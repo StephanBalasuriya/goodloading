@@ -152,10 +152,10 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Length</th>
-              <th>Height</th>
-              <th>Width</th>
-              <th>Weight</th>
+              <th>Length (cm)</th>
+              <th>Height (cm)</th>
+              <th>Width (cm)</th>
+              <th>Weight (kg)</th>
               <th>Quantity</th>
               <th>Stack</th>
               {loads.some((load) => load.stack) && <th>Max Stack Weight</th>}
