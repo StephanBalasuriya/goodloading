@@ -1,4 +1,22 @@
 import type { ChangeEvent } from 'react'
+import { useMemo, useState } from 'react'
+
+import './PlannerSection.css'
+const parseNumber = (value: string): number => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+const createEmptyLoad = (id: number): LoadItem => ({
+  id,
+  name: '',
+  length: 0,
+  height: 0,
+  width: 0,
+  weight: 0,
+  quantity: 1,
+})
+
+
 
 export type LoadItem = {
   id: number
@@ -24,15 +42,99 @@ type PlannerSectionProps = {
   removeLoadRow: (id: number) => void
 }
 
-function PlannerSection({
-  loads,
-  totalWeight,
-  csvMessage,
-  addLoadRow,
-  importCsvLoads,
-  updateLoad,
-  removeLoadRow,
-}: PlannerSectionProps) {
+function PlannerSection() {
+    const [csvMessage, setCsvMessage] = useState('')
+    const [loads, setLoads] = useState<LoadItem[]>([createEmptyLoad(1)])
+
+
+const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const text = await file.text()
+    const lines = text
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+
+    if (lines.length < 2) {
+      setCsvMessage('CSV must include a header row and at least one load row.')
+      return
+    }
+
+    const headers = lines[0].toLowerCase().split(',').map((value) => value.trim())
+    const requiredHeaders = ['doNumber', 'length', 'height', 'width', 'weight', 'quantity']
+    const hasAllHeaders = requiredHeaders.every((header) => headers.includes(header))
+
+    // Support common typo from user input files: "hight".
+    const heightAliasIndex = headers.indexOf('hight')
+
+    if (!hasAllHeaders && heightAliasIndex === -1) {
+      setCsvMessage('CSV headers must include: doNumber,length,height,width,weight,quantity')
+      return
+    }
+
+    const getFieldIndex = (field: string) => {
+    //   if (field === 'height' && heightAliasIndex !== -1) return heightAliasIndex
+      return headers.indexOf(field)
+    }
+
+    const parsedLoads: LoadItem[] = []
+    for (let index = 1; index < lines.length; index += 1) {
+      const cols = lines[index].split(',').map((value) => value.trim())
+      if (cols.every((value) => value.length === 0)) continue
+
+      parsedLoads.push({
+        id: Date.now() + index,
+        name: cols[getFieldIndex('doNumber')] ?? '',
+        length: parseNumber(cols[getFieldIndex('length')] ?? '0'),
+        height: parseNumber(cols[getFieldIndex('height')] ?? '0'),
+        width: parseNumber(cols[getFieldIndex('width')] ?? '0'),
+        weight: parseNumber(cols[getFieldIndex('weight')] ?? '0'),
+        quantity: parseNumber(cols[getFieldIndex('quantity')] ?? '0'),
+      })
+    }
+
+    if (parsedLoads.length === 0) {
+      setCsvMessage('No valid load rows found in CSV.')
+      return
+    }
+
+    setLoads(parsedLoads)
+    setCsvMessage(`Imported ${parsedLoads.length} load rows from CSV.`)
+    event.target.value = ''
+  }
+
+  const updateLoad = (
+    id: number,
+    field: keyof Omit<LoadItem, 'id'>,
+    value: string,
+  ) => {
+    setLoads((previous) =>
+      previous.map((item) => {
+        if (item.id !== id) return item
+        if (field === 'name') {
+          return { ...item, [field]: value }
+        }
+        return { ...item, [field]: parseNumber(value) }
+      }),
+    )
+  }
+  const totalWeight = useMemo(
+    () => loads.reduce((sum, item) => sum + item.weight * item.quantity, 0),
+    [loads],
+  )
+    const addLoadRow = () => {
+    setLoads((previous) => [...previous, createEmptyLoad(Date.now())])
+  }
+
+  const removeLoadRow = (id: number) => {
+    setLoads((previous) => {
+      if (previous.length === 1) return previous
+      return previous.filter((item) => item.id !== id)
+    })
+  }
+  
   return (
     <section id="start" className="planner">
       <div className="planner-head">
