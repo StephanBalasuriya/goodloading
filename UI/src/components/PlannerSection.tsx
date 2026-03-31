@@ -14,6 +14,9 @@ const createEmptyLoad = (id: number): LoadItem => ({
   width: 0,
   weight: 0,
   quantity: 1,
+  stack: false,
+  max_stack_weight: 0,
+  arrange_on_floor: false,
 })
 
 
@@ -26,6 +29,9 @@ export type LoadItem = {
   width: number
   weight: number
   quantity: number
+  stack: boolean
+  max_stack_weight: number
+  arrange_on_floor: boolean
 }
 
 type PlannerSectionProps = {
@@ -53,14 +59,15 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
     }
 
     const headers = lines[0].toLowerCase().split(',').map((value) => value.trim())
-    const requiredHeaders = ['doNumber', 'length', 'height', 'width', 'weight', 'quantity']
+    console.log('CSV Headers:', headers)
+    const requiredHeaders = ['donumber', 'length', 'height', 'width', 'weight', 'quantity', 'stack', 'max_stack_weight', 'arrange_on_floor']
     const hasAllHeaders = requiredHeaders.every((header) => headers.includes(header))
 
     // Support common typo from user input files: "hight".
     const heightAliasIndex = headers.indexOf('hight')
 
     if (!hasAllHeaders && heightAliasIndex === -1) {
-      setCsvMessage('CSV headers must include: doNumber,length,height,width,weight,quantity')
+      setCsvMessage('CSV headers must include: doNumber,length,height,width,weight,quantity,stack,max_stack_weight,arrange_on_floor')
       return
     }
 
@@ -74,15 +81,26 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
       const cols = lines[index].split(',').map((value) => value.trim())
       if (cols.every((value) => value.length === 0)) continue
 
-      parsedLoads.push({
+      const parsedLoad: LoadItem = {
         id: Date.now() + index,
-        name: cols[getFieldIndex('doNumber')] ?? '',
+        name: cols[getFieldIndex('donumber')] ?? '',
         length: parseNumber(cols[getFieldIndex('length')] ?? '0'),
         height: parseNumber(cols[getFieldIndex('height')] ?? '0'),
         width: parseNumber(cols[getFieldIndex('width')] ?? '0'),
         weight: parseNumber(cols[getFieldIndex('weight')] ?? '0'),
         quantity: parseNumber(cols[getFieldIndex('quantity')] ?? '0'),
-      })
+        stack: cols[getFieldIndex('stack')]?.toLowerCase() === 'true',
+        max_stack_weight: parseNumber(cols[getFieldIndex('max_stack_weight')] ?? '0'),
+        arrange_on_floor: cols[getFieldIndex('arrange_on_floor')]?.toLowerCase() === 'true',
+      }
+
+      if (!parsedLoad.stack && (parsedLoad.max_stack_weight !== 0 || parsedLoad.arrange_on_floor)) {
+        setCsvMessage(`Row ${index }: Non-stackable load cannot have max_stack_weight or arrange_on_floor values.`)
+        event.target.value = ''
+        return
+      }
+
+      parsedLoads.push(parsedLoad)
     }
 
     if (parsedLoads.length === 0) {
@@ -162,6 +180,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
               <th>Width</th>
               <th>Weight</th>
               <th>Quantity</th>
+              <th>Stack</th>
               <th>Total</th>
               <th>Action</th>
             </tr>
