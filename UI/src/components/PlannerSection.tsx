@@ -2,36 +2,11 @@ import type { ChangeEvent } from 'react'
 import { useMemo, useState } from 'react'
 
 import './PlannerSection.css'
+import { useLoadsContext } from '../context/LoadsContext'
+import type { LoadItem } from '../context/LoadsContext'
 const parseNumber = (value: string): number => {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
-}
-const createEmptyLoad = (id: number): LoadItem => ({
-  id,
-  name: '',
-  length: 0,
-  height: 0,
-  width: 0,
-  weight: 0,
-  quantity: 1,
-  stack: false,
-  max_stack_weight: 0,
-  arrange_on_floor: false,
-})
-
-
-
-export type LoadItem = {
-  id: number
-  name: string
-  length: number
-  height: number
-  width: number
-  weight: number
-  quantity: number
-  stack: boolean
-  max_stack_weight: number
-  arrange_on_floor: boolean
 }
 
 type PlannerSectionProps = {
@@ -41,7 +16,7 @@ type PlannerSectionProps = {
 function PlannerSection({ id = 'start' }: PlannerSectionProps) {
     const [csvMessage, setCsvMessage] = useState('')
   const [csvMessageType, setCsvMessageType] = useState<'success' | 'error' | null>(null)
-    const [loads, setLoads] = useState<LoadItem[]>([createEmptyLoad(1)])
+  const { loads, setLoads, addLoadRow, removeLoadRow } = useLoadsContext()
 
 
 const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -141,17 +116,6 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
     () => loads.reduce((sum, item) => sum + item.weight * item.quantity, 0),
     [loads],
   )
-    const addLoadRow = () => {
-    setLoads((previous) => [...previous, createEmptyLoad(Date.now())])
-  }
-
-  const removeLoadRow = (id: number) => {
-    setLoads((previous) => {
-      if (previous.length === 1) return previous
-      return previous.filter((item) => item.id !== id)
-    })
-  }
-  
   return (
     <section id={id} className="planner">
       <div className="planner-head">
