@@ -29,20 +29,10 @@ export type LoadItem = {
 }
 
 type PlannerSectionProps = {
-  loads: LoadItem[]
-  totalWeight: number
-  csvMessage: string
-  addLoadRow: () => void
-  importCsvLoads: (event: ChangeEvent<HTMLInputElement>) => void
-  updateLoad: (
-    id: number,
-    field: keyof Omit<LoadItem, 'id'>,
-    value: string,
-  ) => void
-  removeLoadRow: (id: number) => void
+  id?: string
 }
 
-function PlannerSection() {
+function PlannerSection({ id = 'start' }: PlannerSectionProps) {
     const [csvMessage, setCsvMessage] = useState('')
     const [loads, setLoads] = useState<LoadItem[]>([createEmptyLoad(1)])
 
@@ -136,7 +126,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
   }
   
   return (
-    <section id="start" className="planner">
+    <section id={id} className="planner">
       <div className="planner-head">
         <div>
           <p className="eyebrow planner-eyebrow">Load Details</p>

@@ -24,7 +24,7 @@ function App() {
             A logistics planning interface for teams that need precision, speed,
             and fewer surprises in the loading bay.
           </p>
-          <div className="hero-actions" id='start-button'>
+          <div className="hero-actions">
             <button type="button" className="btn btn-primary" onClick={scrollToPlanner}>
               Start Planning
             </button>
@@ -41,7 +41,7 @@ function App() {
       </header>
 
       <main>
-        <PlannerSection />
+        <PlannerSection id="start-button" />
 
       </main>
     </div>
