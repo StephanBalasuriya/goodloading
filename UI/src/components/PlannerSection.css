@@ -67,7 +67,15 @@
 .csv-message {
 	margin: 0 0 0.8rem;
 	font: 500 0.88rem/1.4 'Space Grotesk', sans-serif;
-	color: #8f2424;
+	color: #24548f;
+}
+
+.csv-message-success {
+	color: #24548f;
+}
+
+.csv-message-error {
+	color: #9d2440;
 }
 
 .table-wrap {

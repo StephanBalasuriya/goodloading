@@ -40,6 +40,7 @@ type PlannerSectionProps = {
 
 function PlannerSection({ id = 'start' }: PlannerSectionProps) {
     const [csvMessage, setCsvMessage] = useState('')
+  const [csvMessageType, setCsvMessageType] = useState<'success' | 'error' | null>(null)
     const [loads, setLoads] = useState<LoadItem[]>([createEmptyLoad(1)])
 
 
@@ -55,6 +56,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
 
     if (lines.length < 2) {
       setCsvMessage('CSV must include a header row and at least one load row.')
+      setCsvMessageType('error')
       return
     }
 
@@ -68,6 +70,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
 
     if (!hasAllHeaders && heightAliasIndex === -1) {
       setCsvMessage('CSV headers must include: doNumber,length,height,width,weight,quantity,stack,max_stack_weight,arrange_on_floor')
+      setCsvMessageType('error')
       return
     }
 
@@ -96,6 +99,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
 
       if (!parsedLoad.stack && (parsedLoad.max_stack_weight !== 0 || parsedLoad.arrange_on_floor)) {
         setCsvMessage(`Row ${index }: Non-stackable load cannot have max_stack_weight or arrange_on_floor values.`)
+        setCsvMessageType('error')
         event.target.value = ''
         return
       }
@@ -105,26 +109,31 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
 
     if (parsedLoads.length === 0) {
       setCsvMessage('No valid load rows found in CSV.')
+      setCsvMessageType('error')
       return
     }
 
     setLoads(parsedLoads)
     setCsvMessage(`Imported ${parsedLoads.length} load rows from CSV.`)
+    setCsvMessageType('success')
     event.target.value = ''
   }
 
   const updateLoad = (
     id: number,
     field: keyof Omit<LoadItem, 'id'>,
-    value: string,
+    value: string | boolean,
   ) => {
     setLoads((previous) =>
       previous.map((item) => {
         if (item.id !== id) return item
         if (field === 'name') {
-          return { ...item, [field]: value }
+          return { ...item, [field]: String(value) }
         }
-        return { ...item, [field]: parseNumber(value) }
+        if (field === 'stack' || field === 'arrange_on_floor') {
+          return { ...item, [field]: Boolean(value) }
+        }
+        return { ...item, [field]: parseNumber(String(value)) }
       }),
     )
   }
@@ -168,7 +177,11 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
         </label>
       </div>
 
-      {csvMessage ? <p className="csv-message">{csvMessage}</p> : null}
+      {csvMessage ? (
+        <p className={`csv-message ${csvMessageType === 'success' ? 'csv-message-success' : 'csv-message-error'}`}>
+          {csvMessage}
+        </p>
+      ) : null}
 
       <div className="table-wrap">
         <table className="loads-table">
@@ -181,6 +194,8 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
               <th>Weight</th>
               <th>Quantity</th>
               <th>Stack</th>
+              {loads.some((load) => load.stack) && <th>Max Stack Weight</th>}
+              {loads.some((load) => load.stack) && <th>Arrange on Floor</th>} {/* .some() → checks if at least one item matches a condition */}
               <th>Total</th>
               <th>Action</th>
             </tr>
@@ -237,6 +252,33 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
                       onChange={(event) => updateLoad(load.id, 'quantity', event.target.value)}
                     />
                   </td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={load.stack}
+                      onChange={(event) => updateLoad(load.id, 'stack', event.target.checked)}
+                    />
+                  </td>
+                  {load.stack && (
+                    <>
+                      <td>
+                        <input
+                          type="number"
+                          min="0"
+                          value={load.max_stack_weight}
+                          onChange={(event) => updateLoad(load.id, 'max_stack_weight', event.target.value)}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={load.arrange_on_floor}
+                          onChange={(event) => updateLoad(load.id, 'arrange_on_floor', event.target.checked)}
+                        />
+                      </td>
+                    </>
+                  )}
+                     
                   <td className="row-total">{rowTotal.toFixed(2)} kg</td>
                   <td>
                     <button
