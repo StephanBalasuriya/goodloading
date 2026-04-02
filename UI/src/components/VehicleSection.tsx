@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import './VehicleSection.css'
 import { useLoadsContext } from '../context/LoadsContext'
@@ -24,10 +24,34 @@ function VehicleSection() {
     setIsVehicleModalOpen(false)
   }
 
-  const handleSelectVehicle = (vehicleNcontextame: string) => {
+  const handleSelectVehicle = (_vehicleName: string) => {
     // Vehicle is already saved in  by VehicleForm
     // Just close the modal and display will update from context
   }
+
+  useEffect(() => {
+    if (!selectedVehicle) return
+
+    setLoads((previous) => {
+      const current = previous[0]
+      const nextId = current?.id ?? Date.now()
+
+      return [
+        {
+          id: nextId,
+          name: selectedVehicle.name,
+          length: selectedVehicle.length_cm,
+          height: selectedVehicle.height_cm,
+          width: selectedVehicle.width_cm,
+          weight: selectedVehicle.max_weight_kg,
+          quantity: selectedVehicle.selected_quantity,
+          stack: current?.stack ?? false,
+          max_stack_weight: current?.max_stack_weight ?? 0,
+          arrange_on_floor: current?.arrange_on_floor ?? false,
+        },
+      ]
+    })
+  }, [selectedVehicle, setLoads])
 
   const updateLoad = (
     id: number,
@@ -55,7 +79,9 @@ function VehicleSection() {
           <p className="eyebrow VehicleSection-eyebrow">Vehicle Details</p>
           <h2>Select the Vehicle</h2>
           {selectedVehicle ? (
-            <p className="VehicleSection-selected">Selected: {selectedVehicle.name}</p>
+            <p className="VehicleSection-selected">
+              Selected: {selectedVehicle.name} (No of vehicles: {selectedVehicle.selected_quantity})
+            </p>
           ) : null}
         </div>
         <button
@@ -77,11 +103,7 @@ function VehicleSection() {
               <th>Width (cm)</th>
               <th>Weight (kg)</th>
               <th>Quantity</th>
-              <th>Stack</th>
-              {loads.some((load) => load.stack) && <th>Max Stack Weight</th>}
-              {loads.some((load) => load.stack) && <th>Arrange on Floor</th>}
-              <th>Total</th>
-              <th>Action</th>
+
             </tr>
           </thead>
           <tbody>

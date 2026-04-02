@@ -9,6 +9,7 @@ export type LoadSpaceVehicle = {
   width_cm: number
   max_weight_kg: number
   quantity: number
+  selected_quantity: number
   created_at: string
   updated_at: string
 }

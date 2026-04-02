@@ -207,7 +207,10 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
       return
     }
 
-    setSelectedVehicle(selectingVehicle)
+    setSelectedVehicle({
+      ...selectingVehicle,
+      selected_quantity: quantity,
+    })
     onSelectVehicle(selectingVehicle.name)
     setSelectingVehicle(null)
     setVehicleQuantity('1')
@@ -374,6 +377,7 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
                 <p>Width: {vehicle.width_cm} cm</p>
                 <p>Height: {vehicle.height_cm} cm</p>
                 <p>Max Payload: {vehicle.max_weight_kg} kg</p>
+                <p>Quantity in fleet: {vehicle.quantity}</p>
 
                 <div className="vehicle-card-actions">
                   <button type="button" onClick={() => selectVehicle(vehicle)}>
