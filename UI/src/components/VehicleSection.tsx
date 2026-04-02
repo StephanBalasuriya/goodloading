@@ -3,10 +3,11 @@ import { useState } from 'react'
 import './VehicleSection.css'
 import VehicleForm from './VehicleForm'
 import type { SelectedVehiclePayload } from './VehicleForm'
+import { useLoadSpace } from '../context/LoadSpace'
 
 function VehicleSection() {
   const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false)
-  const [selectedVehicles, setSelectedVehicles] = useState<SelectedVehiclePayload[]>([])
+  const { selectedVehicles, addSelectedVehicle, removeSelectedVehicle } = useLoadSpace()
 
   const openVehicleModal = () => {
     setIsVehicleModalOpen(true)
@@ -17,12 +18,20 @@ function VehicleSection() {
   }
 
   const handleSelectVehicle = (vehicle: SelectedVehiclePayload) => {
-    setSelectedVehicles((previous) => [...previous, vehicle])
+    const veh = {
+      name: vehicle.name,
+      length_cm: vehicle.length_cm,
+      width_cm: vehicle.width_cm,
+      height_cm: vehicle.height_cm,
+      max_weight_kg: vehicle.max_weight_kg,
+      selected_quantity: vehicle.selected_quantity,
+    }
+    addSelectedVehicle(veh)
     closeVehicleModal()
   }
 
   const removeVehicle = (index: number) => {
-    setSelectedVehicles((previous) => previous.filter((_, i) => i !== index))
+    removeSelectedVehicle(index)
   }
 
   return (
