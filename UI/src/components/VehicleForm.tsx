@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { XLg } from 'react-bootstrap-icons'
-import { useLoadSpace } from '../context/LoadSpace'
 
 type Vehicle = {
   id: number
@@ -25,7 +24,11 @@ type VehicleFormData = {
 
 type VehicleFormProps = {
   onClose: () => void
-  onSelectVehicle: (vehicleName: string) => void
+  onSelectVehicle: (vehicle: SelectedVehiclePayload) => void
+}
+
+export type SelectedVehiclePayload = Vehicle & {
+  selected_quantity: number
 }
 
 const emptyVehicleForm: VehicleFormData = {
@@ -38,7 +41,6 @@ const emptyVehicleForm: VehicleFormData = {
 }
 
 function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
-  const { setSelectedVehicle } = useLoadSpace()
   const [isVehiclesLoading, setIsVehiclesLoading] = useState(false)
   const [vehiclesError, setVehiclesError] = useState('')
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
@@ -51,6 +53,7 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
   const [vehicleFormMessage, setVehicleFormMessage] = useState('')
   const [selectingVehicle, setSelectingVehicle] = useState<Vehicle | null>(null)
   const [vehicleQuantity, setVehicleQuantity] = useState<string>('1')
+  const [quantityError, setQuantityError] = useState<string>('')
  
 
   const fetchVehicles = async () => {
@@ -197,6 +200,7 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
   const selectVehicle = (vehicle: Vehicle) => {
     setSelectingVehicle(vehicle)
     setVehicleQuantity('1')
+    setQuantityError('')
   }
 
   const confirmVehicleSelection = () => {
@@ -207,11 +211,11 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
       return
     }
 
-    setSelectedVehicle({
+    const selected: SelectedVehiclePayload = {
       ...selectingVehicle,
       selected_quantity: quantity,
-    })
-    onSelectVehicle(selectingVehicle.name)
+    }
+    onSelectVehicle(selected)
     setSelectingVehicle(null)
     setVehicleQuantity('1')
     onClose()
@@ -220,6 +224,7 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
   const cancelQuantitySelection = () => {
     setSelectingVehicle(null)
     setVehicleQuantity('1')
+    setQuantityError('')
   }
 
   return (
@@ -344,16 +349,27 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
                 type="number"
                 min="1"
                 value={vehicleQuantity}
-                onChange={(event) => setVehicleQuantity(event.target.value)}
+                onChange={(event) => {
+                  const value = event.target.value
+                  setVehicleQuantity(value)
+                  const quantity = Number(value)
+                  if (selectingVehicle && Number.isFinite(quantity) && quantity > selectingVehicle.quantity) {
+                    setQuantityError(`Cannot exceed available quantity (${selectingVehicle.quantity})`)
+                  } else {
+                    setQuantityError('')
+                  }
+                }}
                 placeholder="Number of vehicles"
                 autoFocus
               />
+              {quantityError ? <p className="vehicle-modal-error">{quantityError}</p> : null}
             </div>
             <div className="vehicle-quantity-actions">
               <button
                 type="button"
                 className="btn btn-primary"
                 onClick={confirmVehicleSelection}
+                disabled={Boolean(quantityError)}
               >
                 Confirm ({vehicleQuantity})
               </button>

@@ -1,20 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import './VehicleSection.css'
-import { useLoadsContext } from '../context/LoadsContext'
-import { useLoadSpace } from '../context/LoadSpace'
-import type { LoadItem } from '../context/LoadsContext'
 import VehicleForm from './VehicleForm'
-
-const parseNumber = (value: string): number => {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : 0
-}
+import type { SelectedVehiclePayload } from './VehicleForm'
 
 function VehicleSection() {
   const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false)
-  const { loads, setLoads, removeLoadRow } = useLoadsContext()
-  const { selectedVehicle } = useLoadSpace()
+  const [selectedVehicle, setSelectedVehicle] = useState<SelectedVehiclePayload | null>(null)
 
   const openVehicleModal = () => {
     setIsVehicleModalOpen(true)
@@ -24,52 +16,9 @@ function VehicleSection() {
     setIsVehicleModalOpen(false)
   }
 
-  const handleSelectVehicle = (_vehicleName: string) => {
-    // Vehicle is already saved in  by VehicleForm
-    // Just close the modal and display will update from context
-  }
-
-  useEffect(() => {
-    if (!selectedVehicle) return
-
-    setLoads((previous) => {
-      const current = previous[0]
-      const nextId = current?.id ?? Date.now()
-
-      return [
-        {
-          id: nextId,
-          name: selectedVehicle.name,
-          length: selectedVehicle.length_cm,
-          height: selectedVehicle.height_cm,
-          width: selectedVehicle.width_cm,
-          weight: selectedVehicle.max_weight_kg,
-          quantity: selectedVehicle.selected_quantity,
-          stack: current?.stack ?? false,
-          max_stack_weight: current?.max_stack_weight ?? 0,
-          arrange_on_floor: current?.arrange_on_floor ?? false,
-        },
-      ]
-    })
-  }, [selectedVehicle, setLoads])
-
-  const updateLoad = (
-    id: number,
-    field: keyof Omit<LoadItem, 'id'>,
-    value: string | boolean,
-  ) => {
-    setLoads((previous) =>
-      previous.map((item) => {
-        if (item.id !== id) return item
-        if (field === 'name') {
-          return { ...item, [field]: String(value) }
-        }
-        if (field === 'stack' || field === 'arrange_on_floor') {
-          return { ...item, [field]: Boolean(value) }
-        }
-        return { ...item, [field]: parseNumber(String(value)) }
-      }),
-    )
+  const handleSelectVehicle = (vehicle: SelectedVehiclePayload) => {
+    setSelectedVehicle(vehicle)
+    closeVehicleModal()
   }
 
   return (
@@ -78,11 +27,6 @@ function VehicleSection() {
         <div>
           <p className="eyebrow VehicleSection-eyebrow">Vehicle Details</p>
           <h2>Select the Vehicle</h2>
-          {selectedVehicle ? (
-            <p className="VehicleSection-selected">
-              Selected: {selectedVehicle.name} (No of vehicles: {selectedVehicle.selected_quantity})
-            </p>
-          ) : null}
         </div>
         <button
           type="button"
@@ -97,107 +41,29 @@ function VehicleSection() {
         <table className="loads-table">
           <thead>
             <tr>
-              <th>Name</th>
+              <th>Vehicle Name</th>
               <th>Length (cm)</th>
               <th>Height (cm)</th>
               <th>Width (cm)</th>
-              <th>Weight (kg)</th>
+              <th>Max Weight (kg)</th>
               <th>Quantity</th>
-
             </tr>
           </thead>
           <tbody>
-            {loads.map((load) => {
-              const rowTotal = load.weight * load.quantity
-              return (
-                <tr key={load.id}>
-                  <td>
-                    <input
-                      value={load.name}
-                      onChange={(event) => updateLoad(load.id, 'name', event.target.value)}
-                      placeholder="Load name"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      min="0"
-                      value={load.length}
-                      onChange={(event) => updateLoad(load.id, 'length', event.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      min="0"
-                      value={load.height}
-                      onChange={(event) => updateLoad(load.id, 'height', event.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      min="0"
-                      value={load.width}
-                      onChange={(event) => updateLoad(load.id, 'width', event.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      min="0"
-                      value={load.weight}
-                      onChange={(event) => updateLoad(load.id, 'weight', event.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      min="0"
-                      value={load.quantity}
-                      onChange={(event) => updateLoad(load.id, 'quantity', event.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={load.stack}
-                      onChange={(event) => updateLoad(load.id, 'stack', event.target.checked)}
-                    />
-                  </td>
-                  {load.stack && (
-                    <>
-                      <td>
-                        <input
-                          type="number"
-                          min="0"
-                          value={load.max_stack_weight}
-                          onChange={(event) => updateLoad(load.id, 'max_stack_weight', event.target.value)}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="checkbox"
-                          checked={load.arrange_on_floor}
-                          onChange={(event) => updateLoad(load.id, 'arrange_on_floor', event.target.checked)}
-                        />
-                      </td>
-                    </>
-                  )}
-
-                  <td className="row-total">{rowTotal.toFixed(2)} kg</td>
-                  <td>
-                    <button
-                      type="button"
-                      className="remove-btn"
-                      onClick={() => removeLoadRow(load.id)}
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              )
-            })}
+            {selectedVehicle ? (
+              <tr>
+                <td>{selectedVehicle.name}</td>
+                <td>{selectedVehicle.length_cm}</td>
+                <td>{selectedVehicle.height_cm}</td>
+                <td>{selectedVehicle.width_cm}</td>
+                <td>{selectedVehicle.max_weight_kg}</td>
+                <td>{selectedVehicle.selected_quantity}</td>
+              </tr>
+            ) : (
+              <tr>
+                <td colSpan={6} className="text-center">No vehicle selected</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
