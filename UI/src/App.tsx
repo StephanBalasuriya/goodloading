@@ -1,5 +1,6 @@
 import heroImg from './assets/hero.png'
 import PlannerSection from './components/PlannerSection'
+import VehicleSection from './components/VehicleSection'
 import './App.css'
 
 
@@ -42,7 +43,7 @@ function App() {
 
       <main>
         <PlannerSection id="start-button" />
-
+        <VehicleSection/>
       </main>
     </div>
   )

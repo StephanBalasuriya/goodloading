@@ -7,10 +7,10 @@ class Vehicle(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
-    length_m = Column(Float, nullable=False)  # Length in meters
+    length_cm = Column(Float, nullable=False)  # Length in meters
     width_cm = Column(Float, nullable=False)  # Width in centimeters
     height_cm = Column(Float, nullable=False)  # Height in centimeters
-    weight_kg = Column(Float, nullable=False)  # Weight in kilograms
     max_weight_kg = Column(Float, nullable=False)  # Maximum weight capacity in kilograms
+    quantity = Column(Integer, nullable=False, default=1)  # Number of identical vehicles
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

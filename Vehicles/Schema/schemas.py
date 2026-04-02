@@ -4,11 +4,12 @@ from typing import Optional
 
 class VehicleBase(BaseModel):
     name: str
-    length_m: float  # Length in meters
+    length_cm: float  # Length in meters
     width_cm: float  # Width in centimeters
     height_cm: float  # Height in centimeters
-    weight_kg: float  # Weight in kilograms
     max_weight_kg: float  # Maximum weight capacity in kilograms
+    quantity: int = 1  # Number of identical vehicles
+
 
 class VehicleCreate(VehicleBase):
     pass

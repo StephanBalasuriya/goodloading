@@ -1,97 +1,215 @@
-import type { ChangeEvent } from 'react'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
+import { XLg } from 'react-bootstrap-icons'
 
-import './PlannerSection.css'
+import './VehicleSection.css'
 import { useLoadsContext } from '../context/LoadsContext'
 import type { LoadItem } from '../context/LoadsContext'
+
 const parseNumber = (value: string): number => {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
 }
 
-type PlannerSectionProps = {
-  id?: string
+type Vehicle = {
+  id: number
+  name: string
+  length_m: number
+  height_cm: number
+  width_cm: number
+  weight_kg: number
+  max_weight_kg: number
+  created_at: string
+  updated_at: string
 }
 
-function VehicleSection({ id = 'start' }: PlannerSectionProps) {
-    const [csvMessage, setCsvMessage] = useState('')
-  const [csvMessageType, setCsvMessageType] = useState<'success' | 'error' | null>(null)
-  const { loads, setLoads, addLoadRow, removeLoadRow } = useLoadsContext()
+type VehicleForm = {
+  name: string
+  length_m: string
+  width_cm: string
+  height_cm: string
+  weight_kg: string
+  max_weight_kg: string
+}
+
+const emptyVehicleForm: VehicleForm = {
+  name: '',
+  length_m: '',
+  width_cm: '',
+  height_cm: '',
+  weight_kg: '',
+  max_weight_kg: '',
+}
+
+function VehicleSection() {
+    const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false)
+    const [isVehiclesLoading, setIsVehiclesLoading] = useState(false)
+    const [vehiclesError, setVehiclesError] = useState('')
+    const [vehicles, setVehicles] = useState<Vehicle[]>([])
+    const [vehicleForm, setVehicleForm] = useState<VehicleForm>(emptyVehicleForm)
+    const [isVehicleForm, setIsVehicleForm] = useState(false)
 
 
-const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
 
-    const text = await file.text()
-    const lines = text
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean)
+  const [isSubmittingVehicle, setIsSubmittingVehicle] = useState(false)
+  const [vehicleFormError, setVehicleFormError] = useState('')
+  const [vehicleFormMessage, setVehicleFormMessage] = useState('')
 
-    if (lines.length < 2) {
-      setCsvMessage('CSV must include a header row and at least one load row.')
-      setCsvMessageType('error')
+  const [selectedVehicleName, setSelectedVehicleName] = useState('')
+  const [editingVehicleId, setEditingVehicleId] = useState<number | null>(null)
+
+  const { loads, setLoads, removeLoadRow } = useLoadsContext()
+
+  const openVehicleModal = async () => {
+    setIsVehicleModalOpen(true)
+    await fetchVehicles()
+  }
+
+  const fetchVehicles = async () => {
+    setIsVehiclesLoading(true)
+    setVehiclesError('')
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/vehicles/')
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch vehicles (${response.status})`)
+      }
+      
+      const data = (await response.json()) as Vehicle[]
+    //   console.log('Fetched vehicles:', data)
+      setVehicles(data)
+      if (data.length === 0) {
+        setVehiclesError('No vehicles found in the database yet. Add one below.')
+      }
+    } catch {
+      setVehiclesError('Could not load vehicles. Check if Vehicles API is running on port 8000.')
+    } finally {
+      setIsVehiclesLoading(false)
+    }
+  }
+
+  const closeVehicleModal = () => {
+    setIsVehicleModalOpen(false)
+    setEditingVehicleId(null)
+    setVehicleForm(emptyVehicleForm)
+    setVehicleFormError('')
+    setVehicleFormMessage('')
+  }
+    const startAddVehicle = () => {
+    setEditingVehicleId(null)
+    setVehicleForm(emptyVehicleForm)
+    setIsVehicleForm(true)
+    setVehicleFormError('')
+    setVehicleFormMessage('')
+  }
+
+  const selectVehicle = (vehicle: Vehicle) => {
+    setSelectedVehicleName(vehicle.name)
+    closeVehicleModal()
+  }
+
+
+
+  const startEditVehicle = (vehicle: Vehicle) => {
+    setEditingVehicleId(vehicle.id)
+    setVehicleForm({
+      name: vehicle.name,
+      length_m: String(vehicle.length_m),
+      width_cm: String(vehicle.width_cm),
+      height_cm: String(vehicle.height_cm),
+      weight_kg: String(vehicle.weight_kg),
+      max_weight_kg: String(vehicle.max_weight_kg),
+    })
+    setVehicleFormError('')
+    setVehicleFormMessage('')
+  }
+
+  const updateVehicleForm = (field: keyof VehicleForm, value: string) => {
+    setVehicleForm((previous) => ({ ...previous, [field]: value }))
+  }
+
+  const submitVehicle = async () => {
+    setVehicleFormError('')
+    setVehicleFormMessage('')
+
+    const payload = {
+      name: vehicleForm.name.trim(),
+      length_m: Number(vehicleForm.length_m),
+      width_cm: Number(vehicleForm.width_cm),
+      height_cm: Number(vehicleForm.height_cm),
+      weight_kg: Number(vehicleForm.weight_kg),
+      max_weight_kg: Number(vehicleForm.max_weight_kg),
+    }
+
+    if (!payload.name) {
+      setVehicleFormError('Vehicle name is required.')
       return
     }
 
-    const headers = lines[0].toLowerCase().split(',').map((value) => value.trim())
-    console.log('CSV Headers:', headers)
-    const requiredHeaders = ['donumber', 'length', 'height', 'width', 'weight', 'quantity', 'stack', 'max_stack_weight', 'arrange_on_floor']
-    const hasAllHeaders = requiredHeaders.every((header) => headers.includes(header))
-
-    // Support common typo from user input files: "hight".
-    const heightAliasIndex = headers.indexOf('hight')
-
-    if (!hasAllHeaders && heightAliasIndex === -1) {
-      setCsvMessage('CSV headers must include: doNumber,length,height,width,weight,quantity,stack,max_stack_weight,arrange_on_floor')
-      setCsvMessageType('error')
+    const allNumbers = [
+      payload.length_m,
+      payload.width_cm,
+      payload.height_cm,
+      payload.weight_kg,
+      payload.max_weight_kg,
+    ]
+    const hasInvalidNumber = allNumbers.some((value) => !Number.isFinite(value) || value < 0)
+    if (hasInvalidNumber) {
+      setVehicleFormError('All numeric fields must be valid positive numbers.')
       return
     }
 
-    const getFieldIndex = (field: string) => {
-    //   if (field === 'height' && heightAliasIndex !== -1) return heightAliasIndex
-      return headers.indexOf(field)
-    }
+    setIsSubmittingVehicle(true)
 
-    const parsedLoads: LoadItem[] = []
-    for (let index = 1; index < lines.length; index += 1) {
-      const cols = lines[index].split(',').map((value) => value.trim())
-      if (cols.every((value) => value.length === 0)) continue
+    try {
+      const isUpdate = editingVehicleId !== null
+      const url = isUpdate
+        ? `http://127.0.0.1:8000/vehicles/${editingVehicleId}`
+        : 'http://127.0.0.1:8000/vehicles/'
 
-      const parsedLoad: LoadItem = {
-        id: Date.now() + index,
-        name: cols[getFieldIndex('donumber')] ?? '',
-        length: parseNumber(cols[getFieldIndex('length')] ?? '0'),
-        height: parseNumber(cols[getFieldIndex('height')] ?? '0'),
-        width: parseNumber(cols[getFieldIndex('width')] ?? '0'),
-        weight: parseNumber(cols[getFieldIndex('weight')] ?? '0'),
-        quantity: parseNumber(cols[getFieldIndex('quantity')] ?? '0'),
-        stack: cols[getFieldIndex('stack')]?.toLowerCase() === 'true',
-        max_stack_weight: parseNumber(cols[getFieldIndex('max_stack_weight')] ?? '0'),
-        arrange_on_floor: cols[getFieldIndex('arrange_on_floor')]?.toLowerCase() === 'true',
+      const response = await fetch(url, {
+        method: isUpdate ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        throw new Error(isUpdate ? 'Failed to update vehicle' : 'Failed to add vehicle')
       }
 
-      if (!parsedLoad.stack && (parsedLoad.max_stack_weight !== 0 || parsedLoad.arrange_on_floor)) {
-        setCsvMessage(`Row ${index }: Non-stackable load cannot have max_stack_weight or arrange_on_floor values.`)
-        setCsvMessageType('error')
-        event.target.value = ''
-        return
+      setVehicleFormMessage(isUpdate ? 'Vehicle updated successfully.' : 'Vehicle added successfully.')
+      startAddVehicle()
+      await fetchVehicles()
+    } catch {
+      setVehicleFormError('Unable to save vehicle. Check API status and try again.')
+    } finally {
+      setIsSubmittingVehicle(false)
+    }
+  }
+
+  const deleteVehicle = async (vehicleId: number) => {
+    setVehicleFormError('')
+    setVehicleFormMessage('')
+
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/vehicles/${vehicleId}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        throw new Error('Failed to delete vehicle')
       }
 
-      parsedLoads.push(parsedLoad)
-    }
+      if (editingVehicleId === vehicleId) {
+        startAddVehicle()
+      }
 
-    if (parsedLoads.length === 0) {
-      setCsvMessage('No valid load rows found in CSV.')
-      setCsvMessageType('error')
-      return
+      await fetchVehicles()
+      setVehicleFormMessage('Vehicle deleted successfully.')
+    } catch {
+      setVehicleFormError('Unable to delete vehicle. Check API status and try again.')
     }
-
-    setLoads(parsedLoads)
-    setCsvMessage(`Imported ${parsedLoads.length} load rows from CSV.`)
-    setCsvMessageType('success')
-    event.target.value = ''
   }
 
   const updateLoad = (
@@ -112,40 +230,25 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
       }),
     )
   }
-  const totalWeight = useMemo(
-    () => loads.reduce((sum, item) => sum + item.weight * item.quantity, 0),
-    [loads],
-  )
+
   return (
-    <section id={id} className="planner">
-      <div className="planner-head">
+    <section className="vehicle-section">
+      <div className="VehicleSection-header">
         <div>
-          <p className="eyebrow planner-eyebrow">Load Details</p>
-          <h2>Manual Entry + CSV Import</h2>
+          <p className="eyebrow VehicleSection-eyebrow">Vehicle Details</p>
+          <h2>Select the Vehicle</h2>
+          {selectedVehicleName ? (
+            <p className="VehicleSection-selected">Selected: {selectedVehicleName}</p>
+          ) : null}
         </div>
-        <p className="planner-total">Total Weight: {totalWeight.toFixed(2)} kg</p>
-      </div>
-
-      <div className="planner-actions">
-        <button type="button" className="btn btn-primary" onClick={addLoadRow}>
-          Add Load Row
+        <button
+          type="button"
+          className="VehicleSection-NewVehicleBtn btn btn-primary"
+          onClick={openVehicleModal}
+        >
+          Add Vehicle
         </button>
-        <label className="csv-upload" htmlFor="csv-loads">
-          Import CSV (loads)
-          <input
-            id="csv-loads"
-            type="file"
-            accept=".csv"
-            onChange={importCsvLoads}
-          />
-        </label>
       </div>
-
-      {csvMessage ? (
-        <p className={`csv-message ${csvMessageType === 'success' ? 'csv-message-success' : 'csv-message-error'}`}>
-          {csvMessage}
-        </p>
-      ) : null}
 
       <div className="table-wrap">
         <table className="loads-table">
@@ -159,7 +262,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
               <th>Quantity</th>
               <th>Stack</th>
               {loads.some((load) => load.stack) && <th>Max Stack Weight</th>}
-              {loads.some((load) => load.stack) && <th>Arrange on Floor</th>} {/* .some() → checks if at least one item matches a condition */}
+              {loads.some((load) => load.stack) && <th>Arrange on Floor</th>}
               <th>Total</th>
               <th>Action</th>
             </tr>
@@ -242,7 +345,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
                       </td>
                     </>
                   )}
-                     
+
                   <td className="row-total">{rowTotal.toFixed(2)} kg</td>
                   <td>
                     <button
@@ -259,8 +362,130 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
           </tbody>
         </table>
       </div>
+
+      {isVehicleModalOpen ? (
+        <div className="vehicle-modal-backdrop" role="dialog" aria-modal="true" aria-label="Vehicle manager">
+          <div className="vehicle-modal">
+            <div className="vehicle-modal-head">
+              <h3>Manage vehicles from database</h3>
+              <button
+                type="button"
+                className="vehicle-modal-close"
+                onClick={closeVehicleModal}
+                aria-label="Close vehicle modal"
+              >
+                <XLg aria-hidden="true" focusable="false" />
+              </button>
+            </div>
+
+            <div className="vehicle-modal-toolbar">
+              <button type="button" className="vehicle-modal-new" onClick={startAddVehicle}>
+                + New Vehicle
+              </button>
+            </div>
+            {isVehicleForm ? (
+              <>
+                <div className="vehicle-form-grid">
+                  <input
+                    value={vehicleForm.name}
+                    onChange={(event) => updateVehicleForm('name', event.target.value)}
+                    placeholder="Vehicle name"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    value={vehicleForm.length_m}
+                    onChange={(event) => updateVehicleForm('length_m', event.target.value)}
+                    placeholder="Length (m)"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    value={vehicleForm.width_cm}
+                    onChange={(event) => updateVehicleForm('width_cm', event.target.value)}
+                    placeholder="Width (cm)"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    value={vehicleForm.height_cm}
+                    onChange={(event) => updateVehicleForm('height_cm', event.target.value)}
+                    placeholder="Height (cm)"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    value={vehicleForm.weight_kg}
+                    onChange={(event) => updateVehicleForm('weight_kg', event.target.value)}
+                    placeholder="Weight (kg)"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    value={vehicleForm.max_weight_kg}
+                    onChange={(event) => updateVehicleForm('max_weight_kg', event.target.value)}
+                    placeholder="Max payload (kg)"
+                  />
+                </div>
+
+                <div className="vehicle-form-actions">
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={submitVehicle}
+                    disabled={isSubmittingVehicle}
+                  >
+                    {editingVehicleId === null ? 'Add Vehicle' : 'Update Vehicle'}
+                  </button>
+                  {editingVehicleId !== null ? (
+                    <button type="button" className="vehicle-modal-close" onClick={startAddVehicle}>
+                      Cancel Edit
+                    </button>
+                  ) : null}
+                </div>
+              </>
+            ) : null}
+
+            {vehicleFormError ? <p className="vehicle-modal-error">{vehicleFormError}</p> : null}
+            {vehicleFormMessage ? <p className="vehicle-modal-status">{vehicleFormMessage}</p> : null}
+            {isVehiclesLoading ? <p className="vehicle-modal-status">Loading vehicles...</p> : null}
+            {vehiclesError ? <p className="vehicle-modal-error">{vehiclesError}</p> : null}
+
+            {!isVehiclesLoading && vehicles.length > 0 ? (
+              <div className="vehicle-list">
+                {vehicles.map((vehicle) => (
+                  <div key={vehicle.id} className="vehicle-card">
+                    <h4>{vehicle.name}</h4>
+                    <p>Length: {vehicle.length_m} m</p>
+                    <p>Width: {vehicle.width_cm} cm</p>
+                    <p>Height: {vehicle.height_cm} cm</p>
+                    <p>Weight: {vehicle.weight_kg} kg</p>
+                    <p>Max Payload: {vehicle.max_weight_kg} kg</p>
+
+                    <div className="vehicle-card-actions">
+                      <button type="button" onClick={() => selectVehicle(vehicle)}>
+                        Select
+                      </button>
+                      <button type="button" onClick={() => startEditVehicle(vehicle)}>
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="danger"
+                        onClick={() => deleteVehicle(vehicle.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </section>
   )
 }
 
-export default PlannerSection
+export default VehicleSection
