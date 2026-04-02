@@ -196,6 +196,15 @@
 	margin-bottom: 0.7rem;
 }
 
+.vehicle-form-grid label {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	font: 600 0.78rem/1.2 'Space Grotesk', sans-serif;
+	letter-spacing: 0.02em;
+	color: #1b4f95;
+}
+
 .vehicle-form-grid input {
 	width: 100%;
 	border-radius: 9px;
@@ -221,6 +230,45 @@
 	font: 600 0.84rem/1 'Space Grotesk', sans-serif;
 	color: #17468d;
 	cursor: pointer;
+}
+
+.vehicle-quantity-selector {
+	border: 1px solid rgba(17, 67, 146, 0.15);
+	border-radius: 14px;
+	padding: 1rem;
+	background: linear-gradient(125deg, #f8fbff, #f3f8ff);
+	margin-bottom: 0.8rem;
+	text-align: center;
+}
+
+.vehicle-quantity-selector h4 {
+	margin: 0 0 0.6rem;
+	font: 700 0.98rem/1.2 'Outfit', sans-serif;
+	color: #11356f;
+}
+
+.vehicle-quantity-input-group {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: center;
+	margin-bottom: 0.6rem;
+}
+
+.vehicle-quantity-input-group input {
+	width: 90px;
+	padding: 0.52rem 0.62rem;
+	border: 1px solid rgba(17, 67, 146, 0.2);
+	border-radius: 9px;
+	font: 600 0.9rem/1 'Space Grotesk', sans-serif;
+	text-align: center;
+	background: #ffffff;
+	color: #173767;
+}
+
+.vehicle-quantity-actions {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: center;
 }
 
 .vehicle-modal-status,

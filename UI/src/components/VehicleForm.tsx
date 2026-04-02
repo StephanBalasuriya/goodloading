@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { XLg } from 'react-bootstrap-icons'
+import { useLoadSpace } from '../context/LoadSpace'
 
 type Vehicle = {
   id: number
@@ -37,6 +38,7 @@ const emptyVehicleForm: VehicleFormData = {
 }
 
 function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
+  const { setSelectedVehicle } = useLoadSpace()
   const [isVehiclesLoading, setIsVehiclesLoading] = useState(false)
   const [vehiclesError, setVehiclesError] = useState('')
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
@@ -47,6 +49,9 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
   const [editingVehicleId, setEditingVehicleId] = useState<number | null>(null)
   const [vehicleFormError, setVehicleFormError] = useState('')
   const [vehicleFormMessage, setVehicleFormMessage] = useState('')
+  const [selectingVehicle, setSelectingVehicle] = useState<Vehicle | null>(null)
+  const [vehicleQuantity, setVehicleQuantity] = useState<string>('1')
+ 
 
   const fetchVehicles = async () => {
     setIsVehiclesLoading(true)
@@ -190,8 +195,28 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
   }
 
   const selectVehicle = (vehicle: Vehicle) => {
-    onSelectVehicle(vehicle.name)
+    setSelectingVehicle(vehicle)
+    setVehicleQuantity('1')
+  }
+
+  const confirmVehicleSelection = () => {
+    if (!selectingVehicle) return
+
+    const quantity = Number(vehicleQuantity)
+    if (!Number.isFinite(quantity) || quantity < 1) {
+      return
+    }
+
+    setSelectedVehicle(selectingVehicle)
+    onSelectVehicle(selectingVehicle.name)
+    setSelectingVehicle(null)
+    setVehicleQuantity('1')
     onClose()
+  }
+
+  const cancelQuantitySelection = () => {
+    setSelectingVehicle(null)
+    setVehicleQuantity('1')
   }
 
   return (
@@ -209,55 +234,81 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
           </button>
         </div>
 
-        <div className="vehicle-modal-toolbar">
-          <button type="button" className="vehicle-modal-new" onClick={startAddVehicle}>
-            + New Vehicle
-          </button>
-        </div>
+        {!selectingVehicle ? (
+          <div className="vehicle-modal-toolbar">
+            <button type="button" className="vehicle-modal-new" onClick={startAddVehicle}>
+              + New Vehicle
+            </button>
+          </div>
+        ) : null}
 
-        {isVehicleForm ? (
+        {!selectingVehicle && isVehicleForm ? (
           <>
             <div className="vehicle-form-grid">
-              <input
-                value={vehicleForm.name}
-                onChange={(event) => updateVehicleForm('name', event.target.value)}
-                placeholder="Vehicle name"
-              />
-              <input
-                type="number"
-                min="0"
-                value={vehicleForm.length_cm}
-                onChange={(event) => updateVehicleForm('length_cm', event.target.value)}
-                placeholder="Length (cm)"
-              />
-              <input
-                type="number"
-                min="0"
-                value={vehicleForm.width_cm}
-                onChange={(event) => updateVehicleForm('width_cm', event.target.value)}
-                placeholder="Width (cm)"
-              />
-              <input
-                type="number"
-                min="0"
-                value={vehicleForm.height_cm}
-                onChange={(event) => updateVehicleForm('height_cm', event.target.value)}
-                placeholder="Height (cm)"
-              />
-              <input
-                type="number"
-                min="1"
-                value={vehicleForm.quantity}
-                onChange={(event) => updateVehicleForm('quantity', event.target.value)}
-                placeholder="Quantity"
-              />
-              <input
-                type="number"
-                min="0"
-                value={vehicleForm.max_weight_kg}
-                onChange={(event) => updateVehicleForm('max_weight_kg', event.target.value)}
-                placeholder="Max payload (kg)"
-              />
+              <label htmlFor="vehicle-name-input">
+                Vehicle Name
+                <input
+                  id="vehicle-name-input"
+                  value={vehicleForm.name}
+                  onChange={(event) => updateVehicleForm('name', event.target.value)}
+                  placeholder="Vehicle name"
+                />
+              </label>
+              <label htmlFor="vehicle-length-input">
+                Length in cm
+                <input
+                  id="vehicle-length-input"
+                  type="number"
+                  min="0"
+                  value={vehicleForm.length_cm}
+                  onChange={(event) => updateVehicleForm('length_cm', event.target.value)}
+                  placeholder="Length (cm)"
+                />
+              </label>
+              <label htmlFor="vehicle-width-input">
+                Width in cm
+                <input
+                  id="vehicle-width-input"
+                  type="number"
+                  min="0"
+                  value={vehicleForm.width_cm}
+                  onChange={(event) => updateVehicleForm('width_cm', event.target.value)}
+                  placeholder="Width (cm)"
+                />
+              </label>
+              <label htmlFor="vehicle-height-input">
+                Height in cm
+                <input
+                  id="vehicle-height-input"
+                  type="number"
+                  min="0"
+                  value={vehicleForm.height_cm}
+                  onChange={(event) => updateVehicleForm('height_cm', event.target.value)}
+                  placeholder="Height (cm)"
+                />
+              </label>
+              <label htmlFor="vehicle-quantity-input">
+                Quantity
+                <input
+                  id="vehicle-quantity-input"
+                  type="number"
+                  min="1"
+                  value={vehicleForm.quantity}
+                  onChange={(event) => updateVehicleForm('quantity', event.target.value)}
+                  placeholder="Quantity"
+                />
+              </label>
+              <label htmlFor="vehicle-max-payload-input">
+                Max Payload
+                <input
+                  id="vehicle-max-payload-input"
+                  type="number"
+                  min="0"
+                  value={vehicleForm.max_weight_kg}
+                  onChange={(event) => updateVehicleForm('max_weight_kg', event.target.value)}
+                  placeholder="Max payload (kg)"
+                />
+              </label>
             </div>
 
             <div className="vehicle-form-actions">
@@ -269,11 +320,10 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
               >
                 {editingVehicleId === null ? 'Add Vehicle' : 'Update Vehicle'}
               </button>
-              {editingVehicleId !== null ? (
-                <button type="button" className="vehicle-modal-close" onClick={startAddVehicle}>
-                  Cancel Edit
-                </button>
-              ) : null}
+
+              <button type="button" className="vehicle-modal-close" onClick={() => setIsVehicleForm(false)}>
+                Cancel
+              </button>
             </div>
           </>
         ) : null}
@@ -283,7 +333,39 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
         {isVehiclesLoading ? <p className="vehicle-modal-status">Loading vehicles...</p> : null}
         {vehiclesError ? <p className="vehicle-modal-error">{vehiclesError}</p> : null}
 
-        {!isVehiclesLoading && vehicles.length > 0 ? (
+        {selectingVehicle ? (
+          <div className="vehicle-quantity-selector">
+            <h4>How many {selectingVehicle.name} vehicles do you want to use?</h4>
+            <div className="vehicle-quantity-input-group">
+              <input
+                type="number"
+                min="1"
+                value={vehicleQuantity}
+                onChange={(event) => setVehicleQuantity(event.target.value)}
+                placeholder="Number of vehicles"
+                autoFocus
+              />
+            </div>
+            <div className="vehicle-quantity-actions">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={confirmVehicleSelection}
+              >
+                Confirm ({vehicleQuantity})
+              </button>
+              <button
+                type="button"
+                className="vehicle-modal-close"
+                onClick={cancelQuantitySelection}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {!isVehiclesLoading && vehicles.length > 0 && !selectingVehicle ? (
           <div className="vehicle-list">
             {vehicles.map((vehicle) => (
               <div key={vehicle.id} className="vehicle-card">
