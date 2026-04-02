@@ -6,7 +6,7 @@ import type { SelectedVehiclePayload } from './VehicleForm'
 
 function VehicleSection() {
   const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false)
-  const [selectedVehicle, setSelectedVehicle] = useState<SelectedVehiclePayload | null>(null)
+  const [selectedVehicles, setSelectedVehicles] = useState<SelectedVehiclePayload[]>([])
 
   const openVehicleModal = () => {
     setIsVehicleModalOpen(true)
@@ -17,8 +17,12 @@ function VehicleSection() {
   }
 
   const handleSelectVehicle = (vehicle: SelectedVehiclePayload) => {
-    setSelectedVehicle(vehicle)
+    setSelectedVehicles((previous) => [...previous, vehicle])
     closeVehicleModal()
+  }
+
+  const removeVehicle = (index: number) => {
+    setSelectedVehicles((previous) => previous.filter((_, i) => i !== index))
   }
 
   return (
@@ -47,21 +51,33 @@ function VehicleSection() {
               <th>Width (cm)</th>
               <th>Max Weight (kg)</th>
               <th>Quantity</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {selectedVehicle ? (
-              <tr>
-                <td>{selectedVehicle.name}</td>
-                <td>{selectedVehicle.length_cm}</td>
-                <td>{selectedVehicle.height_cm}</td>
-                <td>{selectedVehicle.width_cm}</td>
-                <td>{selectedVehicle.max_weight_kg}</td>
-                <td>{selectedVehicle.selected_quantity}</td>
-              </tr>
+            {selectedVehicles.length > 0 ? (
+              selectedVehicles.map((vehicle, index) => (
+                <tr key={index}>
+                  <td>{vehicle.name}</td>
+                  <td>{vehicle.length_cm}</td>
+                  <td>{vehicle.height_cm}</td>
+                  <td>{vehicle.width_cm}</td>
+                  <td>{vehicle.max_weight_kg}</td>
+                  <td>{vehicle.selected_quantity}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="remove-btn"
+                      onClick={() => removeVehicle(index)}
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))
             ) : (
               <tr>
-                <td colSpan={6} className="text-center">No vehicle selected</td>
+                <td colSpan={7} className="text-center">No vehicles selected</td>
               </tr>
             )}
           </tbody>
