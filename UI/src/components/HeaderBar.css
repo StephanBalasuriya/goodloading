@@ -1,0 +1,38 @@
+.header-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(17, 42, 88, 0.14);
+  border-radius: 20px;
+  box-shadow: 0 10px 28px rgba(17, 42, 88, 0.1);
+  padding: 0.7rem 1rem;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.header-logo {
+  width: 46px;
+  height: 46px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(25, 55, 105, 0.26);
+}
+
+.header-text h1 {
+  margin: 0;
+  font: 700 1.18rem/1.1 'Outfit', sans-serif;
+  letter-spacing: 0.02em;
+  color: #1146a6;
+}
+
+.header-text p {
+  margin: 0.1rem 0 0;
+  font: 500 0.83rem/1.2 'Space Grotesk', sans-serif;
+  color: #355781;
+}
