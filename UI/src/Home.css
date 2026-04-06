@@ -87,6 +87,12 @@
 	background: rgba(255, 255, 255, 0.7);
 }
 
+.btn-secondary {
+	color: #fff;
+	background: linear-gradient(120deg, var(--brand-2), #2ec6de);
+	box-shadow: 0 10px 24px rgba(2, 180, 200, 0.28);
+}
+
 .hero-art {
 	position: relative;
 	display: grid;
