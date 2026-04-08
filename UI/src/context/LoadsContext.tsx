@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useEffect, useContext, useState } from 'react'
 import type { Dispatch, ReactNode, SetStateAction } from 'react'
 
 export type LoadItem = {
@@ -27,6 +27,24 @@ const createEmptyLoad = (id: number): LoadItem => ({
   arrange_on_floor: false,
 })
 
+const LOADS_STORAGE_KEY = 'goodloading.loads'
+
+const createInitialLoads = () => {
+  if (typeof window === 'undefined') return [createEmptyLoad(1)]
+
+  const storedLoads = window.localStorage.getItem(LOADS_STORAGE_KEY)
+  if (!storedLoads) return [createEmptyLoad(1)]
+
+  try {
+    const parsedLoads = JSON.parse(storedLoads) as LoadItem[]
+    return Array.isArray(parsedLoads) && parsedLoads.length > 0
+      ? parsedLoads
+      : [createEmptyLoad(1)]
+  } catch {
+    return [createEmptyLoad(1)]
+  }
+}
+
 type LoadsContextValue = {
   loads: LoadItem[]
   setLoads: Dispatch<SetStateAction<LoadItem[]>>
@@ -41,7 +59,11 @@ type LoadsProviderProps = {
 }
 
 export function LoadsProvider({ children }: LoadsProviderProps) {
-  const [loads, setLoads] = useState<LoadItem[]>([createEmptyLoad(1)])
+  const [loads, setLoads] = useState<LoadItem[]>(createInitialLoads)
+
+  useEffect(() => {
+    window.localStorage.setItem(LOADS_STORAGE_KEY, JSON.stringify(loads))
+  }, [loads])
 
   const addLoadRow = () => {
     setLoads((previous) => [...previous, createEmptyLoad(Date.now())])
@@ -49,7 +71,7 @@ export function LoadsProvider({ children }: LoadsProviderProps) {
 
   const removeLoadRow = (id: number) => {
     setLoads((previous) => {
-      if (previous.length === 1) return previous
+      // if (previous.length === 1) return previous
       return previous.filter((item) => item.id !== id)
     })
   }

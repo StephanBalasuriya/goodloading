@@ -156,7 +156,7 @@ function Optimize() {
     setApiResponse(null)
 
     if (!hasUploadData) {
-      setApiError('Add at least one valid load and one vehicle before upload.')
+      setApiError('Add at least one valid load and one vehicle before sending the payload.')
       return
     }
 
@@ -199,7 +199,7 @@ function Optimize() {
     } finally {
       setIsSendingToApi(false)
     }
-  }, [hasUploadData, isFromUploadButton, optimizationPayload])
+  }, [hasUploadData, optimizationPayload])
 
   useEffect(() => {
     if (!isFromUploadButton || uploadRequestId === null) return
@@ -382,7 +382,7 @@ function Optimize() {
               onClick={() => {
                 void sendPayloadToApiHandle()
               }}
-              disabled={isSendingToApi || !hasUploadData || !isFromUploadButton}
+              disabled={isSendingToApi || !hasUploadData}
             >
               {isSendingToApi ? 'Sending...' : 'Resend Payload'}
             </button>
@@ -390,15 +390,19 @@ function Optimize() {
           <p className="optimize-response-note">
             Endpoint: <code>/recommend</code> on <code>api_handle</code>
           </p>
-          {!isFromUploadButton ? (
+          {!hasUploadData ? (
             <p className="optimize-api-block-note">
-              Open this page through Home Upload button to trigger payload send.
+              Add loads and vehicles before sending the payload.
+            </p>
+          ) : !isFromUploadButton ? (
+            <p className="optimize-api-block-note">
+              This page was opened directly, but the current load and load space data can still be sent.
             </p>
           ) : null}
           {apiError ? <p className="optimize-api-error">{apiError}</p> : null}
           {!apiError && apiResponse === null ? (
             <p className="optimize-response-placeholder">
-              {isFromUploadButton
+              {hasUploadData
                 ? 'Waiting for backend response...'
                 : 'No backend call triggered yet.'}
             </p>

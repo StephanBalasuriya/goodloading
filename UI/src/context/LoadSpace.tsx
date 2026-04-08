@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useEffect, useContext, useState } from 'react'
 import type { Dispatch, ReactNode, SetStateAction } from 'react'
 
 export type SelectedVehicle = {
@@ -20,12 +20,32 @@ type LoadSpaceContextValue = {
 
 const LoadSpaceContext = createContext<LoadSpaceContextValue | null>(null)
 
+const LOAD_SPACE_STORAGE_KEY = 'goodloading.loadspaces'
+
+const createInitialSelectedVehicles = () => {
+	if (typeof window === 'undefined') return []
+
+	const storedVehicles = window.localStorage.getItem(LOAD_SPACE_STORAGE_KEY)
+	if (!storedVehicles) return []
+
+	try {
+		const parsedVehicles = JSON.parse(storedVehicles) as SelectedVehicle[]
+		return Array.isArray(parsedVehicles) ? parsedVehicles : []
+	} catch {
+		return []
+	}
+}
+
 type LoadSpaceProviderProps = {
 	children: ReactNode
 }
 
 export function LoadSpaceProvider({ children }: LoadSpaceProviderProps) {
-	const [selectedVehicles, setSelectedVehicles] = useState<SelectedVehicle[]>([])
+	const [selectedVehicles, setSelectedVehicles] = useState<SelectedVehicle[]>(createInitialSelectedVehicles)
+
+	useEffect(() => {
+		window.localStorage.setItem(LOAD_SPACE_STORAGE_KEY, JSON.stringify(selectedVehicles))
+	}, [selectedVehicles])
 
 	const addSelectedVehicle = (vehicle: SelectedVehicle) => {
 		setSelectedVehicles((previous) => [...previous, vehicle])

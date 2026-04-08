@@ -17,6 +17,7 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
     const [csvMessage, setCsvMessage] = useState('')
   const [csvMessageType, setCsvMessageType] = useState<'success' | 'error' | null>(null)
   const { loads, setLoads, addLoadRow, removeLoadRow } = useLoadsContext()
+  const showStackColumns = loads.some((load) => load.stack)
 
 
 const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -158,16 +159,24 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
               <th>Weight (kg)</th>
               <th>Quantity</th>
               <th>Stack</th>
-              {loads.some((load) => load.stack) && <th>Max Stack Weight</th>}
-              {loads.some((load) => load.stack) && <th>Arrange on Floor</th>} {/* .some() → checks if at least one item matches a condition */}
+              {showStackColumns && <th>Max Stack Weight</th>}
+              {showStackColumns && <th>Arrange on Floor</th>}
               <th>Total</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
+            {loads.length === 0 && (
+              <tr>
+                <td colSpan={10} className="text-center">
+                  No load rows added yet.
+                </td>
+              </tr>
+            )}
             {loads.map((load) => {
               const rowTotal = load.weight * load.quantity
               return (
+                
                 <tr key={load.id}>
                   <td>
                     <input
@@ -223,25 +232,27 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
                       onChange={(event) => updateLoad(load.id, 'stack', event.target.checked)}
                     />
                   </td>
-                  {load.stack && (
+                  {showStackColumns ? (
                     <>
-                      <td>
+                      <td className={!load.stack ? 'stack-cell-disabled' : ''}>
                         <input
                           type="number"
                           min="0"
                           value={load.max_stack_weight}
+                          disabled={!load.stack}
                           onChange={(event) => updateLoad(load.id, 'max_stack_weight', event.target.value)}
                         />
                       </td>
-                      <td>
+                      <td className={!load.stack ? 'stack-cell-disabled' : ''}>
                         <input
                           type="checkbox"
                           checked={load.arrange_on_floor}
+                          disabled={!load.stack}
                           onChange={(event) => updateLoad(load.id, 'arrange_on_floor', event.target.checked)}
                         />
                       </td>
                     </>
-                  )}
+                  ) : null}
                      
                   <td className="row-total">{rowTotal.toFixed(2)} kg</td>
                   <td>

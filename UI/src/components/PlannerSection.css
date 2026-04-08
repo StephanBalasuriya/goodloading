@@ -119,6 +119,12 @@
 	background: #fbfdff;
 }
 
+.stack-cell-disabled input {
+	filter: blur(1.4px);
+	opacity: 0.58;
+	cursor: not-allowed;
+}
+
 .row-total {
 	font: 700 0.88rem/1 'Space Grotesk', sans-serif;
 	color: #1146a6;
