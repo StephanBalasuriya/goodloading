@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { XLg } from 'react-bootstrap-icons'
+import { vehiclesApiUrl } from '../config/api'
 
 type Vehicle = {
   id: number
@@ -61,7 +62,7 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
     setVehiclesError('')
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/vehicles/')
+      const response = await fetch(vehiclesApiUrl('/vehicles/'))
       if (!response.ok) {
         throw new Error(`Failed to fetch vehicles (${response.status})`)
       }
@@ -147,8 +148,8 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
     try {
       const isUpdate = editingVehicleId !== null
       const url = isUpdate
-        ? `http://127.0.0.1:8000/vehicles/${editingVehicleId}`
-        : 'http://127.0.0.1:8000/vehicles/'
+        ? vehiclesApiUrl(`/vehicles/${editingVehicleId}`)
+        : vehiclesApiUrl('/vehicles/')
 
       const response = await fetch(url, {
         method: isUpdate ? 'PUT' : 'POST',
@@ -177,7 +178,7 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
     setVehicleFormMessage('')
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/vehicles/${vehicleId}`, {
+      const response = await fetch(vehiclesApiUrl(`/vehicles/${vehicleId}`), {
         method: 'DELETE',
       })
 

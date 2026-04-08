@@ -2,11 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useLoadsContext } from './context/LoadsContext'
 import { useLoadSpace } from './context/LoadSpace'
+import { apiHandleUrl } from './config/api'
 import './Optimize.css'
 
-const API_HANDLE_BASE_URL =
-  import.meta.env.VITE_API_HANDLE_URL ?? 'http://127.0.0.1:8001'
-const API_HANDLE_RECOMMEND_ENDPOINT = `${API_HANDLE_BASE_URL.replace(/\/$/, '')}/recommend`
+const API_HANDLE_RECOMMEND_ENDPOINT = apiHandleUrl('/map')
 
 const toVolumeM3 = (lengthCm: number, widthCm: number, heightCm: number) =>
   (lengthCm * widthCm * heightCm) / 1_000_000
@@ -373,44 +372,35 @@ function Optimize() {
             </table>
           </div>
         </section>
-           <section className="optimize-panel optimize-response-panel">
-          <div className="optimize-panel-head">
-            <h2>Optimization API Response</h2>
-            <button
-              type="button"
-              className="btn btn-primary optimize-send-btn"
-              onClick={() => {
-                void sendPayloadToApiHandle()
-              }}
-              disabled={isSendingToApi || !hasUploadData}
+        {hasUploadData && (
+          <section className="optimize-panel optimize-response-panel">
+            <div className="optimize-panel-head">
+              <h2>Optimization API Response</h2>
+              <button
+                type="button"
+                className="btn btn-primary optimize-send-btn"
+                onClick={() => {
+                  void sendPayloadToApiHandle()
+                }}
+                disabled={isSendingToApi || !hasUploadData}
             >
-              {isSendingToApi ? 'Sending...' : 'Resend Payload'}
+              {isSendingToApi ? 'Sending...' : 'Upload & Optimize'}
             </button>
           </div>
-          <p className="optimize-response-note">
-            Endpoint: <code>/recommend</code> on <code>api_handle</code>
-          </p>
-          {!hasUploadData ? (
-            <p className="optimize-api-block-note">
-              Add loads and vehicles before sending the payload.
-            </p>
-          ) : !isFromUploadButton ? (
-            <p className="optimize-api-block-note">
-              This page was opened directly, but the current load and load space data can still be sent.
-            </p>
-          ) : null}
+          
+          
           {apiError ? <p className="optimize-api-error">{apiError}</p> : null}
           {!apiError && apiResponse === null ? (
             <p className="optimize-response-placeholder">
               {hasUploadData
-                ? 'Waiting for backend response...'
+                ? 'Click "Upload & Optimize" to see the response here.'
                 : 'No backend call triggered yet.'}
             </p>
           ) : null}
           {apiResponse !== null ? (
             <pre className="optimize-response-json">{apiResponseText}</pre>
           ) : null}
-        </section>
+        </section>)}
       </main>
     </div>
   )
