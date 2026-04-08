@@ -80,7 +80,7 @@ function Home() {
 
       <main>
         <PlannerSection id="start-button" />
-        <VehicleSection/>
+        {/* <VehicleSection/> */}
       </main>
     </div>
   )

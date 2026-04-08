@@ -9,40 +9,40 @@ const parseNumber = (value: string): number => {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
-const parseLatLngTuple = (value: string): { lat: number; lng: number } | null => {
-  const normalized = value.trim().replace(/^\(/, '').replace(/\)$/, '')
-  const match = normalized.match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/)
-  if (!match) return null
+// const parseLatLngTuple = (value: string): { lat: number; lng: number } | null => {
+//   const normalized = value.trim().replace(/^\(/, '').replace(/\)$/, '')
+//   const match = normalized.match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/)
+//   if (!match) return null
 
-  const lat = Number(match[1])
-  const lng = Number(match[2])
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null
+//   const lat = Number(match[1])
+//   const lng = Number(match[2])
+//   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+//   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null
 
-  return { lat, lng }
-}
+//   return { lat, lng }
+// }
 
-const formatLatLng = (lat: number, lng: number) => `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+// const formatLatLng = (lat: number, lng: number) => `${lat.toFixed(6)}, ${lng.toFixed(6)}`
 
-const geocodeAddressToLatLng = async (address: string): Promise<{ lat: number; lng: number } | null> => {
-  const query = address.trim()
-  if (!query) return null
+// const geocodeAddressToLatLng = async (address: string): Promise<{ lat: number; lng: number } | null> => {
+//   const query = address.trim()
+//   if (!query) return null
 
-  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`
-  const response = await fetch(url)
-  if (!response.ok) return null
+//   const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`
+//   const response = await fetch(url)
+//   if (!response.ok) return null
 
-  const data = (await response.json()) as Array<{ lat?: string; lon?: string }>
-  const first = data[0]
-  if (!first?.lat || !first?.lon) return null
+//   const data = (await response.json()) as Array<{ lat?: string; lon?: string }>
+//   const first = data[0]
+//   if (!first?.lat || !first?.lon) return null
 
-  const lat = Number(first.lat)
-  const lng = Number(first.lon)
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null
+//   const lat = Number(first.lat)
+//   const lng = Number(first.lon)
+//   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+//   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null
 
-  return { lat, lng }
-}
+//   return { lat, lng }
+// }
 
 type PlannerSectionProps = {
   id?: string
@@ -106,7 +106,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
         stack: cols[getFieldIndex('stack')]?.toLowerCase() === 'true',
         max_stack_weight: parseNumber(cols[getFieldIndex('max_stack_weight')] ?? '0'),
         arrange_on_floor: cols[getFieldIndex('arrange_on_floor')]?.toLowerCase() === 'true',
-        destination: cols[getFieldIndex('destination')] ?? '',
+        // destination: cols[getFieldIndex('destination')] ?? '',
       }
 
       if (!parsedLoad.stack && (parsedLoad.max_stack_weight !== 0 || parsedLoad.arrange_on_floor)) {
@@ -142,9 +142,9 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
         if (field === 'name') {
           return { ...item, [field]: String(value) }
         }
-        if (field === 'destination') {
-          return { ...item, [field]: String(value) }
-        }
+        // if (field === 'destination') {
+        //   return { ...item, [field]: String(value) }
+        // }
         if (field === 'stack' || field === 'arrange_on_floor') {
           return { ...item, [field]: Boolean(value) }
         }
@@ -153,28 +153,28 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
     )
   }
 
-  const normalizeDestination = async (id: number, inputValue: string) => {
-    const value = inputValue.trim()
-    if (!value) {
-      updateLoad(id, 'destination', '')
-      return
-    }
+  // const normalizeDestination = async (id: number, inputValue: string) => {
+  //   const value = inputValue.trim()
+  //   if (!value) {
+  //     updateLoad(id, 'destination', '')
+  //     return
+  //   }
 
-    const tuple = parseLatLngTuple(value)
-    if (tuple) {
-      updateLoad(id, 'destination', formatLatLng(tuple.lat, tuple.lng))
-      return
-    }
+  //   const tuple = parseLatLngTuple(value)
+  //   if (tuple) {
+  //     updateLoad(id, 'destination', formatLatLng(tuple.lat, tuple.lng))
+  //     return
+  //   }
 
-    try {
-      const geocoded = await geocodeAddressToLatLng(value)
-      if (geocoded) {
-        updateLoad(id, 'destination', formatLatLng(geocoded.lat, geocoded.lng))
-      }
-    } catch {
-      // Keep the original destination string if geocoding fails.
-    }
-  }
+  //   try {
+  //     const geocoded = await geocodeAddressToLatLng(value)
+  //     if (geocoded) {
+  //       updateLoad(id, 'destination', formatLatLng(geocoded.lat, geocoded.lng))
+  //     }
+  //   } catch {
+  //     // Keep the original destination string if geocoding fails.
+  //   }
+  // }
   const totalWeight = useMemo(
     () => loads.reduce((sum, item) => sum + item.weight * item.quantity, 0),
     [loads],
@@ -223,7 +223,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
               <th>Stack</th>
               {showStackColumns && <th>Max Stack Weight</th>}
               {showStackColumns && <th>Arrange on Floor</th>}
-              <th>Destination</th>
+              {/* <th>Destination</th> */}
               <th>Total</th>
               <th>Action</th>
             </tr>
@@ -316,7 +316,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
                       </td>
                     </>
                   ) : null}
-                  <td>
+                  {/* <td>
                         <input
                           type="text"
                           value={load.destination}
@@ -325,7 +325,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
                             void normalizeDestination(load.id, event.target.value)
                           }}
                         />
-                      </td>
+                      </td> */}
                      
                   <td className="row-total">{rowTotal.toFixed(2)} kg</td>
                   <td>

@@ -25,7 +25,7 @@ type OptimizationRequestPayload = {
     stack: boolean
     max_stack_weight: number
     arrange_on_floor: boolean
-    destination: string
+    // destination: string
   }>
   loadspaces: Array<{
     name: string
@@ -132,7 +132,7 @@ function Optimize() {
         stack: load.stack,
         max_stack_weight: load.max_stack_weight,
         arrange_on_floor: load.arrange_on_floor,
-        destination: load.destination.trim(),
+        // destination: load.destination.trim(),
       })),
       loadspaces: selectedVehicles.map((vehicle) => ({
         name: vehicle.name,
@@ -294,7 +294,7 @@ function Optimize() {
                   <th>Stack</th>
                   <th>Max Stack Weight (kg)</th>
                   <th>Arrange On Floor</th>
-                  <th>Destination</th>
+                  {/* <th>Destination</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -310,7 +310,7 @@ function Optimize() {
                       <td>{load.stack ? 'Yes' : 'No'}</td>
                       <td>{load.stack ? formatNumber(load.max_stack_weight) : '-'}</td>
                       <td>{load.stack ? (load.arrange_on_floor ? 'Yes' : 'No') : '-'}</td>
-                      <td>{load.destination}</td>
+                      {/* <td>{load.destination}</td> */}
                     </tr>
                   ))
                 ) : (

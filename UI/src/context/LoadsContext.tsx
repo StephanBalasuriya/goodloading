@@ -12,7 +12,7 @@ export type LoadItem = {
   stack: boolean
   max_stack_weight: number
   arrange_on_floor: boolean
-  destination: string
+  // destination: string
 }
 
 const createEmptyLoad = (id: number): LoadItem => ({
@@ -26,7 +26,7 @@ const createEmptyLoad = (id: number): LoadItem => ({
   stack: false,
   max_stack_weight: 0,
   arrange_on_floor: false,
-  destination: '',
+  // destination: '',
 })
 
 const LOADS_STORAGE_KEY = 'goodloading.loads'
