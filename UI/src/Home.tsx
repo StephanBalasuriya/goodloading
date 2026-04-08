@@ -38,8 +38,13 @@ function Home() {
       return
     }
 
-    // All validations passed, navigate to optimize page
-    navigate('/optimize')
+    // All validations passed, navigate to optimize page and mark upload flow
+    navigate('/optimize', {
+      state: {
+        fromUpload: true,
+        uploadRequestId: Date.now(),
+      },
+    })
   }
 
   return (
