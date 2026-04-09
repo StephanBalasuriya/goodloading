@@ -6,6 +6,7 @@ import { apiHandleUrl } from './config/api'
 import './Optimize.css'
 
 const API_HANDLE_RECOMMEND_ENDPOINT = apiHandleUrl('/map')
+const API_HANDLE_GMPRO_RESPONSE_ENDPOINT = apiHandleUrl('/GMPROResponse')
 
 const toVolumeM3 = (lengthCm: number, widthCm: number, heightCm: number) =>
   (lengthCm * widthCm * heightCm) / 1_000_000
@@ -74,6 +75,8 @@ function Optimize() {
   const [isSendingToApi, setIsSendingToApi] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
   const [apiResponse, setApiResponse] = useState<unknown>(null)
+  const [hasGmproResponse, setHasGmproResponse] = useState<boolean | null>(null)
+  const [gmproStatusError, setGmproStatusError] = useState<string | null>(null)
 
   const validLoads = useMemo(
     () => loads.filter((load) => load.name.trim() !== ''),
@@ -117,8 +120,7 @@ function Optimize() {
     [selectedVehicles],
   )
 
-  const hasUploadData = validLoads.length > 0 && selectedVehicles.length > 0
-
+  const hasUploadData = validLoads.length > 0 
   const optimizationPayload = useMemo<OptimizationRequestPayload>(
     () => ({
       loads: validLoads.map((load) => ({
@@ -152,12 +154,43 @@ function Optimize() {
     [apiResponse],
   )
 
+  const checkGmproResponseAvailability = useCallback(async () => {
+    setGmproStatusError(null)
+
+    try {
+      const response = await fetch(API_HANDLE_GMPRO_RESPONSE_ENDPOINT)
+      if (response.status === 404) {
+        setHasGmproResponse(false)
+        return false
+      }
+
+      if (!response.ok) {
+        setHasGmproResponse(null)
+        setGmproStatusError(`Unable to verify GMPRO response (status ${response.status}).`)
+        return false
+      }
+
+      setHasGmproResponse(true)
+      return true
+    } catch {
+      setHasGmproResponse(null)
+      setGmproStatusError('Unable to connect to backend while checking GMPRO response.')
+      return false
+    }
+  }, [])
+
   const sendPayloadToApiHandle = useCallback(async () => {
     setApiError(null)
     setApiResponse(null)
 
     if (!hasUploadData) {
       setApiError('Add at least one valid load and one vehicle before sending the payload.')
+      return
+    }
+
+    const gmproExists = await checkGmproResponseAvailability()
+    if (!gmproExists) {
+      setApiError('GMPRO response JSON is missing. Add it on the Home page first.')
       return
     }
 
@@ -200,7 +233,11 @@ function Optimize() {
     } finally {
       setIsSendingToApi(false)
     }
-  }, [hasUploadData, optimizationPayload])
+  }, [checkGmproResponseAvailability, hasUploadData, optimizationPayload])
+
+  useEffect(() => {
+    void checkGmproResponseAvailability()
+  }, [checkGmproResponseAvailability])
 
   useEffect(() => {
     if (!isFromUploadButton || uploadRequestId === null) return
@@ -274,6 +311,24 @@ function Optimize() {
           </article>
         </section>
 
+        <section className="optimize-panel">
+          <div className="optimize-panel-head">
+            <h2>GMPRO Response Status</h2>
+          </div>
+          {gmproStatusError ? <p className="optimize-api-error">{gmproStatusError}</p> : null}
+          {!gmproStatusError && hasGmproResponse === true ? (
+            <p className="optimize-response-placeholder">GMPRO response JSON is available.</p>
+          ) : null}
+          {!gmproStatusError && hasGmproResponse === false ? (
+            <p className="optimize-api-error">
+              GMPRO response JSON not found. Go to Home and submit JSON or send it from GMPRO system.
+            </p>
+          ) : null}
+          {hasGmproResponse === null && !gmproStatusError ? (
+            <p className="optimize-response-placeholder">Checking GMPRO response availability...</p>
+          ) : null}
+        </section>
+
      
 
         <section className="optimize-panel">
@@ -325,7 +380,39 @@ function Optimize() {
           </div>
         </section>
 
-        <section className="optimize-panel">
+        
+        {hasUploadData && (
+          <section className="optimize-panel optimize-response-panel">
+            <div className="optimize-panel-head">
+              <h2>Optimization API Response</h2>
+              <button
+                type="button"
+                className="btn btn-primary optimize-send-btn"
+                onClick={() => {
+                  void sendPayloadToApiHandle()
+                }}
+                disabled={isSendingToApi || !hasUploadData}
+            >
+              {isSendingToApi ? 'Sending...' : 'Upload & Optimize'}
+            </button>
+          </div>
+          
+          
+          {apiError ? <p className="optimize-api-error">{apiError}</p> : null}
+          {!apiError && apiResponse === null ? (
+            <p className="optimize-response-placeholder">
+              {hasUploadData
+                ? 'Click "Upload & Optimize" to see the response here.'
+                : 'No backend call triggered yet.'}
+            </p>
+          ) : null}
+          {apiResponse !== null ? (
+            <pre className="optimize-response-json">{apiResponseText}</pre>
+          ) : null}
+        </section>)}
+
+
+        {/* <section className="optimize-panel">
           <div className="optimize-panel-head">
             <h2>Vehicle Load Space</h2>
             <p>{selectedVehicles.length} rows</p>
@@ -375,36 +462,7 @@ function Optimize() {
               </tbody>
             </table>
           </div>
-        </section>
-        {hasUploadData && (
-          <section className="optimize-panel optimize-response-panel">
-            <div className="optimize-panel-head">
-              <h2>Optimization API Response</h2>
-              <button
-                type="button"
-                className="btn btn-primary optimize-send-btn"
-                onClick={() => {
-                  void sendPayloadToApiHandle()
-                }}
-                disabled={isSendingToApi || !hasUploadData}
-            >
-              {isSendingToApi ? 'Sending...' : 'Upload & Optimize'}
-            </button>
-          </div>
-          
-          
-          {apiError ? <p className="optimize-api-error">{apiError}</p> : null}
-          {!apiError && apiResponse === null ? (
-            <p className="optimize-response-placeholder">
-              {hasUploadData
-                ? 'Click "Upload & Optimize" to see the response here.'
-                : 'No backend call triggered yet.'}
-            </p>
-          ) : null}
-          {apiResponse !== null ? (
-            <pre className="optimize-response-json">{apiResponseText}</pre>
-          ) : null}
-        </section>)}
+        </section> */}
       </main>
     </div>
   )
