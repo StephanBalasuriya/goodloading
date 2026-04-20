@@ -31,6 +31,10 @@ function Home() {
   }
 
   const handleUpload = () => {
+    if (gmproJsonInput.trim() === '' && gmproInputMode === 'manual_json') {
+      setErrorMessage('Please paste GMPRO response JSON before sending.')
+      return
+    }
     setErrorMessage(null)
 
     // Check if there's at least one load with data

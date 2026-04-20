@@ -1,6 +1,11 @@
 from fastapi import HTTPException
 
-from services.gmpro_cache import get_valid_gmpro_response, initialize_gmpro_cache, store_gmpro_response
+from services.gmpro_cache import (
+    get_valid_gmpro_response,
+    initialize_gmpro_cache,
+    store_gmpro_response,
+)
+from services.gmpro_validator import _validate_gmpro_response
 
 
 initialize_gmpro_cache()
@@ -9,6 +14,7 @@ initialize_gmpro_cache()
 def handle_gmpro_response(data: dict):
     try:
         print("Received GMPRO response:", data)
+        _validate_gmpro_response(data)
         saved_payload = store_gmpro_response(data)
         return {
             "status": "success",

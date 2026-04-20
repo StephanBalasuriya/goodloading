@@ -27,7 +27,19 @@ pip install -r requirment.txt
 ```bash
 cd /home/stephan/Documents/Goodloading/api_handle
 source .venv/bin/activate
-uvicorn app:app --reload --host 0.0.0.0 --port 8000
+python app.py
+```
+
+Default runtime values:
+
+- Host: `0.0.0.0`
+- Port: `8001`
+- Reload: `true`
+
+Optional overrides:
+
+```bash
+HOST=127.0.0.1 PORT=9001 RELOAD=false python app.py
 ```
 
 ## Quick Test Commands

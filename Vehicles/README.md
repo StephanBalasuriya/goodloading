@@ -47,7 +47,19 @@ pip install -r requirements.txt
 ### 4. Run the Server
 
 ```bash
-python -m uvicorn app:app --reload --host 0.0.0.0 --port 8000
+python app.py
+```
+
+Default runtime values:
+
+- Host: `0.0.0.0`
+- Port: `8000`
+- Reload: `true`
+
+Optional overrides:
+
+```bash
+HOST=127.0.0.1 PORT=9000 RELOAD=false python app.py
 ```
 
 ## API Endpoints

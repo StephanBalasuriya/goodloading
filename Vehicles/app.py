@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+import os
+import uvicorn
 from model.models import Vehicle, Base
 from Schema.schemas import VehicleCreate, VehicleUpdate, VehicleResponse
 from db_config.db import SessionLocal, engine
@@ -76,3 +78,12 @@ def delete_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
     db.delete(vehicle)
     db.commit()
     return {"detail": "Vehicle deleted successfully"}
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "app:app",
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", "8000")),
+        reload=os.getenv("RELOAD", "true").lower() == "true",
+    )

@@ -384,7 +384,7 @@ function Optimize() {
         {hasUploadData && (
           <section className="optimize-panel optimize-response-panel">
             <div className="optimize-panel-head">
-              <h2>Optimization API Response</h2>
+              <h2>Optimized Response</h2>
               <button
                 type="button"
                 className="btn btn-primary optimize-send-btn"
