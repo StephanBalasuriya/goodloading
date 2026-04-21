@@ -31,8 +31,8 @@ function Home() {
   }
 
   const handleUpload = () => {
-    if (gmproJsonInput.trim() === '' && gmproInputMode === 'manual_json') {
-      setErrorMessage('Please paste GMPRO response JSON before sending.')
+    if (!gmproSubmitSuccess  && gmproInputMode === 'manual_json') {
+      setErrorMessage('Please insert correct GMPRO response JSON before sending.')
       return
     }
     setErrorMessage(null)
@@ -90,7 +90,7 @@ function Home() {
         },
         body: JSON.stringify(parsedJson),
       })
-
+      console.log('GMPRO JSON submission response :', response)
       const rawBody = await response.text()
       let parsedBody: unknown = null
 

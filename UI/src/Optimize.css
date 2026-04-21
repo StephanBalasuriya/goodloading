@@ -100,6 +100,48 @@
   color: #14428a;
 }
 
+.optimize-vehicle-table {
+  min-width: 1120px;
+}
+
+.optimize-vehicle-name {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.optimize-vehicle-name > span:first-child {
+  font-weight: 700;
+  color: #173767;
+}
+
+.optimize-vehicle-subtitle {
+  font: 600 0.76rem/1.2 'Space Grotesk', sans-serif;
+  color: #5d7097;
+}
+
+.optimize-vehicle-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.38rem 0.65rem;
+  border-radius: 999px;
+  font: 700 0.76rem/1 'Space Grotesk', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.optimize-vehicle-badge-active {
+  border: 1px solid rgba(29, 146, 78, 0.22);
+  background: #ecfbf1;
+  color: #1d8a4e;
+}
+
+.optimize-vehicle-badge-inactive {
+  border: 1px solid rgba(157, 36, 64, 0.22);
+  background: #fef1f4;
+  color: #9d2440;
+}
+
 .optimize-api-block-note {
   margin: 0;
   padding: 0.62rem 0.72rem;

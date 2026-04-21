@@ -7,6 +7,7 @@ import './Optimize.css'
 
 const API_HANDLE_RECOMMEND_ENDPOINT = apiHandleUrl('/map')
 const API_HANDLE_GMPRO_RESPONSE_ENDPOINT = apiHandleUrl('/GMPROResponse')
+const API_HANDLE_USED_VEHICLES_ENDPOINT = apiHandleUrl('/vehicles/used')
 
 const toVolumeM3 = (lengthCm: number, widthCm: number, heightCm: number) =>
   (lengthCm * widthCm * heightCm) / 1_000_000
@@ -37,6 +38,20 @@ type OptimizationRequestPayload = {
     quantity: number
     selected_quantity: number
   }>
+}
+
+type GmproUsedVehicle = {
+  gmpro_vehicle_label: string
+  gmpro_vehicle_type: string
+  type_id: number
+  type_name: string
+  count: number
+  is_active: boolean
+  length_cm: number
+  width_cm: number
+  height_cm: number
+  max_weight_kg: number
+  max_cbm: number
 }
 
 type OptimizeNavigationState = {
@@ -77,6 +92,9 @@ function Optimize() {
   const [apiResponse, setApiResponse] = useState<unknown>(null)
   const [hasGmproResponse, setHasGmproResponse] = useState<boolean | null>(null)
   const [gmproStatusError, setGmproStatusError] = useState<string | null>(null)
+  const [usedVehicles, setUsedVehicles] = useState<GmproUsedVehicle[]>([])
+  const [isLoadingUsedVehicles, setIsLoadingUsedVehicles] = useState(false)
+  const [usedVehiclesError, setUsedVehiclesError] = useState<string | null>(null)
 
   const validLoads = useMemo(
     () => loads.filter((load) => load.name.trim() !== ''),
@@ -154,24 +172,49 @@ function Optimize() {
     [apiResponse],
   )
 
+  const fetchUsedVehicles = useCallback(async () => {
+    setIsLoadingUsedVehicles(true)
+    setUsedVehiclesError(null)
+
+    try {
+      const response = await fetch(API_HANDLE_USED_VEHICLES_ENDPOINT)
+      if (!response.ok) {
+        throw new Error(`Failed to load vehicle load space (${response.status}).`)
+      }
+
+      const data = (await response.json()) as GmproUsedVehicle[]
+      setUsedVehicles(Array.isArray(data) ? data : [])
+    } catch (error) {
+      setUsedVehicles([])
+      setUsedVehiclesError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to load vehicle load space from backend.',
+      )
+    } finally {
+      setIsLoadingUsedVehicles(false)
+    }
+  }, [])
+
   const checkGmproResponseAvailability = useCallback(async () => {
     setGmproStatusError(null)
 
     try {
       const response = await fetch(API_HANDLE_GMPRO_RESPONSE_ENDPOINT)
-      if (response.status === 404) {
-        setHasGmproResponse(false)
-        return false
-      }
-
       if (!response.ok) {
         setHasGmproResponse(null)
         setGmproStatusError(`Unable to verify GMPRO response (status ${response.status}).`)
         return false
       }
+      console.log('GMPRO response availability check response :', response)
+      const responseData = (await response.json()) as {
+        available?: boolean
+        data?: unknown
+      }
 
-      setHasGmproResponse(true)
-      return true
+      const isAvailable = responseData.available === true
+      setHasGmproResponse(isAvailable)
+      return isAvailable
     } catch {
       setHasGmproResponse(null)
       setGmproStatusError('Unable to connect to backend while checking GMPRO response.')
@@ -238,6 +281,17 @@ function Optimize() {
   useEffect(() => {
     void checkGmproResponseAvailability()
   }, [checkGmproResponseAvailability])
+
+  useEffect(() => {
+    if (hasGmproResponse !== true) {
+      setUsedVehicles([])
+      setUsedVehiclesError(null)
+      setIsLoadingUsedVehicles(false)
+      return
+    }
+
+    void fetchUsedVehicles()
+  }, [fetchUsedVehicles, hasGmproResponse])
 
   useEffect(() => {
     if (!isFromUploadButton || uploadRequestId === null) return
@@ -380,7 +434,84 @@ function Optimize() {
           </div>
         </section>
 
-        
+        <section className="optimize-panel">
+          <div className="optimize-panel-head">
+            <h2>Vehicle Load Space</h2>
+            <p>{usedVehicles.length} rows</p>
+          </div>
+          <p className="optimize-response-note">
+            Loaded from the latest GMPRO response and enriched with vehicle specs from the database.
+          </p>
+          {usedVehiclesError ? <p className="optimize-api-error">{usedVehiclesError}</p> : null}
+          {!usedVehiclesError && isLoadingUsedVehicles ? (
+            <p className="optimize-response-placeholder">Checking vehicle load space...</p>
+          ) : null}
+          {!usedVehiclesError && !isLoadingUsedVehicles && usedVehicles.length === 0 ? (
+            <p className="optimize-response-placeholder">
+              No used vehicles were found in the GMPRO response yet.
+            </p>
+          ) : null}
+          {usedVehicles.length > 0 ? (
+            <div className="table-wrap">
+              <table className="loads-table optimize-vehicle-table">
+                <thead>
+                  <tr>
+                    <th>Vehicle Name</th>
+                    <th>Vehicle Type</th>
+                    <th>Length (cm)</th>
+                    <th>Width (cm)</th>
+                    <th>Height (cm)</th>
+                    <th>Max Weight (kg)</th>
+                    <th>Qty</th>
+                    <th>Volume/Vehicle (m3)</th>
+                    <th>Max CBM</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usedVehicles.map((vehicle) => {
+                    const vehicleVolume = toVolumeM3(
+                      vehicle.length_cm,
+                      vehicle.width_cm,
+                      vehicle.height_cm,
+                    )
+
+                    return (
+                      <tr key={`${vehicle.type_id}-${vehicle.gmpro_vehicle_label}`}>
+                        <td>
+                          <div className="optimize-vehicle-name">
+                            <span>{vehicle.gmpro_vehicle_label}</span>
+                            <span className="optimize-vehicle-subtitle">Type ID {vehicle.type_id}</span>
+                          </div>
+                        </td>
+                        <td>{vehicle.type_name}</td>
+                        <td>{formatNumber(vehicle.length_cm)}</td>
+                        <td>{formatNumber(vehicle.width_cm)}</td>
+                        <td>{formatNumber(vehicle.height_cm)}</td>
+                        <td>{formatNumber(vehicle.max_weight_kg)}</td>
+                        <td>{formatNumber(vehicle.count, 0)}</td>
+                        <td>{formatNumber(vehicleVolume, 3)}</td>
+                        <td>{formatNumber(vehicle.max_cbm, 3)}</td>
+                        <td>
+                          <span
+                            className={
+                              vehicle.is_active
+                                ? 'optimize-vehicle-badge optimize-vehicle-badge-active'
+                                : 'optimize-vehicle-badge optimize-vehicle-badge-inactive'
+                            }
+                          >
+                            {vehicle.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </section>
+
         {hasUploadData && (
           <section className="optimize-panel optimize-response-panel">
             <div className="optimize-panel-head">
@@ -410,59 +541,6 @@ function Optimize() {
             <pre className="optimize-response-json">{apiResponseText}</pre>
           ) : null}
         </section>)}
-
-
-        {/* <section className="optimize-panel">
-          <div className="optimize-panel-head">
-            <h2>Vehicle Load Space</h2>
-            <p>{selectedVehicles.length} rows</p>
-          </div>
-          <div className="table-wrap">
-            <table className="loads-table">
-              <thead>
-                <tr>
-                  <th>Vehicle Name</th>
-                  <th>Length (cm)</th>
-                  <th>Width (cm)</th>
-                  <th>Height (cm)</th>
-                  <th>Max Weight (kg)</th>
-                  <th>Qty</th>
-                  <th>Volume/Vehicle (m3)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedVehicles.length > 0 ? (
-                  selectedVehicles.map((vehicle, index) => (
-                    <tr key={`${vehicle.name}-${index}`}>
-                      <td>{vehicle.name}</td>
-                      <td>{formatNumber(vehicle.length_cm)}</td>
-                      <td>{formatNumber(vehicle.width_cm)}</td>
-                      <td>{formatNumber(vehicle.height_cm)}</td>
-                      <td>{formatNumber(vehicle.max_weight_kg)}</td>
-                      <td>{formatNumber(vehicle.selected_quantity, 0)}</td>
-                      <td>
-                        {formatNumber(
-                          toVolumeM3(
-                            vehicle.length_cm,
-                            vehicle.width_cm,
-                            vehicle.height_cm,
-                          ),
-                          3,
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={7} className="optimize-empty-row">
-                      No vehicles uploaded yet.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section> */}
       </main>
     </div>
   )

@@ -28,5 +28,12 @@ def handle_gmpro_response(data: dict):
 def get_gmpro_response():
     cached_payload = get_valid_gmpro_response()
     if cached_payload is None:
-        raise HTTPException(status_code=404, detail="No GMPRO response available yet")
-    return cached_payload
+        return {
+            "available": False,
+            "message": "No GMPRO response available yet",
+        }
+
+    return {
+        "available": True,
+        "data": cached_payload,
+    }
