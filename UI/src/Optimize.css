@@ -219,6 +219,118 @@
   font: 600 0.9rem/1.4 'Space Grotesk', sans-serif;
 }
 
+.optimize-sequence-stack {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.optimize-sequence-card {
+  border: 1px solid rgba(17, 67, 146, 0.16);
+  border-radius: 16px;
+  background: #f8fbff;
+  padding: 0.8rem;
+}
+
+.optimize-sequence-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-bottom: 0.65rem;
+}
+
+.optimize-sequence-head h3 {
+  margin: 0;
+  color: #143e82;
+  font: 700 0.96rem/1.2 'Outfit', sans-serif;
+}
+
+.optimize-sequence-head p {
+  margin: 0;
+  color: #4e6793;
+  font: 600 0.78rem/1.2 'Space Grotesk', sans-serif;
+}
+
+.optimize-sequence-steps {
+  display: grid;
+  gap: 0.44rem;
+}
+
+.optimize-sequence-step {
+  display: flex;
+  align-items: center;
+  gap: 0.52rem;
+  flex-wrap: wrap;
+  border-radius: 12px;
+  border: 1px solid rgba(17, 67, 146, 0.12);
+  background: #ffffff;
+  padding: 0.48rem 0.58rem;
+}
+
+.optimize-sequence-order {
+  border-radius: 999px;
+  border: 1px solid rgba(17, 67, 146, 0.2);
+  background: #eef4ff;
+  color: #184a96;
+  padding: 0.16rem 0.48rem;
+  font: 700 0.74rem/1 'Space Grotesk', sans-serif;
+}
+
+.optimize-sequence-badge {
+  border-radius: 999px;
+  padding: 0.2rem 0.5rem;
+  font: 700 0.72rem/1 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.optimize-sequence-badge-pickup {
+  border: 1px solid rgba(26, 127, 201, 0.25);
+  background: #edf7ff;
+  color: #0f65a8;
+}
+
+.optimize-sequence-badge-delivery {
+  border: 1px solid rgba(236, 93, 64, 0.25);
+  background: #fff1ed;
+  color: #be3f25;
+}
+
+.optimize-sequence-shipment {
+  color: #1d3d6c;
+  font: 700 0.82rem/1.25 'Space Grotesk', sans-serif;
+}
+
+.optimize-sequence-match {
+  border-radius: 999px;
+  padding: 0.17rem 0.5rem;
+  font: 700 0.72rem/1 'Space Grotesk', sans-serif;
+}
+
+.optimize-sequence-match-ok {
+  border: 1px solid rgba(31, 139, 89, 0.24);
+  background: #eafaf1;
+  color: #187f4d;
+}
+
+.optimize-sequence-match-miss {
+  border: 1px solid rgba(157, 36, 64, 0.25);
+  background: #fef1f4;
+  color: #9d2440;
+}
+
+.optimize-generated-json-block {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.optimize-generated-json-block h3 {
+  margin: 0;
+  color: #173f80;
+  font: 700 1rem/1.2 'Outfit', sans-serif;
+}
+
 @media (max-width: 980px) {
   .optimize-summary-grid {
     grid-template-columns: 1fr;

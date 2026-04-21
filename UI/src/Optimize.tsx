@@ -7,6 +7,7 @@ import './Optimize.css'
 
 const API_HANDLE_GMPRO_RESPONSE_ENDPOINT = apiHandleUrl('/GMPROResponse')
 const API_HANDLE_USED_VEHICLES_ENDPOINT = apiHandleUrl('/vehicles/used')
+const API_HANDLE_CALCULATE_ENDPOINT = apiHandleUrl('/calculate')
 
 const toVolumeM3 = (lengthCm: number, widthCm: number, heightCm: number) =>
   (lengthCm * widthCm * heightCm) / 1_000_000
@@ -28,6 +29,213 @@ type GmproUsedVehicle = {
   max_cbm: number
 }
 
+type GmproVisit = {
+  shipmentLabel?: string
+  isPickup?: boolean
+  loadDemands?: {
+    weight?: {
+      amount?: string
+    }
+    stop_count?: {
+      amount?: string
+    }
+  }
+}
+
+type GmproRoute = {
+  vehicleLabel?: string
+  visits?: GmproVisit[]
+}
+
+type GmproPayload = {
+  routes?: GmproRoute[]
+}
+
+type RouteStep = {
+  order: number
+  shipmentLabel: string
+  action: 'Pickup' | 'Delivery'
+  matchedLoadName: string | null
+}
+
+type RouteChart = {
+  vehicleLabel: string
+  steps: RouteStep[]
+}
+
+type StopRef = {
+  id: number
+  name: string
+}
+
+type ShipmentStopMap = {
+  origin?: StopRef
+  destination?: StopRef
+}
+
+const normalizeText = (value: string) => value.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
+
+const parseAmount = (value: unknown) => {
+  if (typeof value === 'number') return value
+  if (typeof value === 'string') {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+  return 0
+}
+
+const resolveVisitAction = (visit: GmproVisit): 'Pickup' | 'Delivery' => {
+  if (typeof visit.isPickup === 'boolean') {
+    return visit.isPickup ? 'Pickup' : 'Delivery'
+  }
+
+  const weightAmount = parseAmount(visit.loadDemands?.weight?.amount)
+  const stopCountAmount = parseAmount(visit.loadDemands?.stop_count?.amount)
+  if (weightAmount < 0 || stopCountAmount < 0) return 'Delivery'
+  return 'Pickup'
+}
+
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const buildGoodloadingPayload = (
+  validLoads: ReturnType<typeof useLoadsContext>['loads'],
+  usedVehicles: GmproUsedVehicle[],
+  gmproPayload: GmproPayload | null,
+) => {
+  const routes = Array.isArray(gmproPayload?.routes) ? gmproPayload.routes : []
+  const detailedRoutes = routes.filter(
+    (route): route is GmproRoute =>
+      typeof route.vehicleLabel === 'string' &&
+      route.vehicleLabel.trim() !== '' &&
+      Array.isArray(route.visits) &&
+      route.visits.length > 0,
+  )
+
+  const specsByLabel = new Map(usedVehicles.map((vehicle) => [vehicle.gmpro_vehicle_label, vehicle]))
+
+  const shipmentStops = new Map<string, ShipmentStopMap>()
+
+  const loadingSpaces = detailedRoutes
+    .map((route, routeIndex) => {
+      const label = route.vehicleLabel!
+      const visits = route.visits ?? []
+      const vehicleSpec = specsByLabel.get(label)
+
+      if (!vehicleSpec) {
+        return null
+      }
+
+      let stopId = 1
+      const stops = visits
+        .map((visit) => {
+          const shipmentLabel = typeof visit.shipmentLabel === 'string' ? visit.shipmentLabel.trim() : ''
+          if (!shipmentLabel) return null
+
+          const action = resolveVisitAction(visit)
+          const stop: StopRef = {
+            id: stopId,
+            name: `${action} ${shipmentLabel}`,
+          }
+          stopId += 1
+
+          const shipmentKey = normalizeText(shipmentLabel)
+          const previous = shipmentStops.get(shipmentKey) ?? {}
+          if (action === 'Pickup' && !previous.origin) {
+            previous.origin = stop
+          }
+          if (action === 'Delivery' && !previous.destination) {
+            previous.destination = stop
+          }
+          shipmentStops.set(shipmentKey, previous)
+
+          return {
+            id: stop.id,
+            name: stop.name,
+          }
+        })
+        .filter((stop): stop is { id: number; name: string } => stop !== null)
+
+      return {
+        quantity: 1,
+        name: label,
+        type: 'vehicle',
+        parts: [
+          {
+            length: vehicleSpec.length_cm,
+            width: vehicleSpec.width_cm,
+            height: vehicleSpec.height_cm,
+            limit: vehicleSpec.max_weight_kg,
+          },
+        ],
+        ...(stops.length > 0 ? { stops } : {}),
+        _routeOrder: routeIndex,
+      }
+    })
+    .filter((space): space is NonNullable<typeof space> => space !== null)
+    .sort((a, b) => a._routeOrder - b._routeOrder)
+    .map(({ _routeOrder, ...space }) => space)
+
+  const loadsPayload = validLoads.map((load, index) => {
+    const mappedLoad: Record<string, unknown> = {
+      id: load.id || index + 1,
+      quantity: Math.max(1, Math.floor(load.quantity || 1)),
+      name: load.name.trim(),
+      length: Math.max(0, load.length),
+      width: Math.max(0, load.width),
+      height: Math.max(0, load.height),
+      weight: Math.max(0, load.weight),
+      priority: 0,
+      stacking: load.stack,
+      allowToRotate: true,
+    }
+
+    if (load.stack) {
+      mappedLoad.alongFloor = load.arrange_on_floor
+      if (load.max_stack_weight > 0) {
+        mappedLoad.maxWeightOnTop = load.max_stack_weight
+      }
+    }
+
+    const shipmentKey = normalizeText(load.name)
+    const stops = shipmentStops.get(shipmentKey)
+    if (stops?.origin) {
+      mappedLoad.origin = {
+        id: stops.origin.id,
+        name: stops.origin.name,
+      }
+    }
+    if (stops?.destination) {
+      mappedLoad.destination = {
+        id: stops.destination.id,
+        name: stops.destination.name,
+      }
+    }
+
+    return mappedLoad
+  })
+
+  const hasMultiStops = loadsPayload.some(
+    (load) => isObject(load.origin) && isObject(load.destination),
+  )
+
+  return {
+    name: 'Generated from GMPRO Response',
+    note: 'Auto-generated from GMPRO routes and planner loads',
+    loads: loadsPayload,
+    loadingSpaces,
+    options: {
+      allowOverweight: false,
+      unit: 'cm',
+      keepLoadsTogether: false,
+      newAlgorithm: true,
+      loadingOrder: 'default',
+      multiStops: hasMultiStops,
+      arrangeOptimally: false,
+    },
+  }
+}
+
 const formatApiResult = (value: unknown) => {
   if (typeof value === 'string') return value
   try {
@@ -40,14 +248,15 @@ const formatApiResult = (value: unknown) => {
 function Optimize() {
   const { loads } = useLoadsContext()
   const { selectedVehicles } = useLoadSpace()
-  const [isSendingToApi] = useState(false)
-  const [apiError] = useState<string | null>(null)
-  const [apiResponse] = useState<unknown>(null)
+  const [isSendingToApi, setIsSendingToApi] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
+  const [apiResponse, setApiResponse] = useState<unknown>(null)
   const [hasGmproResponse, setHasGmproResponse] = useState<boolean | null>(null)
   const [gmproStatusError, setGmproStatusError] = useState<string | null>(null)
   const [usedVehicles, setUsedVehicles] = useState<GmproUsedVehicle[]>([])
   const [isLoadingUsedVehicles, setIsLoadingUsedVehicles] = useState(false)
   const [usedVehiclesError, setUsedVehiclesError] = useState<string | null>(null)
+  const [gmproPayload, setGmproPayload] = useState<GmproPayload | null>(null)
 
   const validLoads = useMemo(
     () => loads.filter((load) => load.name.trim() !== ''),
@@ -99,6 +308,55 @@ function Optimize() {
     [apiResponse],
   )
 
+  const routeCharts = useMemo<RouteChart[]>(() => {
+    if (!gmproPayload?.routes || !Array.isArray(gmproPayload.routes)) return []
+
+    const loadNameSet = new Set(validLoads.map((load) => normalizeText(load.name)))
+
+    return gmproPayload.routes
+      .filter(
+        (route): route is GmproRoute =>
+          typeof route.vehicleLabel === 'string' &&
+          route.vehicleLabel.trim() !== '' &&
+          Array.isArray(route.visits) &&
+          route.visits.length > 0,
+      )
+      .map((route) => {
+        const steps = (route.visits ?? [])
+          .map((visit, index) => {
+            const shipmentLabel = typeof visit.shipmentLabel === 'string' ? visit.shipmentLabel.trim() : ''
+            if (!shipmentLabel) return null
+
+            const action = resolveVisitAction(visit)
+            const matched = loadNameSet.has(normalizeText(shipmentLabel))
+
+            return {
+              order: index + 1,
+              shipmentLabel,
+              action,
+              matchedLoadName: matched ? shipmentLabel : null,
+            }
+          })
+          .filter((step): step is RouteStep => step !== null)
+
+        return {
+          vehicleLabel: route.vehicleLabel!,
+          steps,
+        }
+      })
+      .filter((chart) => chart.steps.length > 0)
+  }, [gmproPayload, validLoads])
+
+  const generatedGoodloadingPayload = useMemo(
+    () => buildGoodloadingPayload(validLoads, usedVehicles, gmproPayload),
+    [validLoads, usedVehicles, gmproPayload],
+  )
+
+  const generatedGoodloadingPayloadText = useMemo(
+    () => formatApiResult(generatedGoodloadingPayload),
+    [generatedGoodloadingPayload],
+  )
+
   const fetchUsedVehicles = useCallback(async () => {
     setIsLoadingUsedVehicles(true)
     setUsedVehiclesError(null)
@@ -141,13 +399,55 @@ function Optimize() {
 
       const isAvailable = responseData.available === true
       setHasGmproResponse(isAvailable)
+      setGmproPayload(isObject(responseData.data) ? (responseData.data as GmproPayload) : null)
       return isAvailable
     } catch {
       setHasGmproResponse(null)
       setGmproStatusError('Unable to connect to backend while checking GMPRO response.')
+      setGmproPayload(null)
       return false
     }
   }, [])
+
+  const sendPayloadToApiHandle = useCallback(async () => {
+    setIsSendingToApi(true)
+    setApiError(null)
+    setApiResponse(null)
+
+    try {
+      const response = await fetch(API_HANDLE_CALCULATE_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(generatedGoodloadingPayload),
+      })
+
+      const rawBody = await response.text()
+      let parsedBody: unknown = null
+      if (rawBody.trim() !== '') {
+        try {
+          parsedBody = JSON.parse(rawBody) as unknown
+        } catch {
+          parsedBody = rawBody
+        }
+      }
+
+      if (!response.ok) {
+        const detail =
+          parsedBody && isObject(parsedBody) && 'detail' in parsedBody
+            ? String((parsedBody as { detail?: unknown }).detail)
+            : `Request failed with status ${response.status}.`
+        throw new Error(detail)
+      }
+
+      setApiResponse(parsedBody)
+    } catch (error) {
+      setApiError(error instanceof Error ? error.message : 'Unable to send payload to backend.')
+    } finally {
+      setIsSendingToApi(false)
+    }
+  }, [generatedGoodloadingPayload])
 
 
   useEffect(() => {
@@ -375,6 +675,67 @@ function Optimize() {
           ) : null}
         </section>
 
+        <section className="optimize-panel">
+          <div className="optimize-panel-head">
+            <h2>Vehicle Pickup And Delivery Sequence</h2>
+            <p>{routeCharts.length} routes</p>
+          </div>
+          <p className="optimize-response-note">
+            Sequence is generated from GMPRO route visits. Shipment label is matched with load name
+            from CSV (doNumber).
+          </p>
+          {routeCharts.length === 0 ? (
+            <p className="optimize-response-placeholder">
+              No vehicle sequence found in GMPRO response yet.
+            </p>
+          ) : (
+            <div className="optimize-sequence-stack">
+              {routeCharts.map((chart) => (
+                <article
+                  key={chart.vehicleLabel}
+                  className="optimize-sequence-card"
+                >
+                  <header className="optimize-sequence-head">
+                    <h3>{chart.vehicleLabel}</h3>
+                    <p>{chart.steps.length} visits</p>
+                  </header>
+                  <div className="optimize-sequence-steps">
+                    {chart.steps.map((step) => (
+                      <div key={`${chart.vehicleLabel}-${step.order}-${step.shipmentLabel}`} className="optimize-sequence-step">
+                        <span className="optimize-sequence-order">#{step.order}</span>
+                        <span
+                          className={
+                            step.action === 'Pickup'
+                              ? 'optimize-sequence-badge optimize-sequence-badge-pickup'
+                              : 'optimize-sequence-badge optimize-sequence-badge-delivery'
+                          }
+                        >
+                          {step.action}
+                        </span>
+                        <span className="optimize-sequence-shipment">{step.shipmentLabel}</span>
+                        <span
+                          className={
+                            step.matchedLoadName
+                              ? 'optimize-sequence-match optimize-sequence-match-ok'
+                              : 'optimize-sequence-match optimize-sequence-match-miss'
+                          }
+                        >
+                          {step.matchedLoadName ? 'Mapped to load' : 'No matching load'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          <div className="optimize-generated-json-block">
+            <h3>Generated Goodloading Input JSON</h3>
+            <pre className="optimize-response-json">{generatedGoodloadingPayloadText}</pre>
+          </div>
+        </section>
+
         {hasUploadData && (
           <section className="optimize-panel optimize-response-panel">
             <div className="optimize-panel-head">
@@ -383,7 +744,7 @@ function Optimize() {
                 type="button"
                 className="btn btn-primary optimize-send-btn"
                 onClick={() => {
-                  // void sendPayloadToApiHandle()
+                  void sendPayloadToApiHandle()
                 }}
                 disabled={isSendingToApi || !hasUploadData}
             >
