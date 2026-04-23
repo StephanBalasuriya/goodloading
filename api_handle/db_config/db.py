@@ -43,7 +43,13 @@ Base = declarative_base()
 
 @contextmanager
 def get_connection():
-	conn = psycopg2.connect(**_db_settings())
+	database_url = os.getenv("DATABASE_URL")
+	print("Using database connection:", database_url)
+	conn = (
+		psycopg2.connect(database_url)
+		if database_url
+		else psycopg2.connect(**_db_settings())
+	)
 	try:
 		yield conn
 	finally:

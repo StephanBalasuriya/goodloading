@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLoadsContext } from './context/LoadsContext'
-import { useLoadSpace } from './context/LoadSpace'
 import { apiHandleUrl } from './config/api'
 import './Optimize.css'
 
@@ -247,7 +246,6 @@ const formatApiResult = (value: unknown) => {
 
 function Optimize() {
   const { loads } = useLoadsContext()
-  const { selectedVehicles } = useLoadSpace()
   const [isSendingToApi, setIsSendingToApi] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
   const [apiResponse, setApiResponse] = useState<unknown>(null)
@@ -281,23 +279,17 @@ function Optimize() {
 
   const vehicleSummary = useMemo(
     () => ({
-      totalVehicleUnits: selectedVehicles.reduce(
-        (sum, vehicle) => sum + vehicle.selected_quantity,
+      totalVehicleUnits: usedVehicles.length,
+      totalVehicleCapacityKg: usedVehicles.reduce(
+        (sum, vehicle) => sum + vehicle.max_weight_kg ,
         0,
       ),
-      totalVehicleCapacityKg: selectedVehicles.reduce(
-        (sum, vehicle) => sum + vehicle.max_weight_kg * vehicle.selected_quantity,
-        0,
-      ),
-      totalVehicleVolumeM3: selectedVehicles.reduce(
-        (sum, vehicle) =>
-          sum +
-          toVolumeM3(vehicle.length_cm, vehicle.width_cm, vehicle.height_cm) *
-            vehicle.selected_quantity,
+      totalVehicleVolumeM3: usedVehicles.reduce(
+        (sum, vehicle) => sum + vehicle.max_cbm ,
         0,
       ),
     }),
-    [selectedVehicles],
+    [usedVehicles],
   )
 
   const hasUploadData = validLoads.length > 0 
@@ -322,7 +314,7 @@ function Optimize() {
           route.visits.length > 0,
       )
       .map((route) => {
-        const steps = (route.visits ?? [])
+        const steps = (route.visits ?? [])  
           .map((visit, index) => {
             const shipmentLabel = typeof visit.shipmentLabel === 'string' ? visit.shipmentLabel.trim() : ''
             if (!shipmentLabel) return null
@@ -625,19 +617,19 @@ function Optimize() {
                     <th>Width (cm)</th>
                     <th>Height (cm)</th>
                     <th>Max Weight (kg)</th>
-                    <th>Qty</th>
-                    <th>Volume/Vehicle (m3)</th>
+                    {/*<th>Qty</th>*/}
+                    {/* <th>Volume/Vehicle (m3)</th> */}
                     <th>Max CBM</th>
                     <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {usedVehicles.map((vehicle) => {
-                    const vehicleVolume = toVolumeM3(
-                      vehicle.length_cm,
-                      vehicle.width_cm,
-                      vehicle.height_cm,
-                    )
+                    // const vehicleVolume = toVolumeM3(
+                    //   vehicle.length_cm,
+                    //   vehicle.width_cm,
+                    //   vehicle.height_cm,
+                    // )
 
                     return (
                       <tr key={`${vehicle.type_id}-${vehicle.gmpro_vehicle_label}`}>
@@ -652,8 +644,8 @@ function Optimize() {
                         <td>{formatNumber(vehicle.width_cm)}</td>
                         <td>{formatNumber(vehicle.height_cm)}</td>
                         <td>{formatNumber(vehicle.max_weight_kg)}</td>
-                        <td>{formatNumber(vehicle.count, 0)}</td>
-                        <td>{formatNumber(vehicleVolume, 3)}</td>
+                        {/* <td>{formatNumber(vehicle.count, 0)}</td> */}
+                        {/* <td>{formatNumber(vehicleVolume, 3)}</td> */}
                         <td>{formatNumber(vehicle.max_cbm, 3)}</td>
                         <td>
                           <span
