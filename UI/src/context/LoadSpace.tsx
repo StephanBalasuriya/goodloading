@@ -7,6 +7,7 @@ export type SelectedVehicle = {
 	width_cm: number
 	height_cm: number
 	max_weight_kg: number
+	max_cbm: number
 	selected_quantity: number
 }
 

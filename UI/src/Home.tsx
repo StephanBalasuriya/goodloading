@@ -62,6 +62,8 @@ function Home() {
   const submitGmproJson = async () => {
     setGmproSubmitError(null)
     setGmproSubmitSuccess(null)
+    setErrorMessage(null)
+
 
     if (gmproJsonInput.trim() === '') {
       setGmproSubmitError('Please paste GMPRO response JSON before sending.')
