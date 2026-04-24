@@ -1,0 +1,386 @@
+import { useMemo, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { LoadingSpaceViewer2D } from './components/LoadingSpaceViewer2D'
+import { StatisticsPanel } from './components/StatisticsPanel'
+import { LoadsList } from './components/LoadsList'
+import { StopSelector } from './components/StopSelector'
+import type {
+  Axis,
+  LoadItem,
+  LoadPlacement,
+  LoadingSpace,
+  LoadingSpacePart,
+  NotFittedLoad,
+  OptimizationResponse,
+  Stop,
+  Summary,
+} from './components/loadingTypes'
+import './Optimize.css'
+import './OptimizeResponse.css'
+
+type OptimizeResponseLocationState = {
+  apiError?: string | null
+  apiResponse?: unknown
+}
+
+const formatApiResult = (value: unknown) => {
+  if (typeof value === 'string') return value
+  try {
+    return JSON.stringify(value, null, 2)
+  } catch {
+    return String(value)
+  }
+}
+
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const asNumber = (value: unknown, fallback = 0) => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string') {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : fallback
+  }
+  return fallback
+}
+
+const asString = (value: unknown, fallback = '') =>
+  typeof value === 'string' ? value : fallback
+
+const asBoolean = (value: unknown, fallback = false) =>
+  typeof value === 'boolean' ? value : fallback
+
+const toSummary = (value: unknown): Summary => {
+  if (!isObject(value)) return {}
+  return {
+    freeLdm: asNumber(value.freeLdm, 0),
+    occupiedLdm: asNumber(value.occupiedLdm, 0),
+    freeSurface: asNumber(value.freeSurface, 0),
+    occupiedSurface: asNumber(value.occupiedSurface, 0),
+    freeVolume: asNumber(value.freeVolume, 0),
+    occupiedVolume: asNumber(value.occupiedVolume, 0),
+    percentLdmUsd: asNumber(value.percentLdmUsd, 0),
+    percentVolumeUsd: asNumber(value.percentVolumeUsd, 0),
+  }
+}
+
+const toPlacement = (value: unknown): LoadPlacement | null => {
+  if (!isObject(value) || !isObject(value.position)) return null
+  return {
+    height: asNumber(value.height, 0),
+    length: asNumber(value.length, 0),
+    width: asNumber(value.width, 0),
+    loadsPerAxis: isObject(value.loadsPerAxis)
+      ? {
+          x: asNumber(value.loadsPerAxis.x, 1),
+          y: asNumber(value.loadsPerAxis.y, 1),
+          z: asNumber(value.loadsPerAxis.z, 1),
+        }
+      : { x: 1, y: 1, z: 1 },
+    position: {
+      x: asNumber(value.position.x, 0),
+      y: asNumber(value.position.y, 0),
+      z: asNumber(value.position.z, 0),
+    },
+  }
+}
+
+const toLoad = (value: unknown, index: number): LoadItem | null => {
+  if (!isObject(value)) return null
+
+  const placement = Array.isArray(value.placement)
+    ? value.placement
+        .map((p) => toPlacement(p))
+        .filter((p): p is LoadPlacement => p !== null)
+    : []
+
+  return {
+    id: asNumber(value.id, index + 1),
+    name: asString(value.name, `Load ${index + 1}`),
+    width: asNumber(value.width, 0),
+    length: asNumber(value.length, 0),
+    height: asNumber(value.height, 0),
+    weight: asNumber(value.weight, 0),
+    quantity: asNumber(value.quantity, 1),
+    priority: asNumber(value.priority, 0),
+    allowToRotate: asBoolean(value.allowToRotate, false),
+    stacking:
+      typeof value.stacking === 'number' || typeof value.stacking === 'boolean'
+        ? value.stacking
+        : null,
+    placement,
+  }
+}
+
+const toStop = (value: unknown, index: number): Stop | null => {
+  if (!isObject(value)) return null
+  const loads = Array.isArray(value.loads)
+    ? value.loads.map((load, loadIndex) => toLoad(load, loadIndex)).filter((load): load is LoadItem => load !== null)
+    : []
+
+  return {
+    id: asNumber(value.id ?? value.stopId, index + 1),
+    name: asString(value.name, `Stop ${index + 1}`),
+    loads,
+    summary: toSummary(value.summary),
+  }
+}
+
+const toAxis = (value: unknown): Axis | null => {
+  if (!isObject(value)) return null
+  return {
+    distanceFromSpaceFront: asNumber(value.distanceFromSpaceFront, 0),
+    emptySpaceLoad: asNumber(value.emptySpaceLoad, 0),
+    maxLoad: asNumber(value.maxLoad, 0),
+    addedLoad: asNumber(value.addedLoad, 0),
+  }
+}
+
+const toPart = (value: unknown): LoadingSpacePart | null => {
+  if (!isObject(value)) return null
+  return {
+    height: asNumber(value.height, 0),
+    length: asNumber(value.length, 0),
+    width: asNumber(value.width, 0),
+    limit: asNumber(value.limit, 0),
+    loads: Array.isArray(value.loads)
+      ? value.loads.map((load, loadIndex) => toLoad(load, loadIndex)).filter((load): load is LoadItem => load !== null)
+      : [],
+    stops: Array.isArray(value.stops)
+      ? value.stops.map((stop, stopIndex) => toStop(stop, stopIndex)).filter((stop): stop is Stop => stop !== null)
+      : [],
+    summary: toSummary(value.summary),
+    axis: Array.isArray(value.axis)
+      ? value.axis.map((axis) => toAxis(axis)).filter((axis): axis is Axis => axis !== null)
+      : [],
+  }
+}
+
+const toLoadingSpace = (value: unknown, index: number): LoadingSpace | null => {
+  if (!isObject(value)) return null
+  return {
+    id: asNumber(value.id, index + 1),
+    name: asString(value.name, `Loading Space ${index + 1}`),
+    type: asString(value.type, 'vehicle'),
+    parts: Array.isArray(value.parts)
+      ? value.parts.map((part) => toPart(part)).filter((part): part is LoadingSpacePart => part !== null)
+      : [],
+  }
+}
+
+const toNotFittedLoad = (value: unknown, index: number): NotFittedLoad | null => {
+  if (!isObject(value)) return null
+  return {
+    id: asNumber(value.id, index + 1),
+    name: asString(value.name, `Load ${index + 1}`),
+    width: asNumber(value.width, 0),
+    length: asNumber(value.length, 0),
+    height: asNumber(value.height, 0),
+    weight: asNumber(value.weight, 0),
+    quantity: asNumber(value.quantity, 1),
+  }
+}
+
+const toOptimizationResponse = (value: unknown): OptimizationResponse | null => {
+  if (!isObject(value)) return null
+
+  const loadingSpaces = Array.isArray(value.loadingSpaces)
+    ? value.loadingSpaces
+        .map((loadingSpace, index) => toLoadingSpace(loadingSpace, index))
+        .filter((loadingSpace): loadingSpace is LoadingSpace => loadingSpace !== null)
+    : []
+
+  const notFittedLoads = Array.isArray(value.notFittedLoads)
+    ? value.notFittedLoads
+        .map((load, index) => toNotFittedLoad(load, index))
+        .filter((load): load is NotFittedLoad => load !== null)
+    : []
+
+  return {
+    loadingSpaces,
+    notFittedLoads,
+  }
+}
+
+function OptimizeResponse() {
+  const location = useLocation()
+  const [selectedStopId, setSelectedStopId] = useState<number | undefined>(undefined)
+  const locationState = (location.state ?? null) as OptimizeResponseLocationState | null
+
+  const apiError = typeof locationState?.apiError === 'string' ? locationState.apiError : null
+  const apiResponse = locationState?.apiResponse ?? null
+  const apiResponseText = apiResponse === null ? '' : formatApiResult(apiResponse)
+
+  const parsedResponse = useMemo(() => toOptimizationResponse(apiResponse), [apiResponse])
+  const loadingSpace = parsedResponse?.loadingSpaces[0] ?? null
+  const part = loadingSpace?.parts[0] ?? null
+  const hasStops = (part?.stops?.length ?? 0) > 0
+
+  const currentLoads = useMemo(() => {
+    if (!part) return []
+
+    if (hasStops && selectedStopId !== undefined) {
+      return part.stops?.find((s) => s.id === selectedStopId)?.loads ?? []
+    }
+
+    if (hasStops) {
+      return part.stops?.flatMap((s) => s.loads) ?? []
+    }
+
+    return part.loads ?? []
+  }, [hasStops, part, selectedStopId])
+
+  const selectedStopName = useMemo(() => {
+    if (!hasStops || selectedStopId === undefined || !part?.stops) return null
+    return part.stops.find((s) => s.id === selectedStopId)?.name ?? null
+  }, [hasStops, part?.stops, selectedStopId])
+
+  return (
+    <div className="page">
+      <header className="hero optimize-hero">
+        <div className="hero-copy">
+          <p className="eyebrow">Optimization Result</p>
+          <h1>Optimize Response</h1>
+          <p className="hero-text">
+            View the backend response generated after Upload and Optimize.
+          </p>
+          <Link to="/optimize" className="btn btn-primary optimize-back-btn">
+            Back To Optimize
+          </Link>
+        </div>
+
+        <div className="hero-art" aria-hidden="true">
+          <div className="hero-orbit" />
+        </div>
+      </header>
+
+      <main className="optimize-main optimize-response-main-grid">
+        <section className="optimize-response-left">
+          <section className="optimize-panel">
+            <h2 className="optimize-response-page-title">Loading Space Optimizer</h2>
+            <p className="optimize-response-page-subtitle">
+              Interactive layout visualization generated from the optimization response.
+            </p>
+
+            {loadingSpace && part ? (
+              <div className="optimize-response-layout-grid">
+                <div className="optimize-response-canvas-wrap">
+                  <h3>Cargo Layout View</h3>
+                  {hasStops && part.stops ? (
+                    <StopSelector
+                      stops={part.stops}
+                      selectedStopId={selectedStopId}
+                      onSelectStop={setSelectedStopId}
+                    />
+                  ) : null}
+
+                  <div className="optimize-response-canvas">
+                    <LoadingSpaceViewer2D
+                      loadingSpace={loadingSpace}
+                      selectedStopId={selectedStopId}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <StatisticsPanel
+                    summary={part.summary ?? {}}
+                    spaceName={loadingSpace.name}
+                    spaceType={loadingSpace.type}
+                    dimensions={{
+                      length: part.length,
+                      width: part.width,
+                      height: part.height,
+                      limit: part.limit,
+                    }}
+                  />
+
+                  <LoadsList
+                    loads={currentLoads}
+                    title={
+                      selectedStopName
+                        ? `Loads at ${selectedStopName}`
+                        : 'All Loaded Items'
+                    }
+                  />
+                </div>
+              </div>
+            ) : (
+              !apiError && (
+                <p className="optimize-response-placeholder">
+                  No loading space details were found in the response yet.
+                </p>
+              )
+            )}
+
+            {parsedResponse && parsedResponse.notFittedLoads.length > 0 ? (
+              <div className="optimize-response-notfitted">
+                <h3>Items That Did Not Fit</h3>
+                <div className="optimize-response-notfitted-list">
+                  {parsedResponse.notFittedLoads.map((load) => (
+                    <div key={load.id} className="optimize-response-notfitted-item">
+                      <p>{load.name}</p>
+                      <p>
+                        {load.length} × {load.width} × {load.height} cm, {load.weight} kg,
+                        Qty: {load.quantity}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {part?.axis && part.axis.length > 0 ? (
+              <section>
+                <h3 className="optimize-response-page-title">Axle Load Distribution</h3>
+                <div className="optimize-response-axis-grid">
+                  {part.axis.map((axis, index) => {
+                    const totalLoad = axis.emptySpaceLoad + axis.addedLoad
+                    const maxLoad = axis.maxLoad <= 0 ? 1 : axis.maxLoad
+                    const usedPercent = Math.min(100, (totalLoad / maxLoad) * 100)
+
+                    return (
+                      <article key={`${index}-${axis.distanceFromSpaceFront}`} className="optimize-response-axis-card">
+                        <p>
+                          Axle {index + 1} (Distance: {axis.distanceFromSpaceFront} cm)
+                        </p>
+                        <p>Empty Load: {axis.emptySpaceLoad.toFixed(2)} kg</p>
+                        <p>Added Load: {axis.addedLoad.toFixed(2)} kg</p>
+                        <p>Max Load: {axis.maxLoad.toFixed(2)} kg</p>
+                        <div className="optimize-response-axis-bar">
+                          <div
+                            className="optimize-response-axis-bar-fill"
+                            style={{ width: `${usedPercent.toFixed(1)}%` }}
+                          />
+                        </div>
+                        <p>{usedPercent.toFixed(1)}% of max</p>
+                      </article>
+                    )
+                  })}
+                </div>
+              </section>
+            ) : null}
+          </section>
+        </section>
+
+        <section className="optimize-panel optimize-response-panel optimize-response-right">
+          <div className="optimize-panel-head">
+            <h2>Optimized Response</h2>
+          </div>
+
+          {apiError ? <p className="optimize-api-error">{apiError}</p> : null}
+          {!apiError && apiResponse === null ? (
+            <p className="optimize-response-placeholder">
+              Click "Upload & Optimize" on the Optimize page to see the response here.
+            </p>
+          ) : null}
+          {apiResponse !== null ? (
+            <pre className="optimize-response-json">{apiResponseText}</pre>
+          ) : null}
+        </section>
+      </main>
+    </div>
+  )
+}
+
+export default OptimizeResponse
