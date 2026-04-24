@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLoadsContext } from './context/LoadsContext'
 import { apiHandleUrl } from './config/api'
 import './Optimize.css'
@@ -246,9 +246,8 @@ const formatApiResult = (value: unknown) => {
 
 function Optimize() {
   const { loads } = useLoadsContext()
+  const navigate = useNavigate()
   const [isSendingToApi, setIsSendingToApi] = useState(false)
-  const [apiError, setApiError] = useState<string | null>(null)
-  const [apiResponse, setApiResponse] = useState<unknown>(null)
   const [hasGmproResponse, setHasGmproResponse] = useState<boolean | null>(null)
   const [gmproStatusError, setGmproStatusError] = useState<string | null>(null)
   const [usedVehicles, setUsedVehicles] = useState<GmproUsedVehicle[]>([])
@@ -293,12 +292,6 @@ function Optimize() {
   )
 
   const hasUploadData = validLoads.length > 0 
-  
-
-  const apiResponseText = useMemo(
-    () => (apiResponse === null ? '' : formatApiResult(apiResponse)),
-    [apiResponse],
-  )
 
   const routeCharts = useMemo<RouteChart[]>(() => {
     if (!gmproPayload?.routes || !Array.isArray(gmproPayload.routes)) return []
@@ -403,8 +396,6 @@ function Optimize() {
 
   const sendPayloadToApiHandle = useCallback(async () => {
     setIsSendingToApi(true)
-    setApiError(null)
-    setApiResponse(null)
 
     try {
       const response = await fetch(API_HANDLE_CALCULATE_ENDPOINT, {
@@ -433,13 +424,24 @@ function Optimize() {
         throw new Error(detail)
       }
 
-      setApiResponse(parsedBody)
+      navigate('/optimize-response', {
+        state: {
+          apiError: null,
+          apiResponse: parsedBody,
+        },
+      })
     } catch (error) {
-      setApiError(error instanceof Error ? error.message : 'Unable to send payload to backend.')
+      navigate('/optimize-response', {
+        state: {
+          apiError:
+            error instanceof Error ? error.message : 'Unable to send payload to backend.',
+          apiResponse: null,
+        },
+      })
     } finally {
       setIsSendingToApi(false)
     }
-  }, [generatedGoodloadingPayload])
+  }, [generatedGoodloadingPayload, navigate])
 
 
   useEffect(() => {
@@ -731,7 +733,6 @@ function Optimize() {
         {hasUploadData && (
           <section className="optimize-panel optimize-response-panel">
             <div className="optimize-panel-head">
-              <h2>Optimized Response</h2>
               <button
                 type="button"
                 className="btn btn-primary optimize-send-btn"
@@ -739,23 +740,10 @@ function Optimize() {
                   void sendPayloadToApiHandle()
                 }}
                 disabled={isSendingToApi || !hasUploadData}
-            >
-              {isSendingToApi ? 'Sending...' : 'Upload & Optimize'}
-            </button>
-          </div>
-          
-          
-          {apiError ? <p className="optimize-api-error">{apiError}</p> : null}
-          {!apiError && apiResponse === null ? (
-            <p className="optimize-response-placeholder">
-              {hasUploadData
-                ? 'Click "Upload & Optimize" to see the response here.'
-                : 'No backend call triggered yet.'}
-            </p>
-          ) : null}
-          {apiResponse !== null ? (
-            <pre className="optimize-response-json">{apiResponseText}</pre>
-          ) : null}
+              >
+                {isSendingToApi ? 'Sending...' : 'Upload & Optimize'}
+              </button>
+            </div>
         </section>)}
       </main>
     </div>
