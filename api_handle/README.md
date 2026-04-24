@@ -14,19 +14,36 @@ Dependencies are listed in `requirment.txt`.
 
 ## Setup
 
-```bash
-cd /home/stephan/Documents/Goodloading/api_handle
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install -r requirment.txt
+```powershell
+cd D:\overleap\goodloading\api_handle
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m ensurepip --upgrade
+python -m pip install --upgrade pip
+python -m pip install -r requirment.txt
 ```
+
+Why `python -m pip` instead of `pip`:
+
+- Some Windows environments block direct execution of `pip.exe` with Application Control policies.
+- Running pip through `python -m pip` often works even when `pip.exe` is blocked.
+- This project uses `pg8000` as the PostgreSQL driver to avoid native DLL issues that can affect `psycopg2` on locked-down Windows machines.
+
+## Environment
+
+Create or update `api_handle/.env` with your database connection:
+
+```env
+DATABASE_URL=postgresql://username:password@host:5432/database_name
+```
+
+The app will automatically translate this to the SQLAlchemy `pg8000` format at runtime.
 
 ## Run
 
-```bash
-cd /home/stephan/Documents/Goodloading/api_handle
-source .venv/bin/activate
+```powershell
+cd D:\overleap\goodloading\api_handle
+.\.venv\Scripts\Activate.ps1
 python app.py
 ```
 
@@ -38,29 +55,38 @@ Default runtime values:
 
 Optional overrides:
 
-```bash
-HOST=127.0.0.1 PORT=9001 RELOAD=false python app.py
+```powershell
+$env:HOST="127.0.0.1"
+$env:PORT="9001"
+$env:RELOAD="false"
+python app.py
 ```
 
 ## Quick Test Commands
 
 Test `/map`:
 
-```bash
-curl -i -X POST http://127.0.0.1:8001/map \
-	-H "Content-Type: application/json" \
-	-d '{"ping": true}'
+```powershell
+curl.exe -i -X POST http://127.0.0.1:8001/map `
+  -H "Content-Type: application/json" `
+  -d "{\"ping\": true}"
 ```
 
 Test `/recommend`:
 
-```bash
-curl -i -X POST http://127.0.0.1:8001/recommend \
-	-H "Content-Type: application/json" \
-	-d '{"loads": [], "loadspaces": []}'
+```powershell
+curl.exe -i -X POST http://127.0.0.1:8001/recommend `
+  -H "Content-Type: application/json" `
+  -d "{\"loads\": [], \"loadspaces\": []}"
 ```
 
 ## Notes
 
-- Current token is hardcoded in `app.py`. For production, move it to an environment variable.
+- Current token is hardcoded in `config.py`. For production, move it to an environment variable.
 - The dependency filename is `requirment.txt` in this project.
+- If you previously installed `psycopg2` or `psycopg2-binary`, remove them before reinstalling:
+
+```powershell
+python -m pip uninstall -y psycopg2 psycopg2-binary
+python -m pip install -r requirment.txt
+```
