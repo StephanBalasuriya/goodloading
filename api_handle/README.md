@@ -14,13 +14,13 @@ Dependencies are listed in `requirment.txt`.
 
 ## Setup
 
-```powershell
-cd D:\overleap\goodloading\api_handle
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m ensurepip --upgrade
-python -m pip install --upgrade pip
-python -m pip install -r requirment.txt
+
+```bash
+cd /home/stephan/Documents/Goodloading/api_handle
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirment.txt
 ```
 
 Why `python -m pip` instead of `pip`:
