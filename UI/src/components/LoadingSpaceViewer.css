@@ -1,0 +1,24 @@
+.loading-space-viewer {
+  height: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(17, 67, 146, 0.18);
+  background: #f8fbff;
+  overflow: hidden;
+}
+
+.loading-space-viewer-title {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid rgba(17, 67, 146, 0.12);
+  color: #174589;
+  font: 700 0.9rem/1.2 'Outfit', sans-serif;
+}
+
+.loading-space-viewer-note {
+  margin: 0;
+  padding: 0.65rem 0.9rem;
+  color: #4f648f;
+  font: 600 0.78rem/1.45 'Space Grotesk', sans-serif;
+  border-top: 1px solid rgba(17, 67, 146, 0.12);
+  background: #f1f6ff;
+}

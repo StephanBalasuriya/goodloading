@@ -1,0 +1,124 @@
+.loads-list {
+  border-radius: 16px;
+  border: 1px solid rgba(17, 67, 146, 0.18);
+  background: #ffffff;
+  padding: 0.95rem;
+}
+
+.loads-list h3 {
+  margin: 0;
+  color: #143b7b;
+  font: 700 1rem/1.2 'Outfit', sans-serif;
+}
+
+.loads-list-empty {
+  margin: 0.7rem 0 0;
+  color: #5e7298;
+  font: 600 0.82rem/1.45 'Space Grotesk', sans-serif;
+}
+
+.loads-list-stack {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.65rem;
+  max-height: 25rem;
+  overflow-y: auto;
+}
+
+.loads-list-card {
+  border: 1px solid rgba(17, 67, 146, 0.14);
+  border-radius: 12px;
+  padding: 0.7rem;
+  background: #f9fbff;
+}
+
+.loads-list-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.loads-list-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #203f72;
+  font: 700 0.82rem/1.2 'Space Grotesk', sans-serif;
+}
+
+.loads-list-dot {
+  width: 0.78rem;
+  height: 0.78rem;
+  border-radius: 3px;
+}
+
+.loads-list-id {
+  color: #6981a8;
+  font: 600 0.72rem/1.2 'Space Grotesk', sans-serif;
+}
+
+.loads-list-meta {
+  margin-top: 0.55rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem 0.5rem;
+  color: #4f648f;
+  font: 600 0.72rem/1.35 'Space Grotesk', sans-serif;
+}
+
+.loads-list-positions {
+  margin-top: 0.55rem;
+  border-top: 1px solid rgba(17, 67, 146, 0.1);
+  padding-top: 0.45rem;
+}
+
+.loads-list-positions p {
+  margin: 0;
+  color: #5d7399;
+  font: 600 0.7rem/1.2 'Space Grotesk', sans-serif;
+}
+
+.loads-list-position-chips {
+  margin-top: 0.32rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+}
+
+.loads-list-position-chip {
+  border: 1px solid rgba(17, 67, 146, 0.14);
+  border-radius: 999px;
+  padding: 0.12rem 0.43rem;
+  color: #3f5986;
+  font: 600 0.68rem/1.2 'Space Mono', monospace;
+  background: #ffffff;
+}
+
+.loads-list-badges {
+  margin-top: 0.52rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.loads-list-badge {
+  border-radius: 999px;
+  padding: 0.16rem 0.45rem;
+  font: 700 0.65rem/1.1 'Space Grotesk', sans-serif;
+}
+
+.loads-list-badge-rotate {
+  background: #e8f2ff;
+  color: #194788;
+}
+
+.loads-list-badge-stack {
+  background: #e9fbf0;
+  color: #1f8650;
+}
+
+.loads-list-badge-priority {
+  background: #fff4de;
+  color: #996300;
+}

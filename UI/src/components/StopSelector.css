@@ -1,0 +1,50 @@
+.stop-selector {
+  border-radius: 16px;
+  border: 1px solid rgba(17, 67, 146, 0.18);
+  background: #ffffff;
+  padding: 0.8rem;
+}
+
+.stop-selector h3 {
+  margin: 0;
+  color: #143b7b;
+  font: 700 0.85rem/1.2 'Outfit', sans-serif;
+}
+
+.stop-selector-buttons {
+  margin-top: 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.stop-selector-btn {
+  border: 1px solid rgba(17, 67, 146, 0.18);
+  border-radius: 999px;
+  background: #f6f9ff;
+  color: #244980;
+  padding: 0.35rem 0.62rem;
+  font: 700 0.74rem/1 'Space Grotesk', sans-serif;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.stop-selector-btn:hover {
+  background: #edf4ff;
+}
+
+.stop-selector-btn-active {
+  background: #17468d;
+  color: #ffffff;
+  border-color: #17468d;
+}
+
+.stop-selector-count {
+  border-radius: 999px;
+  padding: 0.12rem 0.4rem;
+  background: rgba(17, 67, 146, 0.15);
+  color: inherit;
+  font: 700 0.66rem/1 'Space Grotesk', sans-serif;
+}

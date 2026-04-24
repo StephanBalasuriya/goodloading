@@ -1,0 +1,122 @@
+.lsv2d-root {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.lsv2d-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border-bottom: 1px solid rgba(17, 67, 146, 0.14);
+}
+
+.lsv2d-view-group,
+.lsv2d-zoom-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lsv2d-btn {
+  border: 1px solid rgba(17, 67, 146, 0.18);
+  background: #f5f9ff;
+  color: #21457f;
+  border-radius: 10px;
+  padding: 0.45rem 0.65rem;
+  font: 700 0.78rem/1 'Space Grotesk', sans-serif;
+  cursor: pointer;
+}
+
+.lsv2d-btn:hover {
+  background: #eaf2ff;
+}
+
+.lsv2d-btn-active {
+  background: #18478f;
+  color: #ffffff;
+  border-color: #18478f;
+}
+
+.lsv2d-zoom-value {
+  min-width: 3rem;
+  text-align: center;
+  color: #4f648f;
+  font: 700 0.78rem/1.1 'Space Grotesk', sans-serif;
+}
+
+.lsv2d-canvas-wrap {
+  overflow: auto;
+  background: #f4f8ff;
+  padding: 1rem;
+}
+
+.lsv2d-center {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.lsv2d-container {
+  position: relative;
+  border: 2px solid #7f97bf;
+  background: #ffffff;
+  box-shadow: 0 10px 18px rgba(16, 46, 98, 0.12);
+  min-width: 220px;
+  min-height: 220px;
+}
+
+.lsv2d-box {
+  position: absolute;
+  border: 1px solid rgba(16, 46, 98, 0.65);
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  font: 700 0.68rem/1.15 'Space Grotesk', sans-serif;
+  cursor: pointer;
+}
+
+.lsv2d-box-label {
+  opacity: 0;
+  padding: 0.1rem 0.2rem;
+  text-align: center;
+}
+
+.lsv2d-box:hover .lsv2d-box-label {
+  opacity: 1;
+}
+
+.lsv2d-dimensions {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  border: 1px solid rgba(17, 67, 146, 0.22);
+  border-radius: 10px;
+  padding: 0.28rem 0.45rem;
+  background: #ffffff;
+  color: #56719c;
+  font: 700 0.7rem/1 'Space Grotesk', sans-serif;
+}
+
+.lsv2d-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  border-top: 1px solid rgba(17, 67, 146, 0.14);
+  color: #4f648f;
+  background: #f8fbff;
+  font: 600 0.76rem/1.2 'Space Grotesk', sans-serif;
+}
+
+@media (max-width: 760px) {
+  .lsv2d-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
