@@ -70,9 +70,12 @@ def _validate_gmpro_response(payload: dict[str, Any]) -> None:
                             )
                         else:
                             weight = load_demands.get("weight")
-                            if not isinstance(weight, dict) or "amount" not in weight:
+                            cbm = load_demands.get("cbm")
+                            has_weight_amount = isinstance(weight, dict) and "amount" in weight
+                            has_cbm_amount = isinstance(cbm, dict) and "amount" in cbm
+                            if not has_weight_amount and not has_cbm_amount:
                                 errors.append(
-                                    f"routes[{idx}].visits[{visit_idx}].loadDemands.weight.amount is required."
+                                    f"routes[{idx}].visits[{visit_idx}].loadDemands must include weight.amount or cbm.amount."
                                 )
 
     if errors:
