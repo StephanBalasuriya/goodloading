@@ -6,7 +6,10 @@ FastAPI proxy service for Goodloading external calculation APIs.
 
 - `POST /calculate` -> forwards to `https://api.goodloading.com/api/external/calculation`
 - `POST /recommend` -> forwards to `https://api.goodloading.com/api/external/calculation/recommendation`
-- `POST /map` -> currently logs incoming payload and returns a placeholder response
+- `POST /map` -> processes loading mapping data
+- `POST /GMPROResponse` -> stores GMPRO optimization response
+- `GET /GMPROResponse` -> retrieves the last cached GMPRO response
+- `GET /vehicles/used` -> returns vehicles used in the last GMPRO optimization result
 
 ## Requirements
 
@@ -31,18 +34,29 @@ Why `python -m pip` instead of `pip`:
 
 ## Environment
 
-Create or update `api_handle/.env` with your database connection:
+Create or update `api_handle/.env` with your database connection and API token:
 
 ```env
 DATABASE_URL=postgresql://username:password@host:5432/database_name
+GOODLOADING_ACCESS_TOKEN=your_api_token_here
 ```
 
-The app will automatically translate this to the SQLAlchemy `pg8000` format at runtime.
+The `GOODLOADING_ACCESS_TOKEN` is required for authentication with the Goodloading API.
 
 ## Run
 
+**Linux/macOS:**
+
+```bash
+cd /home/stephan/Documents/Goodloading/api_handle
+source .venv/bin/activate
+python app.py
+```
+
+**Windows:**
+
 ```powershell
-cd D:\overleap\goodloading\api_handle
+cd D:\path\to\api_handle
 .\.venv\Scripts\Activate.ps1
 python app.py
 ```
@@ -55,13 +69,40 @@ Default runtime values:
 
 Optional overrides:
 
+**Linux/macOS:**
+
+```bash
+export HOST="127.0.0.1"
+export PORT="9001"
+export RELOAD="false"
+python app.py
+```
+
+**Windows:**
+
 ```powershell
 $env:HOST="127.0.0.1"
 $env:PORT="9001"
 $env:RELOAD="false"
-python app.py
-```
+pytCORS Configuration
 
+The API is configured to accept requests from:
+- `http://localhost:5173`
+- `http://127.0.0.1:5173`
+
+Adjust the `CORSMiddleware` configuration in `app.py` for other origins.
+
+## Database
+
+The API requires a PostgreSQL database. Vehicle type and specification data is read from:
+- `vehicle_types` table
+- `vehicle_specs` table
+
+These tables store vehicle dimensions, weight limits, and capacity information used by the `/vehicles/used` endpoint.
+
+## Notes
+
+- The access token must be set via the `GOODLOADING_ACCESS_TOKEN`
 ## Quick Test Commands
 
 Test `/map`:

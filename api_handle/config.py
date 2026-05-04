@@ -18,4 +18,9 @@ HEADERS = {
 }
 
 GMPRO_RESPONSE_FILE = Path(__file__).with_name("gmpro_last_response.json")
-GMPRO_RESPONSE_TTL_SECONDS = 120
+
+
+try:
+    GMPRO_RESPONSE_TTL_SECONDS = int(os.getenv("GMPRO_RESPONSE_TTL_SECONDS", "120"))
+except (TypeError, ValueError):
+    GMPRO_RESPONSE_TTL_SECONDS = 120
