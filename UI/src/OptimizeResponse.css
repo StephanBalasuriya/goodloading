@@ -27,6 +27,48 @@
   font: 600 0.82rem/1.4 'Space Grotesk', sans-serif;
 }
 
+.optimize-response-space-selector {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.optimize-response-space-btn {
+  display: grid;
+  gap: 0.12rem;
+  border: 1px solid rgba(17, 67, 146, 0.2);
+  border-radius: 12px;
+  background: #f5f9ff;
+  padding: 0.5rem 0.72rem;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.optimize-response-space-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 14px rgba(20, 66, 138, 0.12);
+  border-color: rgba(17, 67, 146, 0.35);
+}
+
+.optimize-response-space-btn span {
+  color: #194489;
+  font: 700 0.78rem/1.2 'Outfit', sans-serif;
+}
+
+.optimize-response-space-btn small {
+  color: #5a6f96;
+  font: 600 0.68rem/1.2 'Space Grotesk', sans-serif;
+  text-transform: capitalize;
+}
+
+.optimize-response-space-btn-active {
+  border-color: rgba(20, 66, 138, 0.5);
+  background: #e9f2ff;
+  box-shadow: inset 0 0 0 1px rgba(20, 66, 138, 0.12);
+}
+
 .optimize-response-layout-grid {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);

@@ -204,6 +204,7 @@ const toOptimizationResponse = (value: unknown): OptimizationResponse | null => 
 
 function OptimizeResponse() {
   const location = useLocation()
+  const [selectedLoadingSpaceIndex, setSelectedLoadingSpaceIndex] = useState(0)
   const [selectedStopId, setSelectedStopId] = useState<number | undefined>(undefined)
   const locationState = (location.state ?? null) as OptimizeResponseLocationState | null
 
@@ -212,15 +213,26 @@ function OptimizeResponse() {
   const apiResponseText = apiResponse === null ? '' : formatApiResult(apiResponse)
 
   const parsedResponse = useMemo(() => toOptimizationResponse(apiResponse), [apiResponse])
-  const loadingSpace = parsedResponse?.loadingSpaces[0] ?? null
+  const loadingSpaces = parsedResponse?.loadingSpaces ?? []
+  const effectiveSelectedLoadingSpaceIndex =
+    selectedLoadingSpaceIndex >= 0 && selectedLoadingSpaceIndex < loadingSpaces.length
+      ? selectedLoadingSpaceIndex
+      : 0
+  const loadingSpace = loadingSpaces[effectiveSelectedLoadingSpaceIndex] ?? null
   const part = loadingSpace?.parts[0] ?? null
   const hasStops = (part?.stops?.length ?? 0) > 0
+  const effectiveSelectedStopId =
+    hasStops &&
+    selectedStopId !== undefined &&
+    part?.stops?.some((stop) => stop.id === selectedStopId)
+      ? selectedStopId
+      : undefined
 
   const currentLoads = useMemo(() => {
     if (!part) return []
 
-    if (hasStops && selectedStopId !== undefined) {
-      return part.stops?.find((s) => s.id === selectedStopId)?.loads ?? []
+    if (hasStops && effectiveSelectedStopId !== undefined) {
+      return part.stops?.find((s) => s.id === effectiveSelectedStopId)?.loads ?? []
     }
 
     if (hasStops) {
@@ -228,12 +240,12 @@ function OptimizeResponse() {
     }
 
     return part.loads ?? []
-  }, [hasStops, part, selectedStopId])
+  }, [effectiveSelectedStopId, hasStops, part])
 
   const selectedStopName = useMemo(() => {
-    if (!hasStops || selectedStopId === undefined || !part?.stops) return null
-    return part.stops.find((s) => s.id === selectedStopId)?.name ?? null
-  }, [hasStops, part?.stops, selectedStopId])
+    if (!hasStops || effectiveSelectedStopId === undefined || !part?.stops) return null
+    return part.stops.find((s) => s.id === effectiveSelectedStopId)?.name ?? null
+  }, [effectiveSelectedStopId, hasStops, part])
 
   return (
     <div className="page">
@@ -262,6 +274,30 @@ function OptimizeResponse() {
               Interactive layout visualization generated from the optimization response.
             </p>
 
+            {loadingSpaces.length > 1 ? (
+              <div className="optimize-response-space-selector">
+                {loadingSpaces.map((space, index) => (
+                  <button
+                    key={`${space.id}-${index}`}
+                    type="button"
+                    onClick={() => {
+                      setSelectedLoadingSpaceIndex(index)
+                      setSelectedStopId(undefined)
+                    }}
+                    className={`optimize-response-space-btn ${
+                      effectiveSelectedLoadingSpaceIndex === index
+                        ? 'optimize-response-space-btn-active'
+                        : ''
+                    }`}
+                    aria-pressed={effectiveSelectedLoadingSpaceIndex === index}
+                  >
+                    <span>{space.name}</span>
+                    <small>{space.type}</small>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
             {loadingSpace && part ? (
               <div className="optimize-response-layout-grid">
                 <div className="optimize-response-canvas-wrap">
@@ -269,7 +305,7 @@ function OptimizeResponse() {
                   {hasStops && part.stops ? (
                     <StopSelector
                       stops={part.stops}
-                      selectedStopId={selectedStopId}
+                      selectedStopId={effectiveSelectedStopId}
                       onSelectStop={setSelectedStopId}
                     />
                   ) : null}
@@ -277,7 +313,7 @@ function OptimizeResponse() {
                   <div className="optimize-response-canvas">
                     <LoadingSpaceViewer2D
                       loadingSpace={loadingSpace}
-                      selectedStopId={selectedStopId}
+                      selectedStopId={effectiveSelectedStopId}
                     />
                   </div>
                 </div>
