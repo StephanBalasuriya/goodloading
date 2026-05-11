@@ -1,0 +1,202 @@
+curl -X 'POST' \
+  'http://0.0.0.0:8001/calculate' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Generated from GMPRO Response",
+  "note": "Auto-generated from GMPRO routes and planner loads",
+  "loads": [
+    {
+      "id": 1776752972045,
+      "quantity": 2,
+      "name": "shipment_1",
+      "length": 45,
+      "width": 60,
+      "height": 30,
+      "weight": 10,
+      "priority": 0,
+      "stacking": true,
+      "allowToRotate": true,
+      "alongFloor": false,
+      "maxWeightOnTop": 10,
+      "origin": {
+        "id": 2,
+        "name": "Pickup shipment_1"
+      },
+      "destination": {
+        "id": 7,
+        "name": "Delivery shipment_1"
+      }
+    },
+    {
+      "id": 1776752972046,
+      "quantity": 3,
+      "name": "shipment_2",
+      "length": 60,
+      "width": 60,
+      "height": 45,
+      "weight": 30,
+      "priority": 0,
+      "stacking": true,
+      "allowToRotate": true,
+      "alongFloor": true,
+      "maxWeightOnTop": 20,
+      "origin": {
+        "id": 4,
+        "name": "Pickup shipment_2"
+      },
+      "destination": {
+        "id": 8,
+        "name": "Delivery shipment_2"
+      }
+    },
+    {
+      "id": 1776752972047,
+      "quantity": 4,
+      "name": "shipment_3",
+      "length": 45,
+      "width": 45,
+      "height": 45,
+      "weight": 45,
+      "priority": 0,
+      "stacking": true,
+      "allowToRotate": true,
+      "alongFloor": false,
+      "maxWeightOnTop": 45,
+      "origin": {
+        "id": 1,
+        "name": "Pickup shipment_3"
+      },
+      "destination": {
+        "id": 5,
+        "name": "Delivery shipment_3"
+      }
+    },
+    {
+      "id": 1776752972048,
+      "quantity": 5,
+      "name": "shipment_4",
+      "length": 60,
+      "width": 75,
+      "height": 60,
+      "weight": 45,
+      "priority": 0,
+      "stacking": true,
+      "allowToRotate": true,
+      "alongFloor": true,
+      "maxWeightOnTop": 30,
+      "origin": {
+        "id": 3,
+        "name": "Pickup shipment_4"
+      },
+      "destination": {
+        "id": 6,
+        "name": "Delivery shipment_4"
+      }
+    },
+    {
+      "id": 1776752972049,
+      "quantity": 6,
+      "name": "shipment_5",
+      "length": 60,
+      "width": 45,
+      "height": 30,
+      "weight": 30,
+      "priority": 0,
+      "stacking": true,
+      "allowToRotate": true,
+      "alongFloor": false,
+      "maxWeightOnTop": 15,
+      "origin": {
+        "id": 7,
+        "name": "Pickup shipment_5"
+      },
+      "destination": {
+        "id": 8,
+        "name": "Delivery shipment_5"
+      }
+    }
+  ],
+  "loadingSpaces": [
+    {
+      "quantity": 1,
+      "name": "vehicle_Light Van_1",
+      "type": "vehicle",
+      "parts": [
+        {
+          "length": 500,
+          "width": 200,
+          "height": 200,
+          "limit": 800
+        }
+      ],
+      "stops": [
+        {
+          "id": 1,
+          "name": "Pickup shipment_3"
+        },
+        {
+          "id": 2,
+          "name": "Pickup shipment_1"
+        },
+        {
+          "id": 3,
+          "name": "Pickup shipment_4"
+        },
+        {
+          "id": 4,
+          "name": "Pickup shipment_2"
+        },
+        {
+          "id": 5,
+          "name": "Delivery shipment_3"
+        },
+        {
+          "id": 6,
+          "name": "Delivery shipment_4"
+        },
+        {
+          "id": 7,
+          "name": "Delivery shipment_1"
+        },
+        {
+          "id": 8,
+          "name": "Delivery shipment_2"
+        }
+      ]
+    },
+    {
+      "quantity": 1,
+      "name": "vehicle_Light Van_2",
+      "type": "vehicle",
+      "parts": [
+        {
+          "length": 500,
+          "width": 200,
+          "height": 200,
+          "limit": 800
+        }
+      ],
+      "stops": [
+        {
+          "id": 1,
+          "name": "Pickup shipment_5"
+        },
+        {
+          "id": 2,
+          "name": "Delivery shipment_5"
+        }
+      ]
+    }
+  ],
+  "options": {
+    "allowOverweight": false,
+    "unit": "cm",
+    "keepLoadsTogether": false,
+    "newAlgorithm": true,
+    "loadingOrder": "default",
+    "multiStops": true,
+    "arrangeOptimally": false
+  }
+}
+'

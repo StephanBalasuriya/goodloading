@@ -147,8 +147,8 @@ export function LoadingSpaceViewer2D({ loadingSpace, selectedStopId }: LoadingSp
             <div
               className="lsv2d-container"
               style={{
-                width: `${viewDimensions.width * zoom}px`,
-                height: `${viewDimensions.height * zoom}px`,
+                width: `${viewDimensions.width * zoom+4}px`,
+                height: `${viewDimensions.height * zoom+4}px`,
               }}
             >
               {loadsToRender.map((load, loadIndex) =>
