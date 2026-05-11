@@ -56,18 +56,75 @@ const asString = (value: unknown, fallback = '') =>
 const asBoolean = (value: unknown, fallback = false) =>
   typeof value === 'boolean' ? value : fallback
 
+const asOptionalNumber = (value: unknown): number | undefined => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string') {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : undefined
+  }
+  return undefined
+}
+
 const toSummary = (value: unknown): Summary => {  //Converts summary object.
   if (!isObject(value)) return {}
   return {
-    freeLdm: asNumber(value.freeLdm, 0),
-    occupiedLdm: asNumber(value.occupiedLdm, 0),
-    freeSurface: asNumber(value.freeSurface, 0),
-    occupiedSurface: asNumber(value.occupiedSurface, 0),
-    freeVolume: asNumber(value.freeVolume, 0),
-    occupiedVolume: asNumber(value.occupiedVolume, 0),
-    percentLdmUsd: asNumber(value.percentLdmUsd, 0),
-    percentVolumeUsd: asNumber(value.percentVolumeUsd, 0),
+    freeLdm: asOptionalNumber(value.freeLdm),
+    occupiedLdm: asOptionalNumber(value.occupiedLdm),
+    freeSurface: asOptionalNumber(value.freeSurface),
+    occupiedSurface: asOptionalNumber(value.occupiedSurface),
+    freeVolume: asOptionalNumber(value.freeVolume),
+    occupiedVolume: asOptionalNumber(value.occupiedVolume),
+    percentLdmUsd: asOptionalNumber(value.percentLdmUsd),
+    percentVolumeUsd: asOptionalNumber(value.percentVolumeUsd),
+    totalLoadsWeight: asOptionalNumber(value.totalLoadsWeight),
   }
+}
+
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value)
+
+const MIN_SUMMARY_KEYS: Array<keyof Summary> = ['freeLdm', 'freeSurface', 'freeVolume']
+const MAX_SUMMARY_KEYS: Array<keyof Summary> = [
+  'occupiedLdm',
+  'occupiedSurface',
+  'occupiedVolume',
+  'percentLdmUsd',
+  'percentVolumeUsd',
+  'totalLoadsWeight',
+]
+
+const pickBestStopSummary = (part: LoadingSpacePart | null): Summary => {
+  if (!part?.stops || part.stops.length === 0) return part?.summary ?? {}
+
+  const stopSummaries = part.stops
+    .map((stop) => stop.summary)
+    .filter((summary): summary is Summary => summary !== undefined)
+
+  if (stopSummaries.length === 0) return part.summary ?? {}
+
+  const bestSummary: Summary = {}
+
+  for (const key of MIN_SUMMARY_KEYS) {
+    const values = stopSummaries
+      .map((summary) => summary[key])
+      .filter(isFiniteNumber)
+
+    if (values.length > 0) {
+      bestSummary[key] = Math.min(...values)
+    }
+  }
+
+  for (const key of MAX_SUMMARY_KEYS) {
+    const values = stopSummaries
+      .map((summary) => summary[key])
+      .filter(isFiniteNumber)
+
+    if (values.length > 0) {
+      bestSummary[key] = Math.max(...values)
+    }
+  }
+
+  return Object.keys(bestSummary).length > 0 ? bestSummary : part.summary ?? {}
 }
 
 const toPlacement = (value: unknown): LoadPlacement | null => { //Converts cargo placement.
@@ -286,6 +343,8 @@ function OptimizeResponse() {
     return part.stops.find((s) => s.id === effectiveSelectedStopId)?.name ?? null
   }, [effectiveSelectedStopId, hasStops, part])
 
+  const bestStopSummary = useMemo(() => pickBestStopSummary(part), [part])
+
   return (
     <div className="page">
       <header className="hero optimize-hero">
@@ -361,7 +420,7 @@ function OptimizeResponse() {
 
                 <div>
                   <StatisticsPanel
-                    summary={part.summary ?? {}}
+                    summary={bestStopSummary}
                     spaceName={loadingSpace.name}
                     spaceType={loadingSpace.type}
                     dimensions={{

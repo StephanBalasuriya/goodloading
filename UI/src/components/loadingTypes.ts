@@ -43,6 +43,7 @@ export type Summary = {
   occupiedVolume?: number
   percentLdmUsd?: number
   percentVolumeUsd?: number
+  totalLoadsWeight?: number
 }
 
 export type LoadingSpacePart = {
