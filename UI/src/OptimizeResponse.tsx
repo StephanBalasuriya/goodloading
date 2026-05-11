@@ -251,19 +251,13 @@ function OptimizeResponse() {
 
   const selectedApiResponse = selectedVehicleResponse?.response ?? apiResponse
   const apiResponseText = selectedApiResponse === null ? '' : formatApiResult(selectedApiResponse)
-  const [selectedLoadingSpaceIndex, setSelectedLoadingSpaceIndex] = useState(0)
   const [selectedStopId, setSelectedStopId] = useState<number | undefined>(undefined)
   const parsedResponse = useMemo(
     () => toOptimizationResponse(selectedApiResponse),
     [selectedApiResponse],
   )
   const loadingSpaces = parsedResponse?.loadingSpaces ?? []
-  console.log("loadingSpaces", loadingSpaces)
-  const effectiveSelectedLoadingSpaceIndex =
-    selectedLoadingSpaceIndex >= 0 && selectedLoadingSpaceIndex < loadingSpaces.length
-      ? selectedLoadingSpaceIndex
-      : 0
-  const loadingSpace = loadingSpaces[effectiveSelectedLoadingSpaceIndex] ?? null
+  const loadingSpace = loadingSpaces[0] ?? null
   const part = loadingSpace?.parts[0] ?? null
   const hasStops = (part?.stops?.length ?? 0) > 0
   const effectiveSelectedStopId =
@@ -329,7 +323,6 @@ function OptimizeResponse() {
                       type="button"
                       onClick={() => {
                         setSelectedVehicleResponseIndex(index)
-                        setSelectedLoadingSpaceIndex(0)
                         setSelectedStopId(undefined)
                       }}
                       className={`optimize-response-space-btn ${
@@ -340,33 +333,6 @@ function OptimizeResponse() {
                       aria-pressed={effectiveSelectedVehicleResponseIndex === index}
                     >
                       <span>{vehicleResponse.vehicleLabel}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {loadingSpaces.length > 1 ? (
-              <div className="optimize-response-space-selector">
-                <p className="optimize-response-selector-label">Select Loading Space:</p>
-                <div className="optimize-response-space-tabs">
-                  {loadingSpaces.map((space, index) => (
-                    <button
-                      key={`space-${effectiveSelectedVehicleResponseIndex}-${space.id}-${index}`}
-                      type="button"
-                      onClick={() => {
-                        setSelectedLoadingSpaceIndex(index)
-                        setSelectedStopId(undefined)
-                      }}
-                      className={`optimize-response-space-btn ${
-                        effectiveSelectedLoadingSpaceIndex === index
-                          ? 'optimize-response-space-btn-active'
-                          : ''
-                      }`}
-                      aria-pressed={effectiveSelectedLoadingSpaceIndex === index}
-                    >
-                      <span>{space.name}</span>
-                      <small>{space.type}</small>
                     </button>
                   ))}
                 </div>
@@ -501,7 +467,6 @@ function OptimizeResponse() {
                         title={`Copy ${vehicleResponse.vehicleLabel} response`}
                         onClick={async () => {
                           setSelectedVehicleResponseIndex(index)
-                          setSelectedLoadingSpaceIndex(0)
                           setSelectedStopId(undefined)
 
                           try {

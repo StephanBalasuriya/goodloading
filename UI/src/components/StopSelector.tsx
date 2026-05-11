@@ -32,8 +32,7 @@ export function StopSelector({ stops, selectedStopId, onSelectStop }: StopSelect
               selectedStopId === stop.id ? 'stop-selector-btn-active' : ''
             }`}
           >
-            Stop
-            {stop.name}
+            Stop {stop.name}
             <span className="stop-selector-count">
               {stop.loads.length}
             </span>
