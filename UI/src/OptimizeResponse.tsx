@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { Check, Copy } from 'lucide-react'
 import { LoadingSpaceViewer2D } from './components/LoadingSpaceViewer2D'
 import { StatisticsPanel } from './components/StatisticsPanel'
 import { LoadsList } from './components/LoadsList'
@@ -21,6 +22,11 @@ import './OptimizeResponse.css'
 type OptimizeResponseLocationState = {
   apiError?: string | null
   apiResponse?: unknown
+}
+
+type VehicleResponseItem = {
+  vehicleLabel: string
+  response: unknown
 }
 
 const formatApiResult = (value: unknown) => {
@@ -50,7 +56,7 @@ const asString = (value: unknown, fallback = '') =>
 const asBoolean = (value: unknown, fallback = false) =>
   typeof value === 'boolean' ? value : fallback
 
-const toSummary = (value: unknown): Summary => {
+const toSummary = (value: unknown): Summary => {  //Converts summary object.
   if (!isObject(value)) return {}
   return {
     freeLdm: asNumber(value.freeLdm, 0),
@@ -64,7 +70,7 @@ const toSummary = (value: unknown): Summary => {
   }
 }
 
-const toPlacement = (value: unknown): LoadPlacement | null => {
+const toPlacement = (value: unknown): LoadPlacement | null => { //Converts cargo placement.
   if (!isObject(value) || !isObject(value.position)) return null
   return {
     height: asNumber(value.height, 0),
@@ -168,7 +174,7 @@ const toLoadingSpace = (value: unknown, index: number): LoadingSpace | null => {
   }
 }
 
-const toNotFittedLoad = (value: unknown, index: number): NotFittedLoad | null => {
+const toNotFittedLoad = (value: unknown, index: number): NotFittedLoad | null => { //Converts items that could not fit.
   if (!isObject(value)) return null
   return {
     id: asNumber(value.id, index + 1),
@@ -181,7 +187,7 @@ const toNotFittedLoad = (value: unknown, index: number): NotFittedLoad | null =>
   }
 }
 
-const toOptimizationResponse = (value: unknown): OptimizationResponse | null => {
+const toOptimizationResponse = (value: unknown): OptimizationResponse | null => { //Converts full API response into:loadingSpaces, notFittedLoads
   if (!isObject(value)) return null
 
   const loadingSpaces = Array.isArray(value.loadingSpaces)
@@ -202,18 +208,57 @@ const toOptimizationResponse = (value: unknown): OptimizationResponse | null => 
   }
 }
 
+const toVehicleResponses = (value: unknown): VehicleResponseItem[] => { //Parses multi-vehicle response.
+  if (!isObject(value) || !Array.isArray(value.vehicleResponses)) return []
+
+  return value.vehicleResponses
+    .map((entry, index): VehicleResponseItem | null => {
+      if (!isObject(entry)) return null
+
+      const vehicleLabel =
+        typeof entry.vehicleLabel === 'string' && entry.vehicleLabel.trim() !== ''
+          ? entry.vehicleLabel
+          : `Vehicle ${index + 1}`
+
+      return {
+        vehicleLabel,
+        response: 'response' in entry ? entry.response : null,
+      }
+    })
+    .filter((entry): entry is VehicleResponseItem => entry !== null)
+}
+
 function OptimizeResponse() {
   const location = useLocation()
-  const [selectedLoadingSpaceIndex, setSelectedLoadingSpaceIndex] = useState(0)
-  const [selectedStopId, setSelectedStopId] = useState<number | undefined>(undefined)
-  const locationState = (location.state ?? null) as OptimizeResponseLocationState | null
 
+  const locationState = (location.state ?? null) as OptimizeResponseLocationState | null
   const apiError = typeof locationState?.apiError === 'string' ? locationState.apiError : null
   const apiResponse = locationState?.apiResponse ?? null
-  const apiResponseText = apiResponse === null ? '' : formatApiResult(apiResponse)
+  const vehicleResponses = useMemo(() => toVehicleResponses(apiResponse), [apiResponse])
+  const hasSeparateVehicleResponses = vehicleResponses.length > 0
+  const [selectedVehicleResponseIndex, setSelectedVehicleResponseIndex] = useState(0)
+  const [copiedVehicleResponseIndex, setCopiedVehicleResponseIndex] = useState<number | null>(null)
 
-  const parsedResponse = useMemo(() => toOptimizationResponse(apiResponse), [apiResponse])
+  const effectiveSelectedVehicleResponseIndex =
+    selectedVehicleResponseIndex >= 0 && selectedVehicleResponseIndex < vehicleResponses.length
+      ? selectedVehicleResponseIndex
+      : 0
+
+  const selectedVehicleResponse =
+    hasSeparateVehicleResponses
+      ? vehicleResponses[effectiveSelectedVehicleResponseIndex] ?? null
+      : null
+
+  const selectedApiResponse = selectedVehicleResponse?.response ?? apiResponse
+  const apiResponseText = selectedApiResponse === null ? '' : formatApiResult(selectedApiResponse)
+  const [selectedLoadingSpaceIndex, setSelectedLoadingSpaceIndex] = useState(0)
+  const [selectedStopId, setSelectedStopId] = useState<number | undefined>(undefined)
+  const parsedResponse = useMemo(
+    () => toOptimizationResponse(selectedApiResponse),
+    [selectedApiResponse],
+  )
   const loadingSpaces = parsedResponse?.loadingSpaces ?? []
+  console.log("loadingSpaces", loadingSpaces)
   const effectiveSelectedLoadingSpaceIndex =
     selectedLoadingSpaceIndex >= 0 && selectedLoadingSpaceIndex < loadingSpaces.length
       ? selectedLoadingSpaceIndex
@@ -254,7 +299,7 @@ function OptimizeResponse() {
           <p className="eyebrow">Optimization Result</p>
           <h1>Optimize Response</h1>
           <p className="hero-text">
-            View the backend response generated after Upload and Optimize.
+            View the Optimized results generated from the Goodloading System.
           </p>
           <Link to="/optimize" className="btn btn-primary optimize-back-btn">
             Back To Optimize
@@ -274,27 +319,57 @@ function OptimizeResponse() {
               Interactive layout visualization generated from the optimization response.
             </p>
 
+            {hasSeparateVehicleResponses && vehicleResponses.length > 1 ? (
+              <div className="optimize-response-space-selector">
+                <p className="optimize-response-selector-label">Select Vehicle:</p>
+                <div className="optimize-response-vehicle-tabs">
+                  {vehicleResponses.map((vehicleResponse, index) => (
+                    <button
+                      key={`vehicle-tab-${index}`}
+                      type="button"
+                      onClick={() => {
+                        setSelectedVehicleResponseIndex(index)
+                        setSelectedLoadingSpaceIndex(0)
+                        setSelectedStopId(undefined)
+                      }}
+                      className={`optimize-response-space-btn ${
+                        effectiveSelectedVehicleResponseIndex === index
+                          ? 'optimize-response-space-btn-active'
+                          : ''
+                      }`}
+                      aria-pressed={effectiveSelectedVehicleResponseIndex === index}
+                    >
+                      <span>{vehicleResponse.vehicleLabel}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             {loadingSpaces.length > 1 ? (
               <div className="optimize-response-space-selector">
-                {loadingSpaces.map((space, index) => (
-                  <button
-                    key={`${space.id}-${index}`}
-                    type="button"
-                    onClick={() => {
-                      setSelectedLoadingSpaceIndex(index)
-                      setSelectedStopId(undefined)
-                    }}
-                    className={`optimize-response-space-btn ${
-                      effectiveSelectedLoadingSpaceIndex === index
-                        ? 'optimize-response-space-btn-active'
-                        : ''
-                    }`}
-                    aria-pressed={effectiveSelectedLoadingSpaceIndex === index}
-                  >
-                    <span>{space.name}</span>
-                    <small>{space.type}</small>
-                  </button>
-                ))}
+                <p className="optimize-response-selector-label">Select Loading Space:</p>
+                <div className="optimize-response-space-tabs">
+                  {loadingSpaces.map((space, index) => (
+                    <button
+                      key={`space-${effectiveSelectedVehicleResponseIndex}-${space.id}-${index}`}
+                      type="button"
+                      onClick={() => {
+                        setSelectedLoadingSpaceIndex(index)
+                        setSelectedStopId(undefined)
+                      }}
+                      className={`optimize-response-space-btn ${
+                        effectiveSelectedLoadingSpaceIndex === index
+                          ? 'optimize-response-space-btn-active'
+                          : ''
+                      }`}
+                      aria-pressed={effectiveSelectedLoadingSpaceIndex === index}
+                    >
+                      <span>{space.name}</span>
+                      <small>{space.type}</small>
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : null}
 
@@ -353,8 +428,8 @@ function OptimizeResponse() {
               <div className="optimize-response-notfitted">
                 <h3>Items That Did Not Fit</h3>
                 <div className="optimize-response-notfitted-list">
-                  {parsedResponse.notFittedLoads.map((load) => (
-                    <div key={load.id} className="optimize-response-notfitted-item">
+                  {parsedResponse.notFittedLoads.map((load, loadIdx) => (
+                    <div key={`notfitted-${effectiveSelectedVehicleResponseIndex}-${load.id}-${loadIdx}`} className="optimize-response-notfitted-item">
                       <p>{load.name}</p>
                       <p>
                         {load.length} × {load.width} × {load.height} cm, {load.weight} kg,
@@ -370,15 +445,15 @@ function OptimizeResponse() {
               <section>
                 <h3 className="optimize-response-page-title">Axle Load Distribution</h3>
                 <div className="optimize-response-axis-grid">
-                  {part.axis.map((axis, index) => {
+                  {part.axis.map((axis, axisIdx) => {
                     const totalLoad = axis.emptySpaceLoad + axis.addedLoad
                     const maxLoad = axis.maxLoad <= 0 ? 1 : axis.maxLoad
                     const usedPercent = Math.min(100, (totalLoad / maxLoad) * 100)
 
                     return (
-                      <article key={`${index}-${axis.distanceFromSpaceFront}`} className="optimize-response-axis-card">
+                      <article key={`axis-${effectiveSelectedVehicleResponseIndex}-${axisIdx}-${axis.distanceFromSpaceFront}`} className="optimize-response-axis-card">
                         <p>
-                          Axle {index + 1} (Distance: {axis.distanceFromSpaceFront} cm)
+                          Axle {axisIdx + 1} (Distance: {axis.distanceFromSpaceFront} cm)
                         </p>
                         <p>Empty Load: {axis.emptySpaceLoad.toFixed(2)} kg</p>
                         <p>Added Load: {axis.addedLoad.toFixed(2)} kg</p>
@@ -405,12 +480,57 @@ function OptimizeResponse() {
           </div>
 
           {apiError ? <p className="optimize-api-error">{apiError}</p> : null}
-          {!apiError && apiResponse === null ? (
+          {!apiError && selectedApiResponse === null ? (
             <p className="optimize-response-placeholder">
               Click "Upload & Optimize" on the Optimize page to see the response here.
             </p>
           ) : null}
-          {apiResponse !== null ? (
+          {!apiError && hasSeparateVehicleResponses ? (
+            <div className="optimize-response-vehicle-json-list">
+              {vehicleResponses.map((vehicleResponse, index) => {
+                const vehicleResponseText = formatApiResult(vehicleResponse.response)
+
+                return (
+                  <article key={`${vehicleResponse.vehicleLabel}-${index}`} className="optimize-generated-json-item">
+                    <div className="optimize-panel-head">
+                      <h3>{vehicleResponse.vehicleLabel}</h3>
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        aria-label={`Copy ${vehicleResponse.vehicleLabel} response`}
+                        title={`Copy ${vehicleResponse.vehicleLabel} response`}
+                        onClick={async () => {
+                          setSelectedVehicleResponseIndex(index)
+                          setSelectedLoadingSpaceIndex(0)
+                          setSelectedStopId(undefined)
+
+                          try {
+                            await navigator.clipboard.writeText(vehicleResponseText)
+                            setCopiedVehicleResponseIndex(index)
+                            window.setTimeout(() => {
+                              setCopiedVehicleResponseIndex((current) =>
+                                current === index ? null : current,
+                              )
+                            }, 1500)
+                          } catch {
+                            setCopiedVehicleResponseIndex(null)
+                          }
+                        }}
+                      >
+                        {copiedVehicleResponseIndex === index ? (
+                          <Check size={16} strokeWidth={2.25} />
+                        ) : (
+                          <Copy size={16} strokeWidth={2.25} />
+                        )}
+                      </button>
+                    </div>
+                    <pre className="optimize-response-json">{vehicleResponseText}</pre>
+                  </article>
+                )
+              })}
+            </div>
+          ) : null}
+          {!apiError && !hasSeparateVehicleResponses && selectedApiResponse !== null ? (
             <pre className="optimize-response-json">{apiResponseText}</pre>
           ) : null}
         </section>

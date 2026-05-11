@@ -29,6 +29,20 @@
 
 .optimize-response-space-selector {
   margin-top: 0.85rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.optimize-response-selector-label {
+  margin: 0;
+  color: #184282;
+  font: 700 0.82rem/1.2 'Outfit', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.optimize-response-vehicle-tabs,
+.optimize-response-space-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 0.55rem;
