@@ -8,8 +8,8 @@ interface LoadingSpaceViewer2DProps {
 }
 
 const COLORS = [
-  '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
-  '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788'
+  '#FF6B6B', '#d4a849', '#c4ce37', '#FFA07A', '#98D8C8',
+  '#986ff7', '#ce8fce', '#2c8383', '#9ef1a9', '#093950'
 ]
 
 type ViewType = 'top' | 'side' | 'front'
@@ -81,6 +81,16 @@ export function LoadingSpaceViewer2D({ loadingSpace, selectedStopId }: LoadingSp
   )
 
   const viewDimensions = getViewDimensions()
+  const coordinateChart = useMemo(() => {
+    switch (view) {
+      case 'top':
+        return { yAxisLabel: 'Z (Length)', xAxisLabel: 'X (Width)', yAxisKey: 'Z', xAxisKey: 'X' }
+      case 'side':
+        return { xAxisLabel: 'Z (Length)', yAxisLabel: 'Y (Height)', xAxisKey: 'Z', yAxisKey: 'Y' }
+      case 'front':
+        return { xAxisLabel: 'X (Width)', yAxisLabel: 'Y (Height)', xAxisKey: 'X', yAxisKey: 'Y' }
+    }
+  }, [view])
 
   return (
     <div className="lsv2d-root">
@@ -131,46 +141,76 @@ export function LoadingSpaceViewer2D({ loadingSpace, selectedStopId }: LoadingSp
         </div>
       </div>
 
-      <div className="lsv2d-canvas-wrap">
-        <div className="lsv2d-center">
-          <div
-            className="lsv2d-container"
-            style={{
-              width: `${viewDimensions.width * zoom}px`,
-              height: `${viewDimensions.height * zoom}px`,
-            }}
-          >
-            {loadsToRender.map((load, loadIndex) =>
-              load.placement.map((placement, placementIndex) => {
-                const boxStyle = getBoxPosition(placement)
-                return (
-                  <div
-                    key={`${load.id}-${placementIndex}`}
-                    className="lsv2d-box"
-                    style={{
-                      left: `${boxStyle.left * zoom}px`,
-                      top: `${boxStyle.top * zoom}px`,
-                      width: `${boxStyle.width * zoom}px`,
-                      height: `${boxStyle.height * zoom}px`,
-                      backgroundColor: COLORS[loadIndex % COLORS.length],
-                      opacity: 0.8,
-                    }}
-                    title={`${load.name} - ${placement.width}×${placement.length}×${placement.height} cm`}
-                  >
-                    <span className="lsv2d-box-label">
-                      {load.name}
-                    </span>
-                  </div>
-                )
-              })
-            )}
+      <div className="lsv2d-canvas-shell">
+        <div className="lsv2d-canvas-wrap">
+          <div className="lsv2d-center">
+            <div
+              className="lsv2d-container"
+              style={{
+                width: `${viewDimensions.width * zoom}px`,
+                height: `${viewDimensions.height * zoom}px`,
+              }}
+            >
+              {loadsToRender.map((load, loadIndex) =>
+                load.placement.map((placement, placementIndex) => {
+                  const boxStyle = getBoxPosition(placement)
+                  return (
+                    <div
+                      key={`${load.id}-${placementIndex}`}
+                      className="lsv2d-box"
+                      style={{
+                        left: `${boxStyle.left * zoom}px`,
+                        top: `${boxStyle.top * zoom}px`,
+                        width: `${boxStyle.width * zoom}px`,
+                        height: `${boxStyle.height * zoom}px`,
+                        backgroundColor: COLORS[loadIndex % COLORS.length],
+                        opacity: 0.8,
+                      }}
+                      title={`${load.name} - ${placement.width}×${placement.length}×${placement.height} cm`}
+                    >
+                      <span className="lsv2d-box-label">
+                        {load.name}
+                      </span>
+                    </div>
+                  )
+                })
+              )}
 
-            <div className="lsv2d-dimensions">
-              {view === 'top' && `${part.width} × ${part.length} cm`}
-              {view === 'side' && `${part.length} × ${part.height} cm`}
-              {view === 'front' && `${part.width} × ${part.height} cm`}
+              <div className="lsv2d-dimensions">
+                {view === 'top' && `${part.width} × ${part.length} cm`}
+                {view === 'side' && `${part.length} × ${part.height} cm`}
+                {view === 'front' && `${part.width} × ${part.height} cm`}
+              </div>
             </div>
           </div>
+        </div>
+
+        <div className="lsv2d-coordinate-chart" aria-hidden="true">
+          <svg
+            className="lsv2d-coordinate-svg"
+            viewBox="0 0 170 95"
+            role="presentation"
+          >
+            <line x1="34" y1="75" x2="34" y2="20" className="lsv2d-coordinate-axis" />
+            <line x1="34" y1="75" x2="89" y2="75" className="lsv2d-coordinate-axis" />
+
+            <circle cx="34" cy="20" r="10" className="lsv2d-coordinate-node" />
+            <circle cx="89" cy="75" r="10" className="lsv2d-coordinate-node" />
+
+            <text x="34" y="24" textAnchor="middle" className="lsv2d-coordinate-node-text">
+              {coordinateChart.yAxisKey}
+            </text>
+            <text x="89" y="79" textAnchor="middle" className="lsv2d-coordinate-node-text">
+              {coordinateChart.xAxisKey}
+            </text>
+
+            <text x="16" y="4" className="lsv2d-coordinate-text">
+              {coordinateChart.yAxisLabel}
+            </text>
+            <text x="110" y="77" className="lsv2d-coordinate-text">
+              {coordinateChart.xAxisLabel}
+            </text>
+          </svg>
         </div>
       </div>
 

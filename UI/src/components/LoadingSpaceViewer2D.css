@@ -51,15 +51,61 @@
 }
 
 .lsv2d-canvas-wrap {
+  height: 100%;
   overflow: auto;
   background: #f4f8ff;
   padding: 1rem;
 }
 
+.lsv2d-canvas-shell {
+  position: relative;
+  min-height: 0;
+}
+
 .lsv2d-center {
+  position: relative;
   min-height: 100%;
   display: grid;
   place-items: center;
+}
+
+.lsv2d-coordinate-chart {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.9rem;
+  width: 160px;
+  height: 95px;
+  pointer-events: none;
+  opacity: 0.88;
+  filter: drop-shadow(0 1px 2px rgba(13, 38, 84, 0.35));
+  z-index: 2;
+}
+
+.lsv2d-coordinate-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.lsv2d-coordinate-axis {
+  stroke: rgba(42, 45, 51, 0.452);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}
+
+.lsv2d-coordinate-node {
+  fill: rgba(245, 248, 255, 0.96);
+  stroke: rgba(42, 45, 51, 0.452);
+  stroke-width: 1.5;
+}
+
+.lsv2d-coordinate-node-text {
+  fill: rgba(43, 63, 98, 0.75);
+  font: 700 0.6rem/1 'Space Grotesk', sans-serif;
+}
+
+.lsv2d-coordinate-text {
+  fill: rgba(43, 63, 98, 0.75);
+  font: 700 0.56rem/1 'Space Grotesk', sans-serif;
 }
 
 .lsv2d-container {
@@ -118,5 +164,12 @@
   .lsv2d-toolbar {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .lsv2d-coordinate-chart {
+    width: 136px;
+    height: 84px;
+    top: 0.6rem;
+    right: 0.5rem;
   }
 }

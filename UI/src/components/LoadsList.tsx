@@ -7,8 +7,8 @@ interface LoadsListProps {
 }
 
 const COLORS = [
-  '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
-  '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788'
+  '#FF6B6B', '#d4a849', '#c4ce37', '#FFA07A', '#98D8C8',
+  '#986ff7', '#ce8fce', '#2c8383', '#9ef1a9', '#093950'
 ]
 
 export function LoadsList({ loads, title = 'Loaded Items' }: LoadsListProps) {
