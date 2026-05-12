@@ -127,6 +127,43 @@ const pickBestStopSummary = (part: LoadingSpacePart | null): Summary => {
   return Object.keys(bestSummary).length > 0 ? bestSummary : part.summary ?? {}
 }
 
+const buildLoadSignature = (load: LoadItem): string => {
+  const placementSignature = load.placement
+    .map(
+      (placement) =>
+        `${placement.position.x},${placement.position.y},${placement.position.z}:${placement.width},${placement.length},${placement.height}`,
+    )
+    .sort()
+    .join('|')
+
+  return [
+    load.name,
+    load.width,
+    load.length,
+    load.height,
+    load.weight,
+    load.quantity,
+    load.priority,
+    load.allowToRotate ? 1 : 0,
+    String(load.stacking),
+    placementSignature,
+  ].join('::')
+}
+
+const dedupeLoads = (loads: LoadItem[]): LoadItem[] => {
+  const seen = new Set<string>()
+  const uniqueLoads: LoadItem[] = []
+
+  for (const load of loads) {
+    const signature = buildLoadSignature(load)
+    if (seen.has(signature)) continue
+    seen.add(signature)
+    uniqueLoads.push(load)
+  }
+
+  return uniqueLoads
+}
+
 const toPlacement = (value: unknown): LoadPlacement | null => { //Converts cargo placement.
   if (!isObject(value) || !isObject(value.position)) return null
   return {
@@ -328,14 +365,14 @@ function OptimizeResponse() {
     if (!part) return []
 
     if (hasStops && effectiveSelectedStopId !== undefined) {
-      return part.stops?.find((s) => s.id === effectiveSelectedStopId)?.loads ?? []
+      return dedupeLoads(part.stops?.find((s) => s.id === effectiveSelectedStopId)?.loads ?? [])
     }
 
     if (hasStops) {
-      return part.stops?.flatMap((s) => s.loads) ?? []
+      return dedupeLoads(part.stops?.flatMap((s) => s.loads) ?? [])
     }
 
-    return part.loads ?? []
+    return dedupeLoads(part.loads ?? [])
   }, [effectiveSelectedStopId, hasStops, part])
 
   const selectedStopName = useMemo(() => {
