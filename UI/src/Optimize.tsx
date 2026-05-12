@@ -41,9 +41,15 @@ type GmproVisit = {
   }
 }
 
+type GmproTransition = {
+  travelDuration?: string
+  routePolyline?: Record<string, unknown>
+}
+
 type GmproRoute = {
   vehicleLabel?: string
   visits?: GmproVisit[]
+  transitions?: GmproTransition[]
 }
 
 type GmproPayload = {
@@ -55,11 +61,14 @@ type RouteStep = {
   shipmentLabel: string
   action: 'Pickup' | 'Delivery'
   matchedLoadName: string | null
+  locationLabel: string
+  isFirstInLocation: boolean
 }
 
 type RouteChart = {
   vehicleLabel: string
   steps: RouteStep[]
+  uniqueLocationCount: number
 }
 
 type StopRef = {
@@ -131,6 +140,31 @@ const resolveVisitAction = (visit: GmproVisit): 'Pickup' | 'Delivery' => {
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const isZeroTravelDuration = (value: unknown) => {
+  if (typeof value === 'number') return value === 0
+  if (typeof value !== 'string') return false
+  return value.trim() === '0s' || value.trim() === '0'
+}
+
+const isEmptyRoutePolyline = (value: unknown) => {
+  if (!isObject(value)) return false
+  const keys = Object.keys(value)
+  if (keys.length === 0) return true
+  if (keys.length === 1 && keys[0] === 'points') {
+    const points = value.points
+    return typeof points !== 'string' || points.trim() === ''
+  }
+  return false
+}
+
+const isSameLocationTransition = (transition: GmproTransition | undefined) => {
+  if (!transition) return false
+  return (
+    isZeroTravelDuration(transition.travelDuration) &&
+    isEmptyRoutePolyline(transition.routePolyline)
+  )
+}
 
 const buildGoodloadingPayloads = (
   validLoads: ReturnType<typeof useLoadsContext>['loads'],
@@ -349,8 +383,17 @@ function Optimize() {
           route.visits.length > 0,
       )
       .map((route) => {
+        const transitions = Array.isArray(route.transitions) ? route.transitions : []
+        let locationNumber = 1
+
         const steps = (route.visits ?? [])  
           .map((visit, index) => {
+            const isFirstInLocation =
+              index === 0 || !isSameLocationTransition(transitions[index])
+            if (index > 0 && isFirstInLocation) {
+              locationNumber += 1
+            }
+
             const shipmentLabel = typeof visit.shipmentLabel === 'string' ? visit.shipmentLabel.trim() : ''
             if (!shipmentLabel) return null
 
@@ -362,13 +405,18 @@ function Optimize() {
               shipmentLabel,
               action,
               matchedLoadName: matched ? shipmentLabel : null,
+              locationLabel: `Location ${locationNumber}`,
+              isFirstInLocation,
             }
           })
           .filter((step): step is RouteStep => step !== null)
 
+        const uniqueLocationCount = new Set(steps.map((step) => step.locationLabel)).size
+
         return {
           vehicleLabel: route.vehicleLabel!,
           steps,
+          uniqueLocationCount,
         }
       })
       .filter((chart) => chart.steps.length > 0)
@@ -732,8 +780,7 @@ function Optimize() {
             <p>{routeCharts.length} routes</p>
           </div>
           <p className="optimize-response-note">
-            Sequence is generated from GMPRO route visits. Shipment label is matched with load name
-            from CSV (doNumber).
+            Sequence is generated from GMPRO response.
           </p>
           {routeCharts.length === 0 ? (
             <p className="optimize-response-placeholder">
@@ -748,7 +795,7 @@ function Optimize() {
                 >
                   <header className="optimize-sequence-head">
                     <h3>{chart.vehicleLabel}</h3>
-                    <p>{chart.steps.length} visits</p>
+                    <p>{chart.uniqueLocationCount} locations · {chart.steps.length} visits</p>
                   </header>
                   <div className="optimize-sequence-steps">
                     {chart.steps.map((step) => (
@@ -764,6 +811,7 @@ function Optimize() {
                           {step.action}
                         </span>
                         <span className="optimize-sequence-shipment">{step.shipmentLabel}</span>
+                        <span className="optimize-sequence-location">{step.locationLabel}</span>
                         <span
                           className={
                             step.matchedLoadName
