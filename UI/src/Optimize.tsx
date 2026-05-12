@@ -41,9 +41,15 @@ type GmproVisit = {
   }
 }
 
+type GmproTransition = {
+  travelDuration?: string
+  routePolyline?: Record<string, unknown>
+}
+
 type GmproRoute = {
   vehicleLabel?: string
   visits?: GmproVisit[]
+  transitions?: GmproTransition[]
 }
 
 type GmproPayload = {
@@ -55,11 +61,14 @@ type RouteStep = {
   shipmentLabel: string
   action: 'Pickup' | 'Delivery'
   matchedLoadName: string | null
+  locationLabel: string
+  isFirstInLocation: boolean
 }
 
 type RouteChart = {
   vehicleLabel: string
   steps: RouteStep[]
+  uniqueLocationCount: number
 }
 
 type StopRef = {
@@ -132,6 +141,46 @@ const resolveVisitAction = (visit: GmproVisit): 'Pickup' | 'Delivery' => {
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
+const isZeroTravelDuration = (value: unknown) => {
+  if (typeof value === 'number') return value === 0
+  if (typeof value !== 'string') return false
+  return value.trim() === '0s' || value.trim() === '0'
+}
+
+const isEmptyRoutePolyline = (value: unknown) => {
+  if (!isObject(value)) return false
+  const keys = Object.keys(value)
+  if (keys.length === 0) return true
+  if (keys.length === 1 && keys[0] === 'points') {
+    const points = value.points
+    return typeof points !== 'string' || points.trim() === ''
+  }
+  return false
+}
+
+const isSameLocationTransition = (transition: GmproTransition | undefined) => {
+  if (!transition) return false
+  return (
+    isZeroTravelDuration(transition.travelDuration) &&
+    isEmptyRoutePolyline(transition.routePolyline)
+  )
+}
+
+const buildVisitLocationNumbers = (
+  visits: GmproVisit[],
+  transitions: GmproTransition[] | undefined,
+) => {
+  const routeTransitions = Array.isArray(transitions) ? transitions : []
+  let locationNumber = 1
+
+  return visits.map((_, index) => {
+    if (index > 0 && !isSameLocationTransition(routeTransitions[index])) {
+      locationNumber += 1
+    }
+    return locationNumber
+  })
+}
+
 const buildGoodloadingPayloads = (
   validLoads: ReturnType<typeof useLoadsContext>['loads'],
   usedVehicles: GmproUsedVehicle[],
@@ -160,38 +209,38 @@ const buildGoodloadingPayloads = (
 
       const shipmentStops = new Map<string, ShipmentStopMap>()
       const shipmentKeys = new Set<string>()
+      const locationNumbers = buildVisitLocationNumbers(visits, route.transitions)
+      const locationStops = new Map<number, StopRef>()
 
-      let stopId = 1
-      const stops = visits
-        .map((visit) => {
-          const shipmentLabel = typeof visit.shipmentLabel === 'string' ? visit.shipmentLabel.trim() : ''
-          if (!shipmentLabel) return null
+      visits.forEach((visit, index) => {
+        const shipmentLabel = typeof visit.shipmentLabel === 'string' ? visit.shipmentLabel.trim() : ''
+        if (!shipmentLabel) return
 
-          const action = resolveVisitAction(visit)
-          const stop: StopRef = {
-            id: stopId,
-            name: `${action} ${shipmentLabel}`,
-          }
-          stopId += 1
+        const action = resolveVisitAction(visit)
+        const locationNumber = locationNumbers[index] ?? 1
+        const stop: StopRef = {
+          id: locationNumber,
+          name: `Location ${locationNumber}`,
+        }
 
-          const shipmentKey = normalizeText(shipmentLabel)
-          shipmentKeys.add(shipmentKey)
+        if (!locationStops.has(locationNumber)) {
+          locationStops.set(locationNumber, stop)
+        }
 
-          const previous = shipmentStops.get(shipmentKey) ?? {}
-          if (action === 'Pickup' && !previous.origin) {
-            previous.origin = stop
-          }
-          if (action === 'Delivery' && !previous.destination) {
-            previous.destination = stop
-          }
-          shipmentStops.set(shipmentKey, previous)
+        const shipmentKey = normalizeText(shipmentLabel)
+        shipmentKeys.add(shipmentKey)
 
-          return {
-            id: stop.id,
-            name: stop.name,
-          }
-        })
-        .filter((stop): stop is { id: number; name: string } => stop !== null)
+        const previous = shipmentStops.get(shipmentKey) ?? {}
+        if (action === 'Pickup' && !previous.origin) {
+          previous.origin = stop
+        }
+        if (action === 'Delivery' && !previous.destination) {
+          previous.destination = stop
+        }
+        shipmentStops.set(shipmentKey, previous)
+      })
+
+      const stops = Array.from(locationStops.values()).sort((a, b) => a.id - b.id)
 
       const loadsPayload = validLoads
         .map((load, index) => {
@@ -349,8 +398,16 @@ function Optimize() {
           route.visits.length > 0,
       )
       .map((route) => {
-        const steps = (route.visits ?? [])  
+        const visits = route.visits ?? []
+        const locationNumbers = buildVisitLocationNumbers(visits, route.transitions)
+
+        const steps = visits  
           .map((visit, index) => {
+            const locationNumber = locationNumbers[index] ?? 1
+            const previousLocationNumber = index > 0 ? locationNumbers[index - 1] : null
+            const isFirstInLocation =
+              index === 0 || locationNumber !== previousLocationNumber
+
             const shipmentLabel = typeof visit.shipmentLabel === 'string' ? visit.shipmentLabel.trim() : ''
             if (!shipmentLabel) return null
 
@@ -362,13 +419,18 @@ function Optimize() {
               shipmentLabel,
               action,
               matchedLoadName: matched ? shipmentLabel : null,
+              locationLabel: `Location ${locationNumber}`,
+              isFirstInLocation,
             }
           })
           .filter((step): step is RouteStep => step !== null)
 
+        const uniqueLocationCount = new Set(steps.map((step) => step.locationLabel)).size
+
         return {
           vehicleLabel: route.vehicleLabel!,
           steps,
+          uniqueLocationCount,
         }
       })
       .filter((chart) => chart.steps.length > 0)
@@ -732,8 +794,7 @@ function Optimize() {
             <p>{routeCharts.length} routes</p>
           </div>
           <p className="optimize-response-note">
-            Sequence is generated from GMPRO route visits. Shipment label is matched with load name
-            from CSV (doNumber).
+            Sequence is generated from GMPRO response.
           </p>
           {routeCharts.length === 0 ? (
             <p className="optimize-response-placeholder">
@@ -748,7 +809,7 @@ function Optimize() {
                 >
                   <header className="optimize-sequence-head">
                     <h3>{chart.vehicleLabel}</h3>
-                    <p>{chart.steps.length} visits</p>
+                    <p>{chart.uniqueLocationCount} locations · {chart.steps.length} visits</p>
                   </header>
                   <div className="optimize-sequence-steps">
                     {chart.steps.map((step) => (
@@ -764,6 +825,7 @@ function Optimize() {
                           {step.action}
                         </span>
                         <span className="optimize-sequence-shipment">{step.shipmentLabel}</span>
+                        <span className="optimize-sequence-location">{step.locationLabel}</span>
                         <span
                           className={
                             step.matchedLoadName

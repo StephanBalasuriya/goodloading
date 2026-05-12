@@ -490,6 +490,15 @@
   font: 700 0.82rem/1.25 'Space Grotesk', sans-serif;
 }
 
+.optimize-sequence-location {
+  border-radius: 999px;
+  border: 1px solid rgba(17, 67, 146, 0.24);
+  background: #eef5ff;
+  color: #144387;
+  padding: 0.17rem 0.5rem;
+  font: 700 0.72rem/1 'Space Grotesk', sans-serif;
+}
+
 .optimize-sequence-match {
   border-radius: 999px;
   padding: 0.17rem 0.5rem;
