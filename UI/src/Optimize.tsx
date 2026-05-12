@@ -166,6 +166,21 @@ const isSameLocationTransition = (transition: GmproTransition | undefined) => {
   )
 }
 
+const buildVisitLocationNumbers = (
+  visits: GmproVisit[],
+  transitions: GmproTransition[] | undefined,
+) => {
+  const routeTransitions = Array.isArray(transitions) ? transitions : []
+  let locationNumber = 1
+
+  return visits.map((_, index) => {
+    if (index > 0 && !isSameLocationTransition(routeTransitions[index])) {
+      locationNumber += 1
+    }
+    return locationNumber
+  })
+}
+
 const buildGoodloadingPayloads = (
   validLoads: ReturnType<typeof useLoadsContext>['loads'],
   usedVehicles: GmproUsedVehicle[],
@@ -194,38 +209,38 @@ const buildGoodloadingPayloads = (
 
       const shipmentStops = new Map<string, ShipmentStopMap>()
       const shipmentKeys = new Set<string>()
+      const locationNumbers = buildVisitLocationNumbers(visits, route.transitions)
+      const locationStops = new Map<number, StopRef>()
 
-      let stopId = 1
-      const stops = visits
-        .map((visit) => {
-          const shipmentLabel = typeof visit.shipmentLabel === 'string' ? visit.shipmentLabel.trim() : ''
-          if (!shipmentLabel) return null
+      visits.forEach((visit, index) => {
+        const shipmentLabel = typeof visit.shipmentLabel === 'string' ? visit.shipmentLabel.trim() : ''
+        if (!shipmentLabel) return
 
-          const action = resolveVisitAction(visit)
-          const stop: StopRef = {
-            id: stopId,
-            name: `${action} ${shipmentLabel}`,
-          }
-          stopId += 1
+        const action = resolveVisitAction(visit)
+        const locationNumber = locationNumbers[index] ?? 1
+        const stop: StopRef = {
+          id: locationNumber,
+          name: `Location ${locationNumber}`,
+        }
 
-          const shipmentKey = normalizeText(shipmentLabel)
-          shipmentKeys.add(shipmentKey)
+        if (!locationStops.has(locationNumber)) {
+          locationStops.set(locationNumber, stop)
+        }
 
-          const previous = shipmentStops.get(shipmentKey) ?? {}
-          if (action === 'Pickup' && !previous.origin) {
-            previous.origin = stop
-          }
-          if (action === 'Delivery' && !previous.destination) {
-            previous.destination = stop
-          }
-          shipmentStops.set(shipmentKey, previous)
+        const shipmentKey = normalizeText(shipmentLabel)
+        shipmentKeys.add(shipmentKey)
 
-          return {
-            id: stop.id,
-            name: stop.name,
-          }
-        })
-        .filter((stop): stop is { id: number; name: string } => stop !== null)
+        const previous = shipmentStops.get(shipmentKey) ?? {}
+        if (action === 'Pickup' && !previous.origin) {
+          previous.origin = stop
+        }
+        if (action === 'Delivery' && !previous.destination) {
+          previous.destination = stop
+        }
+        shipmentStops.set(shipmentKey, previous)
+      })
+
+      const stops = Array.from(locationStops.values()).sort((a, b) => a.id - b.id)
 
       const loadsPayload = validLoads
         .map((load, index) => {
@@ -383,16 +398,15 @@ function Optimize() {
           route.visits.length > 0,
       )
       .map((route) => {
-        const transitions = Array.isArray(route.transitions) ? route.transitions : []
-        let locationNumber = 1
+        const visits = route.visits ?? []
+        const locationNumbers = buildVisitLocationNumbers(visits, route.transitions)
 
-        const steps = (route.visits ?? [])  
+        const steps = visits  
           .map((visit, index) => {
+            const locationNumber = locationNumbers[index] ?? 1
+            const previousLocationNumber = index > 0 ? locationNumbers[index - 1] : null
             const isFirstInLocation =
-              index === 0 || !isSameLocationTransition(transitions[index])
-            if (index > 0 && isFirstInLocation) {
-              locationNumber += 1
-            }
+              index === 0 || locationNumber !== previousLocationNumber
 
             const shipmentLabel = typeof visit.shipmentLabel === 'string' ? visit.shipmentLabel.trim() : ''
             if (!shipmentLabel) return null
