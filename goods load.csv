@@ -1,3 +1,6 @@
 donumber,length,height,width,weight,quantity,stack,max_stack_weight,arrange_on_floor
-1,100,150,200,1000,2,TRUE,500,FALSE
-2,150,200,200,1500,3,TRUE,1000,TRUE
+1,50,50,50,10,2,FALSE,,FALSE
+2,75,60,45,15,3,TRUE,15,TRUE
+3,75,70,65,10,5,FALSE,,FALSE
+4,50,60,70,25,4,TRUE,25,TRUE
+5,75,50,25,30,3,TRUE,30,FALSE

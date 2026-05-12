@@ -72,6 +72,41 @@ type ShipmentStopMap = {
   destination?: StopRef
 }
 
+type GoodloadingPayload = {
+  name: string
+  note: string
+  loads: Record<string, unknown>[]
+  loadingSpaces: Array<{
+    quantity: number
+    name: string
+    type: string
+    parts: Array<{
+      length: number
+      width: number
+      height: number
+      limit: number
+    }>
+    stops?: Array<{
+      id: number
+      name: string
+    }>
+  }>
+  options: {
+    allowOverweight: boolean
+    unit: string
+    keepLoadsTogether: boolean
+    newAlgorithm: boolean
+    loadingOrder: string
+    multiStops: boolean
+    arrangeOptimally: boolean
+  }
+}
+
+type GoodloadingPayloadPerVehicle = {
+  vehicleLabel: string
+  payload: GoodloadingPayload
+}
+
 const normalizeText = (value: string) => value.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
 
 const parseAmount = (value: unknown) => {
@@ -97,7 +132,7 @@ const resolveVisitAction = (visit: GmproVisit): 'Pickup' | 'Delivery' => {
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-const buildGoodloadingPayload = (
+const buildGoodloadingPayloads = (
   validLoads: ReturnType<typeof useLoadsContext>['loads'],
   usedVehicles: GmproUsedVehicle[],
   gmproPayload: GmproPayload | null,
@@ -113,10 +148,8 @@ const buildGoodloadingPayload = (
 
   const specsByLabel = new Map(usedVehicles.map((vehicle) => [vehicle.gmpro_vehicle_label, vehicle]))
 
-  const shipmentStops = new Map<string, ShipmentStopMap>()
-
-  const loadingSpaces = detailedRoutes
-    .map((route, routeIndex) => {
+  return detailedRoutes
+    .map((route, routeIndex): GoodloadingPayloadPerVehicle | null => {
       const label = route.vehicleLabel!
       const visits = route.visits ?? []
       const vehicleSpec = specsByLabel.get(label)
@@ -124,6 +157,9 @@ const buildGoodloadingPayload = (
       if (!vehicleSpec) {
         return null
       }
+
+      const shipmentStops = new Map<string, ShipmentStopMap>()
+      const shipmentKeys = new Set<string>()
 
       let stopId = 1
       const stops = visits
@@ -139,6 +175,8 @@ const buildGoodloadingPayload = (
           stopId += 1
 
           const shipmentKey = normalizeText(shipmentLabel)
+          shipmentKeys.add(shipmentKey)
+
           const previous = shipmentStops.get(shipmentKey) ?? {}
           if (action === 'Pickup' && !previous.origin) {
             previous.origin = stop
@@ -155,84 +193,88 @@ const buildGoodloadingPayload = (
         })
         .filter((stop): stop is { id: number; name: string } => stop !== null)
 
+      const loadsPayload = validLoads
+        .map((load, index) => {
+          const shipmentKey = normalizeText(load.name)
+          if (!shipmentKeys.has(shipmentKey)) return null
+
+          const mappedLoad: Record<string, unknown> = {
+            id: load.id || index + 1,
+            quantity: Math.max(1, Math.floor(load.quantity || 1)),
+            name: load.name.trim(),
+            length: Math.max(0, load.length),
+            width: Math.max(0, load.width),
+            height: Math.max(0, load.height),
+            weight: Math.max(0, load.weight),
+            priority: 0,
+            stacking: load.stack,
+            allowToRotate: true,
+          }
+
+          if (load.stack) {
+            mappedLoad.alongFloor = load.arrange_on_floor
+            if (load.max_stack_weight > 0) {
+              mappedLoad.maxWeightOnTop = load.max_stack_weight
+            }
+          }
+
+          const mappedStops = shipmentStops.get(shipmentKey)
+          if (mappedStops?.origin) {
+            mappedLoad.origin = {
+              id: mappedStops.origin.id,
+              name: mappedStops.origin.name,
+            }
+          }
+          if (mappedStops?.destination) {
+            mappedLoad.destination = {
+              id: mappedStops.destination.id,
+              name: mappedStops.destination.name,
+            }
+          }
+
+          return mappedLoad
+        })
+        .filter((load): load is Record<string, unknown> => load !== null)
+
+      const hasMultiStops = loadsPayload.some(
+        (load) => isObject(load.origin) && isObject(load.destination),
+      )
+
       return {
-        quantity: 1,
-        name: label,
-        type: 'vehicle',
-        parts: [
-          {
-            length: vehicleSpec.length_cm,
-            width: vehicleSpec.width_cm,
-            height: vehicleSpec.height_cm,
-            limit: vehicleSpec.max_weight_kg,
+        vehicleLabel: label,
+        payload: {
+          name: `Generated from GMPRO Response - ${label}`,
+          note: `Auto-generated from GMPRO route ${routeIndex + 1} and planner loads`,
+          loads: loadsPayload,
+          loadingSpaces: [
+            {
+              quantity: 1,
+              name: label,
+              type: 'vehicle',
+              parts: [
+                {
+                  length: vehicleSpec.length_cm,
+                  width: vehicleSpec.width_cm,
+                  height: vehicleSpec.height_cm,
+                  limit: vehicleSpec.max_weight_kg,
+                },
+              ],
+              ...(stops.length > 0 ? { stops } : {}),
+            },
+          ],
+          options: {
+            allowOverweight: false,
+            unit: 'cm',
+            keepLoadsTogether: false,
+            newAlgorithm: true,
+            loadingOrder: 'default',
+            multiStops: hasMultiStops,
+            arrangeOptimally: false,
           },
-        ],
-        ...(stops.length > 0 ? { stops } : {}),
-        _routeOrder: routeIndex,
+        },
       }
     })
-    .filter((space): space is NonNullable<typeof space> => space !== null)
-    .sort((a, b) => a._routeOrder - b._routeOrder)
-    .map(({ _routeOrder, ...space }) => space)
-
-  const loadsPayload = validLoads.map((load, index) => {
-    const mappedLoad: Record<string, unknown> = {
-      id: load.id || index + 1,
-      quantity: Math.max(1, Math.floor(load.quantity || 1)),
-      name: load.name.trim(),
-      length: Math.max(0, load.length),
-      width: Math.max(0, load.width),
-      height: Math.max(0, load.height),
-      weight: Math.max(0, load.weight),
-      priority: 0,
-      stacking: load.stack,
-      allowToRotate: true,
-    }
-
-    if (load.stack) {
-      mappedLoad.alongFloor = load.arrange_on_floor
-      if (load.max_stack_weight > 0) {
-        mappedLoad.maxWeightOnTop = load.max_stack_weight
-      }
-    }
-
-    const shipmentKey = normalizeText(load.name)
-    const stops = shipmentStops.get(shipmentKey)
-    if (stops?.origin) {
-      mappedLoad.origin = {
-        id: stops.origin.id,
-        name: stops.origin.name,
-      }
-    }
-    if (stops?.destination) {
-      mappedLoad.destination = {
-        id: stops.destination.id,
-        name: stops.destination.name,
-      }
-    }
-
-    return mappedLoad
-  })
-
-  const hasMultiStops = loadsPayload.some(
-    (load) => isObject(load.origin) && isObject(load.destination),
-  )
-
-  return {
-    name: 'Generated from GMPRO Response',
-    note: 'Auto-generated from GMPRO routes and planner loads',
-    loads: loadsPayload,
-    loadingSpaces,
-    options: {
-      allowOverweight: false,
-      unit: 'cm',
-      keepLoadsTogether: false,
-      newAlgorithm: true,
-      loadingOrder: 'default',
-      multiStops: hasMultiStops,
-      arrangeOptimally: false,
-    },
-  }
+    .filter((payload): payload is GoodloadingPayloadPerVehicle => payload !== null)
 }
 
 const formatApiResult = (value: unknown) => {
@@ -332,15 +374,12 @@ function Optimize() {
       .filter((chart) => chart.steps.length > 0)
   }, [gmproPayload, validLoads])
 
-  const generatedGoodloadingPayload = useMemo(
-    () => buildGoodloadingPayload(validLoads, usedVehicles, gmproPayload),
+  const generatedGoodloadingPayloads = useMemo(
+    () => buildGoodloadingPayloads(validLoads, usedVehicles, gmproPayload),
     [validLoads, usedVehicles, gmproPayload],
   )
 
-  const generatedGoodloadingPayloadText = useMemo(
-    () => formatApiResult(generatedGoodloadingPayload),
-    [generatedGoodloadingPayload],
-  )
+  const hasGeneratedVehiclePayloads = generatedGoodloadingPayloads.length > 0
 
   const fetchUsedVehicles = useCallback(async () => {
     setIsLoadingUsedVehicles(true)
@@ -398,36 +437,54 @@ function Optimize() {
     setIsSendingToApi(true)
 
     try {
-      const response = await fetch(API_HANDLE_CALCULATE_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(generatedGoodloadingPayload),
-      })
-
-      const rawBody = await response.text()
-      let parsedBody: unknown = null
-      if (rawBody.trim() !== '') {
-        try {
-          parsedBody = JSON.parse(rawBody) as unknown
-        } catch {
-          parsedBody = rawBody
-        }
+      if (generatedGoodloadingPayloads.length === 0) {
+        throw new Error('No per-vehicle payload available to send.')
       }
 
-      if (!response.ok) {
-        const detail =
-          parsedBody && isObject(parsedBody) && 'detail' in parsedBody
-            ? String((parsedBody as { detail?: unknown }).detail)
-            : `Request failed with status ${response.status}.`
-        throw new Error(detail)
+      const results = await Promise.all(
+        generatedGoodloadingPayloads.map(async (generated) => {
+          const response = await fetch(API_HANDLE_CALCULATE_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(generated.payload),
+          })
+
+          const rawBody = await response.text()
+          let parsedBody: unknown = null
+          if (rawBody.trim() !== '') {
+            try {
+              parsedBody = JSON.parse(rawBody) as unknown
+            } catch {
+              parsedBody = rawBody
+            }
+          }
+
+          if (!response.ok) {
+            const detail =
+              parsedBody && isObject(parsedBody) && 'detail' in parsedBody
+                ? String((parsedBody as { detail?: unknown }).detail)
+                : `Request failed with status ${response.status}.`
+            throw new Error(`[${generated.vehicleLabel}] ${detail}`)
+          }
+
+          return {
+            vehicleLabel: generated.vehicleLabel,
+            response: parsedBody,
+          }
+        }),
+      )
+
+      // Send all per-vehicle responses separately to the response page
+      const finalResponse = {
+        vehicleResponses: results,
       }
 
       navigate('/optimize-response', {
         state: {
           apiError: null,
-          apiResponse: parsedBody,
+          apiResponse: finalResponse,
         },
       })
     } catch (error) {
@@ -441,7 +498,7 @@ function Optimize() {
     } finally {
       setIsSendingToApi(false)
     }
-  }, [generatedGoodloadingPayload, navigate])
+  }, [generatedGoodloadingPayloads, navigate])
 
 
   useEffect(() => {
@@ -725,8 +782,19 @@ function Optimize() {
           )}
 
           <div className="optimize-generated-json-block">
-            <h3>Generated Goodloading Input JSON</h3>
-            <pre className="optimize-response-json">{generatedGoodloadingPayloadText}</pre>
+            <h3>Generated Goodloading Input JSONs (Per Vehicle)</h3>
+            {!hasGeneratedVehiclePayloads ? (
+              <p className="optimize-response-placeholder">
+                No per-vehicle payload generated yet. Make sure GMPRO routes and used vehicles are available.
+              </p>
+            ) : (
+              generatedGoodloadingPayloads.map((generated) => (
+                <div key={generated.vehicleLabel} className="optimize-generated-json-item">
+                  <h4>{generated.vehicleLabel}</h4>
+                  <pre className="optimize-response-json">{formatApiResult(generated.payload)}</pre>
+                </div>
+              ))
+            )}
           </div>
         </section>
 
@@ -739,7 +807,7 @@ function Optimize() {
                 onClick={() => {
                   void sendPayloadToApiHandle()
                 }}
-                disabled={isSendingToApi || !hasUploadData}
+                disabled={isSendingToApi || !hasUploadData || !hasGeneratedVehiclePayloads}
               >
                 {isSendingToApi ? 'Sending...' : 'Upload & Optimize'}
               </button>

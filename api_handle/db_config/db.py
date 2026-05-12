@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
-import pg8000
+import psycopg2
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -24,11 +24,11 @@ def _db_settings() -> dict:
 def _sqlalchemy_database_url() -> str:
 	explicit_url = os.getenv("DATABASE_URL")
 	if explicit_url:
-		return explicit_url.replace("postgresql://", "postgresql+pg8000://", 1)
+		return explicit_url
 
 	settings = _db_settings()
 	return (
-		"postgresql+pg8000://"
+		"postgresql+psycopg2://"
 		f"{settings['user']}:{settings['password']}"
 		f"@{settings['host']}:{settings['port']}/{settings['dbname']}"
 	)

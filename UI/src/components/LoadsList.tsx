@@ -7,8 +7,8 @@ interface LoadsListProps {
 }
 
 const COLORS = [
-  '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
-  '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788'
+  '#FF6B6B', '#d4a849', '#c4ce37', '#FFA07A', '#98D8C8',
+  '#986ff7', '#ce8fce', '#2c8383', '#9ef1a9', '#093950'
 ]
 
 export function LoadsList({ loads, title = 'Loaded Items' }: LoadsListProps) {
@@ -26,7 +26,7 @@ export function LoadsList({ loads, title = 'Loaded Items' }: LoadsListProps) {
       <h3>{title}</h3>
       <div className="loads-list-stack">
         {loads.map((load, index) => (
-          <div key={load.id} className="loads-list-card">
+          <div key={`load-${load.id}-${index}`} className="loads-list-card">
             <div className="loads-list-head">
               <div className="loads-list-name">
                 <span
@@ -53,8 +53,8 @@ export function LoadsList({ loads, title = 'Loaded Items' }: LoadsListProps) {
               <div className="loads-list-positions">
                 <p>Positions:</p>
                 <div className="loads-list-position-chips">
-                  {load.placement.slice(0, 3).map((p, i) => (
-                    <span key={i} className="loads-list-position-chip">
+                  {load.placement.slice(0, 3).map((p, placementIdx) => (
+                    <span key={`pos-${load.id}-${index}-${placementIdx}`} className="loads-list-position-chip">
                       ({p.position.x}, {p.position.y}, {p.position.z})
                     </span>
                   ))}
