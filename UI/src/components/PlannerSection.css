@@ -109,7 +109,8 @@
 	color: #17468d;
 }
 
-.loads-table td input {
+.loads-table td input,
+.loads-table td select {
 	width: 100%;
 	border-radius: 9px;
 	border: 1px solid rgba(17, 67, 146, 0.2);
@@ -119,7 +120,8 @@
 	background: #fbfdff;
 }
 
-.stack-cell-disabled input {
+.stack-cell-disabled input,
+.stack-cell-disabled select {
 	filter: blur(1.4px);
 	opacity: 0.58;
 	cursor: not-allowed;

@@ -14,6 +14,17 @@ const toVolumeM3 = (lengthCm: number, widthCm: number, heightCm: number) =>
 const formatNumber = (value: number, maximumFractionDigits = 2) =>
   value.toLocaleString(undefined, { maximumFractionDigits })
 
+const LOAD_TYPE_BOX = 0
+const LOAD_TYPE_BARREL = 1
+const LOAD_TYPE_PIPE = 2
+
+const formatLoadType = (value: number) => {
+  if (value === LOAD_TYPE_BARREL) return 'barrel'
+  if (value === LOAD_TYPE_PIPE) return 'pipe'
+  if (value === LOAD_TYPE_BOX) return 'box'
+  return `box`
+}
+
 type GmproUsedVehicle = {
   gmpro_vehicle_label: string
   gmpro_vehicle_type: string
@@ -254,10 +265,12 @@ const buildGoodloadingPayloads = (
             length: Math.max(0, load.length),
             width: Math.max(0, load.width),
             height: Math.max(0, load.height),
+            diameter: Math.max(0, load.diameter),
+            loadType: load.load_type,
             weight: Math.max(0, load.weight),
             priority: 0,
             stacking: load.stack,
-            allowToRotate: true,
+            allowToRotate: load.rotate_freely,
           }
 
           if (load.stack) {
@@ -671,11 +684,14 @@ function Optimize() {
               <thead>
                 <tr>
                   <th>Load Name</th>
+                  <th>Load Type</th>
                   <th>Length (cm)</th>
                   <th>Width (cm)</th>
                   <th>Height (cm)</th>
+                  <th>Diameter (cm)</th>
                   <th>Weight (kg)</th>
                   <th>Qty</th>
+                  <th>Rotate Freely</th>
                   <th>Stack</th>
                   <th>Max Stack Weight (kg)</th>
                   <th>Arrange On Floor</th>
@@ -687,11 +703,14 @@ function Optimize() {
                   validLoads.map((load) => (
                     <tr key={load.id}>
                       <td>{load.name}</td>
+                      <td>{formatLoadType(load.load_type)}</td>
                       <td>{formatNumber(load.length)}</td>
                       <td>{formatNumber(load.width)}</td>
                       <td>{formatNumber(load.height)}</td>
+                      <td>{load.load_type === LOAD_TYPE_BOX ? '-' : formatNumber(load.diameter)}</td>
                       <td>{formatNumber(load.weight)}</td>
                       <td>{formatNumber(load.quantity, 0)}</td>
+                      <td>{load.rotate_freely ? 'Yes' : 'No'}</td>
                       <td>{load.stack ? 'Yes' : 'No'}</td>
                       <td>{load.stack ? formatNumber(load.max_stack_weight) : '-'}</td>
                       <td>{load.stack ? (load.arrange_on_floor ? 'Yes' : 'No') : '-'}</td>
@@ -700,7 +719,7 @@ function Optimize() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={9} className="optimize-empty-row">
+                    <td colSpan={12} className="optimize-empty-row">
                       No loads uploaded yet.
                     </td>
                   </tr>
