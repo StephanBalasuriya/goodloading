@@ -262,15 +262,29 @@ const buildGoodloadingPayloads = (
             id: load.id || index + 1,
             quantity: Math.max(1, Math.floor(load.quantity || 1)),
             name: load.name.trim(),
-            length: Math.max(0, load.length),
-            width: Math.max(0, load.width),
-            height: Math.max(0, load.height),
-            diameter: Math.max(0, load.diameter),
             loadType: load.load_type,
             weight: Math.max(0, load.weight),
             priority: 0,
             stacking: load.stack,
-            allowToRotate: load.rotate_freely,
+            rotateFreely: load.rotate_freely,
+            allowToRotate: true,
+          }
+
+          if (load.load_type === LOAD_TYPE_BOX) {
+            mappedLoad.length = Math.max(0, load.length)
+            mappedLoad.width = Math.max(0, load.width)
+            mappedLoad.height = Math.max(0, load.height)
+          } else if (load.load_type === LOAD_TYPE_PIPE) {
+            mappedLoad.length = Math.max(0, load.length)
+            mappedLoad.diameter = Math.max(0, load.diameter)
+          } else if (load.load_type === LOAD_TYPE_BARREL) {
+            mappedLoad.height = Math.max(0, load.height)
+            mappedLoad.diameter = Math.max(0, load.diameter)
+          } else {
+            mappedLoad.length = Math.max(0, load.length)
+            mappedLoad.width = Math.max(0, load.width)
+            mappedLoad.height = Math.max(0, load.height)
+            mappedLoad.diameter = Math.max(0, load.diameter)
           }
 
           if (load.stack) {
