@@ -33,9 +33,32 @@
   transform: translateY(-1px);
 }
 
+.sidebar-link-active {
+  background: linear-gradient(120deg, #4d95fb, #6db2ff);
+  box-shadow: 0 10px 24px rgba(77, 149, 251, 0.34);
+}
+
 @media (max-width: 980px) {
   .sidebar {
     position: static;
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    padding: 0.5rem;
+    border-radius: 12px;
+  }
+
+  .sidebar-link {
+    padding: 0.6rem 0.72rem;
+    font-size: 0.9rem;
+    box-shadow: none;
+  }
+
+  .sidebar-link-active {
+    background: linear-gradient(120deg, #6aa8ff, #8fc9ff);
+    box-shadow: none;
   }
 }

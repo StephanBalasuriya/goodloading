@@ -1,15 +1,15 @@
-import { Link } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import './Sidebar.css'
 
 function Sidebar() {
   return (
     <aside className="sidebar" aria-label="Primary navigation">
-      <Link to="/" className="sidebar-link">
+      <NavLink to="/" end className={({ isActive }) => `sidebar-link${isActive ? ' sidebar-link-active' : ''}`}>
         Home
-      </Link>
-      <Link to="/optimize" className="sidebar-link">
+      </NavLink>
+      <NavLink to="/optimize" className={({ isActive }) => `sidebar-link${isActive ? ' sidebar-link-active' : ''}`}>
         Optimize
-      </Link>
+      </NavLink>
     </aside>
   )
 }
