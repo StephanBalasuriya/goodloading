@@ -1,0 +1,2240 @@
+{
+  "loadingSpaces": [
+    {
+      "id": 1,
+      "name": "vehicle_Light Van1",
+      "stops": [
+        {
+          "id": 1,
+          "name": "Location 1"
+        },
+        {
+          "id": 2,
+          "name": "Location 2"
+        },
+        {
+          "id": 3,
+          "name": "Location 3"
+        },
+        {
+          "id": 4,
+          "name": "Location 4"
+        },
+        {
+          "id": 5,
+          "name": "Location 5"
+        },
+        {
+          "id": 6,
+          "name": "Location 6"
+        },
+        {
+          "id": 7,
+          "name": "Location 7"
+        },
+        {
+          "id": 8,
+          "name": "Location 8"
+        }
+      ],
+      "parts": [
+        {
+          "height": 200,
+          "length": 500,
+          "width": 200,
+          "limit": 800,
+          "loads": [],
+          "stops": [
+            {
+              "name": "Location 1",
+              "id": 1,
+              "loads": [
+                {
+                  "id": 1778839500080,
+                  "allowToRotate": true,
+                  "stacking": true,
+                  "name": "5",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 3,
+                  "width": 75,
+                  "length": 25,
+                  "height": 50,
+                  "weight": 30,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 8,
+                    "name": "Location 8"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "maxWeightOnTop": 30,
+                  "boxesBelowAllowed": [],
+                  "color": 9684093,
+                  "placement": [
+                    {
+                      "height": 50,
+                      "length": 25,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                      }
+                    },
+                    {
+                      "height": 50,
+                      "length": 25,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 0
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 25,
+                      "width": 50,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 0
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500078,
+                  "allowToRotate": true,
+                  "stacking": false,
+                  "name": "3",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 5,
+                  "width": 75,
+                  "length": 65,
+                  "height": 70,
+                  "weight": 10,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 7,
+                    "name": "Location 7"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "boxesBelowAllowed": [],
+                  "color": 15843890,
+                  "placement": [
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 90
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 90
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 155
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500076,
+                  "allowToRotate": true,
+                  "stacking": false,
+                  "name": "1",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 2,
+                  "width": 50,
+                  "length": 50,
+                  "height": 50,
+                  "weight": 10,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 4,
+                    "name": "Location 4"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "boxesBelowAllowed": [],
+                  "color": 6989903,
+                  "placement": [
+                    {
+                      "height": 50,
+                      "length": 50,
+                      "width": 50,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 50,
+                      "length": 50,
+                      "width": 50,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 75
+                      }
+                    }
+                  ]
+                }
+              ],
+              "unloads": [],
+              "summary": {
+                "freeLdm": 280,
+                "occupiedLdm": 220,
+                "freeSurface": 6562500,
+                "occupiedSurface": 3437500,
+                "freeVolume": 177625000000,
+                "occupiedVolume": 22375000000,
+                "percentLdmUsd": 44,
+                "percentVolumeUsd": 11.1875,
+                "totalLoadsWeight": 160
+              },
+              "axis": []
+            },
+            {
+              "name": "Location 2",
+              "id": 2,
+              "loads": [
+                {
+                  "id": 1778839500080,
+                  "allowToRotate": true,
+                  "stacking": true,
+                  "name": "5",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 3,
+                  "width": 75,
+                  "length": 25,
+                  "height": 50,
+                  "weight": 30,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 8,
+                    "name": "Location 8"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "maxWeightOnTop": 30,
+                  "boxesBelowAllowed": [],
+                  "color": 9684093,
+                  "placement": [
+                    {
+                      "height": 50,
+                      "length": 25,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                      }
+                    },
+                    {
+                      "height": 50,
+                      "length": 25,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 0
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 25,
+                      "width": 50,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 0
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500078,
+                  "allowToRotate": true,
+                  "stacking": false,
+                  "name": "3",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 5,
+                  "width": 75,
+                  "length": 65,
+                  "height": 70,
+                  "weight": 10,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 7,
+                    "name": "Location 7"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "boxesBelowAllowed": [],
+                  "color": 15843890,
+                  "placement": [
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 90
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 90
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 155
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500076,
+                  "allowToRotate": true,
+                  "stacking": false,
+                  "name": "1",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 2,
+                  "width": 50,
+                  "length": 50,
+                  "height": 50,
+                  "weight": 10,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 4,
+                    "name": "Location 4"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "boxesBelowAllowed": [],
+                  "color": 6989903,
+                  "placement": [
+                    {
+                      "height": 50,
+                      "length": 50,
+                      "width": 50,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 50,
+                      "length": 50,
+                      "width": 50,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 75
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500077,
+                  "allowToRotate": true,
+                  "stacking": true,
+                  "name": "2",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 3,
+                  "width": 45,
+                  "length": 75,
+                  "height": 60,
+                  "weight": 15,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 2,
+                    "name": "Location 2"
+                  },
+                  "destination": {
+                    "id": 5,
+                    "name": "Location 5"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": true,
+                  "maxWeightOnTop": 15,
+                  "boxesBelowAllowed": [],
+                  "color": 7184107,
+                  "placement": [
+                    {
+                      "height": 60,
+                      "length": 75,
+                      "width": 45,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 125
+                      }
+                    },
+                    {
+                      "height": 60,
+                      "length": 45,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 155
+                      }
+                    },
+                    {
+                      "height": 60,
+                      "length": 45,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 200
+                      }
+                    }
+                  ]
+                }
+              ],
+              "unloads": [],
+              "summary": {
+                "freeLdm": 255,
+                "occupiedLdm": 245,
+                "freeSurface": 5550000,
+                "occupiedSurface": 4450000,
+                "freeVolume": 171550000000,
+                "occupiedVolume": 28450000000,
+                "percentLdmUsd": 49,
+                "percentVolumeUsd": 14.224999999999998,
+                "totalLoadsWeight": 205
+              },
+              "axis": []
+            },
+            {
+              "name": "Location 3",
+              "id": 3,
+              "loads": [
+                {
+                  "id": 1778839500080,
+                  "allowToRotate": true,
+                  "stacking": true,
+                  "name": "5",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 3,
+                  "width": 75,
+                  "length": 25,
+                  "height": 50,
+                  "weight": 30,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 8,
+                    "name": "Location 8"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "maxWeightOnTop": 30,
+                  "boxesBelowAllowed": [],
+                  "color": 9684093,
+                  "placement": [
+                    {
+                      "height": 50,
+                      "length": 25,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                      }
+                    },
+                    {
+                      "height": 50,
+                      "length": 25,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 0
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 25,
+                      "width": 50,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 0
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500078,
+                  "allowToRotate": true,
+                  "stacking": false,
+                  "name": "3",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 5,
+                  "width": 75,
+                  "length": 65,
+                  "height": 70,
+                  "weight": 10,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 7,
+                    "name": "Location 7"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "boxesBelowAllowed": [],
+                  "color": 15843890,
+                  "placement": [
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 90
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 90
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 155
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500076,
+                  "allowToRotate": true,
+                  "stacking": false,
+                  "name": "1",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 2,
+                  "width": 50,
+                  "length": 50,
+                  "height": 50,
+                  "weight": 10,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 4,
+                    "name": "Location 4"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "boxesBelowAllowed": [],
+                  "color": 6989903,
+                  "placement": [
+                    {
+                      "height": 50,
+                      "length": 50,
+                      "width": 50,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 50,
+                      "length": 50,
+                      "width": 50,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 75
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500077,
+                  "allowToRotate": true,
+                  "stacking": true,
+                  "name": "2",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 3,
+                  "width": 45,
+                  "length": 75,
+                  "height": 60,
+                  "weight": 15,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 2,
+                    "name": "Location 2"
+                  },
+                  "destination": {
+                    "id": 5,
+                    "name": "Location 5"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": true,
+                  "maxWeightOnTop": 15,
+                  "boxesBelowAllowed": [],
+                  "color": 7184107,
+                  "placement": [
+                    {
+                      "height": 60,
+                      "length": 75,
+                      "width": 45,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 125
+                      }
+                    },
+                    {
+                      "height": 60,
+                      "length": 45,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 155
+                      }
+                    },
+                    {
+                      "height": 60,
+                      "length": 45,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 200
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500079,
+                  "allowToRotate": true,
+                  "stacking": true,
+                  "name": "4",
+                  "loadType": 1,
+                  "priority": 0,
+                  "quantity": 4,
+                  "width": 100,
+                  "length": 100,
+                  "height": 75,
+                  "weight": 25,
+                  "diameter": 100,
+                  "origin": {
+                    "id": 3,
+                    "name": "Location 3"
+                  },
+                  "destination": {
+                    "id": 6,
+                    "name": "Location 6"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": true,
+                  "maxWeightOnTop": 25,
+                  "boxesBelowAllowed": [],
+                  "color": 13386021,
+                  "placement": [
+                    {
+                      "height": 75,
+                      "length": 100,
+                      "width": 100,
+                      "diameter": 100,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 245
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 100,
+                      "width": 100,
+                      "diameter": 100,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 100,
+                        "y": 0,
+                        "z": 245
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 100,
+                      "width": 100,
+                      "diameter": 100,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 345
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 100,
+                      "width": 100,
+                      "diameter": 100,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 100,
+                        "y": 0,
+                        "z": 345
+                      }
+                    }
+                  ]
+                }
+              ],
+              "unloads": [],
+              "summary": {
+                "freeLdm": 55,
+                "occupiedLdm": 445,
+                "freeSurface": 1550000,
+                "occupiedSurface": 8450000,
+                "freeVolume": 141550000000,
+                "occupiedVolume": 58450000000,
+                "percentLdmUsd": 89,
+                "percentVolumeUsd": 29.225,
+                "totalLoadsWeight": 305
+              },
+              "axis": []
+            },
+            {
+              "name": "Location 4",
+              "id": 4,
+              "loads": [
+                {
+                  "id": 1778839500080,
+                  "allowToRotate": true,
+                  "stacking": true,
+                  "name": "5",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 3,
+                  "width": 75,
+                  "length": 25,
+                  "height": 50,
+                  "weight": 30,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 8,
+                    "name": "Location 8"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "maxWeightOnTop": 30,
+                  "boxesBelowAllowed": [],
+                  "color": 9684093,
+                  "placement": [
+                    {
+                      "height": 50,
+                      "length": 25,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                      }
+                    },
+                    {
+                      "height": 50,
+                      "length": 25,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 0
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 25,
+                      "width": 50,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 0
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500078,
+                  "allowToRotate": true,
+                  "stacking": false,
+                  "name": "3",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 5,
+                  "width": 75,
+                  "length": 65,
+                  "height": 70,
+                  "weight": 10,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 7,
+                    "name": "Location 7"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "boxesBelowAllowed": [],
+                  "color": 15843890,
+                  "placement": [
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 90
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 90
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 155
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500077,
+                  "allowToRotate": true,
+                  "stacking": true,
+                  "name": "2",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 3,
+                  "width": 45,
+                  "length": 75,
+                  "height": 60,
+                  "weight": 15,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 2,
+                    "name": "Location 2"
+                  },
+                  "destination": {
+                    "id": 5,
+                    "name": "Location 5"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": true,
+                  "maxWeightOnTop": 15,
+                  "boxesBelowAllowed": [],
+                  "color": 7184107,
+                  "placement": [
+                    {
+                      "height": 60,
+                      "length": 75,
+                      "width": 45,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 125
+                      }
+                    },
+                    {
+                      "height": 60,
+                      "length": 45,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 155
+                      }
+                    },
+                    {
+                      "height": 60,
+                      "length": 45,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 200
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500079,
+                  "allowToRotate": true,
+                  "stacking": true,
+                  "name": "4",
+                  "loadType": 1,
+                  "priority": 0,
+                  "quantity": 4,
+                  "width": 100,
+                  "length": 100,
+                  "height": 75,
+                  "weight": 25,
+                  "diameter": 100,
+                  "origin": {
+                    "id": 3,
+                    "name": "Location 3"
+                  },
+                  "destination": {
+                    "id": 6,
+                    "name": "Location 6"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": true,
+                  "maxWeightOnTop": 25,
+                  "boxesBelowAllowed": [],
+                  "color": 13386021,
+                  "placement": [
+                    {
+                      "height": 75,
+                      "length": 100,
+                      "width": 100,
+                      "diameter": 100,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 245
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 100,
+                      "width": 100,
+                      "diameter": 100,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 100,
+                        "y": 0,
+                        "z": 245
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 100,
+                      "width": 100,
+                      "diameter": 100,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 345
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 100,
+                      "width": 100,
+                      "diameter": 100,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 100,
+                        "y": 0,
+                        "z": 345
+                      }
+                    }
+                  ]
+                }
+              ],
+              "unloads": [
+                {
+                  "id": 1778839500076,
+                  "allowToRotate": true,
+                  "stacking": false,
+                  "name": "1",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 2,
+                  "width": 50,
+                  "length": 50,
+                  "height": 50,
+                  "weight": 10,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 4,
+                    "name": "Location 4"
+                  },
+                  "stopId": 4
+                }
+              ],
+              "summary": {
+                "freeLdm": 55,
+                "occupiedLdm": 445,
+                "freeSurface": 2050000,
+                "occupiedSurface": 7950000,
+                "freeVolume": 144050000000,
+                "occupiedVolume": 55950000000,
+                "percentLdmUsd": 89,
+                "percentVolumeUsd": 27.975,
+                "totalLoadsWeight": 285
+              },
+              "axis": []
+            },
+            {
+              "name": "Location 5",
+              "id": 5,
+              "loads": [
+                {
+                  "id": 1778839500080,
+                  "allowToRotate": true,
+                  "stacking": true,
+                  "name": "5",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 3,
+                  "width": 75,
+                  "length": 25,
+                  "height": 50,
+                  "weight": 30,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 8,
+                    "name": "Location 8"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "maxWeightOnTop": 30,
+                  "boxesBelowAllowed": [],
+                  "color": 9684093,
+                  "placement": [
+                    {
+                      "height": 50,
+                      "length": 25,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                      }
+                    },
+                    {
+                      "height": 50,
+                      "length": 25,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 0
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 25,
+                      "width": 50,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 0
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500078,
+                  "allowToRotate": true,
+                  "stacking": false,
+                  "name": "3",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 5,
+                  "width": 75,
+                  "length": 65,
+                  "height": 70,
+                  "weight": 10,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 7,
+                    "name": "Location 7"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "boxesBelowAllowed": [],
+                  "color": 15843890,
+                  "placement": [
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 90
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 90
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 155
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500079,
+                  "allowToRotate": true,
+                  "stacking": true,
+                  "name": "4",
+                  "loadType": 1,
+                  "priority": 0,
+                  "quantity": 4,
+                  "width": 100,
+                  "length": 100,
+                  "height": 75,
+                  "weight": 25,
+                  "diameter": 100,
+                  "origin": {
+                    "id": 3,
+                    "name": "Location 3"
+                  },
+                  "destination": {
+                    "id": 6,
+                    "name": "Location 6"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": true,
+                  "maxWeightOnTop": 25,
+                  "boxesBelowAllowed": [],
+                  "color": 13386021,
+                  "placement": [
+                    {
+                      "height": 75,
+                      "length": 100,
+                      "width": 100,
+                      "diameter": 100,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 245
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 100,
+                      "width": 100,
+                      "diameter": 100,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 100,
+                        "y": 0,
+                        "z": 245
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 100,
+                      "width": 100,
+                      "diameter": 100,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 345
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 100,
+                      "width": 100,
+                      "diameter": 100,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 100,
+                        "y": 0,
+                        "z": 345
+                      }
+                    }
+                  ]
+                }
+              ],
+              "unloads": [
+                {
+                  "id": 1778839500077,
+                  "allowToRotate": true,
+                  "stacking": null,
+                  "name": "2",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 3,
+                  "width": 75,
+                  "length": 45,
+                  "height": 60,
+                  "weight": 15,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 2,
+                    "name": "Location 2"
+                  },
+                  "destination": {
+                    "id": 5,
+                    "name": "Location 5"
+                  },
+                  "stopId": 5
+                }
+              ],
+              "summary": {
+                "freeLdm": 80,
+                "occupiedLdm": 420,
+                "freeSurface": 3062500,
+                "occupiedSurface": 6937500,
+                "freeVolume": 150125000000,
+                "occupiedVolume": 49875000000,
+                "percentLdmUsd": 84,
+                "percentVolumeUsd": 24.9375,
+                "totalLoadsWeight": 240
+              },
+              "axis": []
+            },
+            {
+              "name": "Location 6",
+              "id": 6,
+              "loads": [
+                {
+                  "id": 1778839500080,
+                  "allowToRotate": true,
+                  "stacking": true,
+                  "name": "5",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 3,
+                  "width": 75,
+                  "length": 25,
+                  "height": 50,
+                  "weight": 30,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 8,
+                    "name": "Location 8"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "maxWeightOnTop": 30,
+                  "boxesBelowAllowed": [],
+                  "color": 9684093,
+                  "placement": [
+                    {
+                      "height": 50,
+                      "length": 25,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                      }
+                    },
+                    {
+                      "height": 50,
+                      "length": 25,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 0
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 25,
+                      "width": 50,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 0
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": 1778839500078,
+                  "allowToRotate": true,
+                  "stacking": false,
+                  "name": "3",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 5,
+                  "width": 75,
+                  "length": 65,
+                  "height": 70,
+                  "weight": 10,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 7,
+                    "name": "Location 7"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "boxesBelowAllowed": [],
+                  "color": 15843890,
+                  "placement": [
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 25
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 90
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 90
+                      }
+                    },
+                    {
+                      "height": 70,
+                      "length": 65,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 155
+                      }
+                    }
+                  ]
+                }
+              ],
+              "unloads": [
+                {
+                  "id": 1778839500079,
+                  "allowToRotate": true,
+                  "stacking": null,
+                  "name": "4",
+                  "loadType": 1,
+                  "priority": 0,
+                  "quantity": 4,
+                  "width": 100,
+                  "length": 100,
+                  "height": 75,
+                  "weight": 25,
+                  "diameter": 100,
+                  "origin": {
+                    "id": 3,
+                    "name": "Location 3"
+                  },
+                  "destination": {
+                    "id": 6,
+                    "name": "Location 6"
+                  },
+                  "stopId": 6
+                }
+              ],
+              "summary": {
+                "freeLdm": 280,
+                "occupiedLdm": 220,
+                "freeSurface": 7062500,
+                "occupiedSurface": 2937500,
+                "freeVolume": 180125000000,
+                "occupiedVolume": 19875000000,
+                "percentLdmUsd": 44,
+                "percentVolumeUsd": 9.9375,
+                "totalLoadsWeight": 140
+              },
+              "axis": []
+            },
+            {
+              "name": "Location 7",
+              "id": 7,
+              "loads": [
+                {
+                  "id": 1778839500080,
+                  "allowToRotate": true,
+                  "stacking": true,
+                  "name": "5",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 3,
+                  "width": 75,
+                  "length": 25,
+                  "height": 50,
+                  "weight": 30,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 8,
+                    "name": "Location 8"
+                  },
+                  "pctSupport": 100,
+                  "alongFloor": false,
+                  "maxWeightOnTop": 30,
+                  "boxesBelowAllowed": [],
+                  "color": 9684093,
+                  "placement": [
+                    {
+                      "height": 50,
+                      "length": 25,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                      }
+                    },
+                    {
+                      "height": 50,
+                      "length": 25,
+                      "width": 75,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 75,
+                        "y": 0,
+                        "z": 0
+                      }
+                    },
+                    {
+                      "height": 75,
+                      "length": 25,
+                      "width": 50,
+                      "diameter": 0,
+                      "loadsPerAxis": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                      },
+                      "position": {
+                        "x": 150,
+                        "y": 0,
+                        "z": 0
+                      }
+                    }
+                  ]
+                }
+              ],
+              "unloads": [
+                {
+                  "id": 1778839500078,
+                  "allowToRotate": true,
+                  "stacking": false,
+                  "name": "3",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 5,
+                  "width": 75,
+                  "length": 65,
+                  "height": 70,
+                  "weight": 10,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 7,
+                    "name": "Location 7"
+                  },
+                  "stopId": 7
+                }
+              ],
+              "summary": {
+                "freeLdm": 475,
+                "occupiedLdm": 25,
+                "freeSurface": 9500000,
+                "occupiedSurface": 500000,
+                "freeVolume": 197187500000,
+                "occupiedVolume": 2812500000,
+                "percentLdmUsd": 5,
+                "percentVolumeUsd": 1.40625,
+                "totalLoadsWeight": 90
+              },
+              "axis": []
+            },
+            {
+              "name": "Location 8",
+              "id": 8,
+              "loads": [],
+              "unloads": [
+                {
+                  "id": 1778839500080,
+                  "allowToRotate": true,
+                  "stacking": null,
+                  "name": "5",
+                  "loadType": 0,
+                  "priority": 0,
+                  "quantity": 3,
+                  "width": 75,
+                  "length": 25,
+                  "height": 50,
+                  "weight": 30,
+                  "diameter": 0,
+                  "origin": {
+                    "id": 1,
+                    "name": "Location 1"
+                  },
+                  "destination": {
+                    "id": 8,
+                    "name": "Location 8"
+                  },
+                  "stopId": 8
+                }
+              ],
+              "summary": {
+                "freeLdm": 500,
+                "occupiedLdm": 0,
+                "freeSurface": 10000000,
+                "occupiedSurface": 0,
+                "freeVolume": 200000000000,
+                "occupiedVolume": 0,
+                "percentLdmUsd": 0,
+                "percentVolumeUsd": 0,
+                "totalLoadsWeight": 0
+              },
+              "axis": []
+            }
+          ],
+          "loadingSide": "back",
+          "summary": {
+            "freeLdm": 500,
+            "occupiedLdm": 0,
+            "freeSurface": 10000000,
+            "occupiedSurface": 0,
+            "freeVolume": 200000000000,
+            "occupiedVolume": 0,
+            "percentLdmUsd": 0,
+            "percentVolumeUsd": 0,
+            "totalLoadsWeight": 0
+          },
+          "axis": []
+        }
+      ],
+      "type": "vehicle"
+    }
+  ],
+  "notFittedLoads": [],
+  "options": {
+    "allowOverweight": false,
+    "unit": "cm",
+    "keepLoadsTogether": false,
+    "newAlgorithm": true,
+    "loadingOrder": "default",
+    "multiStops": true,
+    "arrangeOptimally": false,
+    "keepGroupsInGivenSpaces": false,
+    "isMagnetOn": false,
+    "includeSavedLoadingSpaces": false,
+    "additionOrder": true,
+    "userOrder": false,
+    "volumeOrder": false,
+    "weightOrder": false
+  },
+  "name": "Generated from GMPRO Response - vehicle_Light Van1",
+  "note": "Auto-generated from GMPRO route 1 and planner loads",
+  "_links": [
+    {
+      "rel": "preview",
+      "href": "https://app.goodloading.com/session?id=e43eaec3-cac7-4dd5-95b6-a507b48d46f8&pref=opt-names-opened"
+    }
+  ]
+}
