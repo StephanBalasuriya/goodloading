@@ -67,6 +67,10 @@
   background: #fff5e8;
 }
 
+.statistics-panel-card-types {
+  background: #eff8ff;
+}
+
 @media (max-width: 680px) {
   .statistics-panel-grid {
     grid-template-columns: 1fr;

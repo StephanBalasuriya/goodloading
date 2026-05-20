@@ -37,10 +37,10 @@ const normalizeLoadType = (value: unknown): LoadItem['load_type'] => {
 
 const sanitizeLoadByType = (load: LoadItem): LoadItem => {
   if (load.load_type === LOAD_TYPE_BARREL) {
-    return { ...load, length: 0, width: 0 }
+    return { ...load, length: 0, width: 0, rotate_freely: false }
   }
   if (load.load_type === LOAD_TYPE_PIPE) {
-    return { ...load, height: 0, width: 0 }
+    return { ...load, height: 0, width: 0, rotate_freely: false }
   }
   return { ...load, diameter: 0 }
 }
@@ -335,6 +335,7 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
                     <input
                       type="checkbox"
                       checked={load.rotate_freely}
+                      disabled={isBarrel || isPipe}
                       onChange={(event) => updateLoad(load.id, 'rotate_freely', event.target.checked)}
                     />
                   </td>

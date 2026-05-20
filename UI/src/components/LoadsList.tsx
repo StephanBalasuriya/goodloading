@@ -1,4 +1,5 @@
 import type { LoadItem } from './loadingTypes'
+import { LOAD_COLORS } from './loadColors'
 import './LoadsList.css'
 
 interface LoadsListProps {
@@ -6,10 +7,10 @@ interface LoadsListProps {
   title?: string
 }
 
-const COLORS = [
-  '#FF6B6B', '#d4a849', '#c4ce37', '#FFA07A', '#98D8C8',
-  '#986ff7', '#ce8fce', '#2c8383', '#9ef1a9', '#093950'
-]
+// const COLORS = [
+//   '#FF6B6B', '#d4a849', '#c4ce37', '#FFA07A', '#98D8C8',
+//   '#986ff7', '#ce8fce', '#2c8383', '#9ef1a9', '#093950'
+// ]
 
 export function LoadsList({ loads, title = 'Loaded Items' }: LoadsListProps) {
   if (loads.length === 0) {
@@ -31,7 +32,7 @@ export function LoadsList({ loads, title = 'Loaded Items' }: LoadsListProps) {
               <div className="loads-list-name">
                 <span
                   className="loads-list-dot"
-                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  style={{ backgroundColor: LOAD_COLORS[index % LOAD_COLORS.length] }}
                 />
                 {load.name}
               </div>

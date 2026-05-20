@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { LoadPlacement, LoadingSpace } from './loadingTypes'
+import { LOAD_COLORS } from './loadColors'
 import './LoadingSpaceViewer2D.css'
 
 interface LoadingSpaceViewer2DProps {
@@ -7,12 +8,27 @@ interface LoadingSpaceViewer2DProps {
   selectedStopId?: number
 }
 
-const COLORS = [
-  '#FF6B6B', '#d4a849', '#c4ce37', '#FFA07A', '#98D8C8',
-  '#986ff7', '#ce8fce', '#2c8383', '#9ef1a9', '#093950'
-]
+// const COLORS = [
+//   '#FF6B6B', '#d4a849', '#c4ce37', '#FFA07A', '#98D8C8',
+//   '#986ff7', '#ce8fce', '#2c8383', '#9ef1a9', '#093950'
+// ]
 
 type ViewType = 'top' | 'side' | 'front'
+
+const LOAD_TYPE_BOX = 0
+const LOAD_TYPE_BARREL = 1
+const LOAD_TYPE_PIPE = 2
+
+type LoadLike = {
+  id: number
+  name: string
+  width: number
+  length: number
+  height: number
+  diameter?: number
+  loadType?: number
+  placement: LoadPlacement[]
+}
 
 export function LoadingSpaceViewer2D({ loadingSpace, selectedStopId }: LoadingSpaceViewer2DProps) {
   const [view, setView] = useState<ViewType>('top')
@@ -73,6 +89,81 @@ export function LoadingSpaceViewer2D({ loadingSpace, selectedStopId }: LoadingSp
           height: height * scale,
         }
     }
+  }
+
+  const getPositive = (value: unknown) =>
+    typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0
+
+  const getEffectivePlacement = (load: LoadLike, placement: LoadPlacement) => {
+    const rawWidth = getPositive(placement.width) || getPositive(load.width)
+    const rawLength = getPositive(placement.length) || getPositive(load.length)
+    const rawHeight = getPositive(placement.height) || getPositive(load.height)
+    const rawDiameter =
+      getPositive(placement.diameter) || getPositive(load.diameter)
+
+    if (load.loadType === LOAD_TYPE_BARREL) {
+      const diameter = rawDiameter > 0 ? rawDiameter : Math.max(rawWidth, rawLength)
+      return {
+        width: diameter,
+        length: diameter,
+        height: rawHeight > 0 ? rawHeight : diameter,
+        diameter,
+      }
+    }
+
+    if (load.loadType === LOAD_TYPE_PIPE) {
+      const diameter = rawDiameter > 0 ? rawDiameter : Math.max(rawWidth, rawHeight)
+      return {
+        width: diameter,
+        length: rawLength > 0 ? rawLength : diameter,
+        height: diameter,
+        diameter,
+      }
+    }
+
+    return {
+      width: rawWidth,
+      length: rawLength,
+      height: rawHeight,
+      diameter: rawDiameter,
+    }
+  }
+
+  const getPlacementByView = (load: LoadLike, placement: LoadPlacement) => {
+    const normalized = getEffectivePlacement(load, placement)
+    const projectedPlacement: LoadPlacement = {
+      ...placement,
+      width: normalized.width,
+      length: normalized.length,
+      height: normalized.height,
+      diameter: normalized.diameter,
+    }
+
+    return {
+      style: getBoxPosition(projectedPlacement),
+      normalized,
+    }
+  }
+
+  const getLoadTypeLabel = (loadType: number | undefined) => {
+    if (loadType === LOAD_TYPE_BARREL) return 'Barrel'
+    if (loadType === LOAD_TYPE_PIPE) return 'Pipe'
+    return 'Box'
+  }
+
+  const formatLoadSize = (loadType: number | undefined, dimensions: {
+    width: number
+    length: number
+    height: number
+    diameter: number
+  }) => {
+    if (loadType === LOAD_TYPE_BARREL) {
+      return `H:${dimensions.height} D:${dimensions.diameter} cm`
+    }
+    if (loadType === LOAD_TYPE_PIPE) {
+      return `L:${dimensions.length} D:${dimensions.diameter} cm`
+    }
+    return `${dimensions.width}x${dimensions.length}x${dimensions.height} cm`
   }
 
   const totalBoxes = useMemo(
@@ -153,20 +244,32 @@ export function LoadingSpaceViewer2D({ loadingSpace, selectedStopId }: LoadingSp
             >
               {loadsToRender.map((load, loadIndex) =>
                 load.placement.map((placement, placementIndex) => {
-                  const boxStyle = getBoxPosition(placement)
+                  const { style: boxStyle, normalized } = getPlacementByView(load, placement)
+                  const loadTypeClassName =
+                    load.loadType === LOAD_TYPE_BARREL &&  view === 'top'
+                      ? 'lsv2d-box-barrel'
+                      : load.loadType === LOAD_TYPE_PIPE && view === 'front'
+                        ? 'lsv2d-box-pipe'
+                        : ''
+
                   return (
                     <div
                       key={`${load.id}-${placementIndex}`}
-                      className="lsv2d-box"
+                      className={`lsv2d-box ${loadTypeClassName}`.trim()}
                       style={{
                         left: `${boxStyle.left * zoom}px`,
                         top: `${boxStyle.top * zoom}px`,
                         width: `${boxStyle.width * zoom}px`,
                         height: `${boxStyle.height * zoom}px`,
-                        backgroundColor: COLORS[loadIndex % COLORS.length],
+                        backgroundColor: LOAD_COLORS[loadIndex % LOAD_COLORS.length],
                         opacity: 0.8,
                       }}
-                      title={`${load.name} - ${placement.width}×${placement.length}×${placement.height} cm`}
+                      title={`${load.name} (${getLoadTypeLabel(load.loadType)}) - ${formatLoadSize(load.loadType, {
+                        width: normalized.width,
+                        length: normalized.length,
+                        height: normalized.height,
+                        diameter: normalized.diameter,
+                      })}`}
                     >
                       <span className="lsv2d-box-label">
                         {load.name}
