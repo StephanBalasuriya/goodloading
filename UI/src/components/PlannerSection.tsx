@@ -250,7 +250,7 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
           <tbody>
             {loads.length === 0 && (
               <tr>
-                <td colSpan={showStackColumns ? 14 : 12} className="text-center">
+                <td colSpan={showStackColumns ? 14 : 12} className="text-center planner-empty-row">
                   No load rows added yet.
                 </td>
               </tr>
@@ -262,14 +262,14 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
               const isBox = load.load_type === LOAD_TYPE_BOX
               return (
                 <tr key={load.id}>
-                  <td>
+                  <td data-label="Name">
                     <input
                       value={load.name}
                       onChange={(event) => updateLoad(load.id, 'name', event.target.value)}
                       placeholder="Load name"
                     />
                   </td>
-                  <td>
+                  <td data-label="Load Type">
                     <select
                       value={load.load_type}
                       onChange={(event) => updateLoad(load.id, 'load_type', event.target.value)}
@@ -279,7 +279,7 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
                       <option value={LOAD_TYPE_PIPE}>pipe</option>
                     </select>
                   </td>
-                  <td className={isBarrel ? 'stack-cell-disabled' : ''}>
+                  <td data-label="Length (cm)" className={isBarrel ? 'stack-cell-disabled' : ''}>
                     <input
                       type="number"
                       min="0"
@@ -288,7 +288,7 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
                       onChange={(event) => updateLoad(load.id, 'length', event.target.value)}
                     />
                   </td>
-                  <td className={isPipe ? 'stack-cell-disabled' : ''}>
+                  <td data-label="Height (cm)" className={isPipe ? 'stack-cell-disabled' : ''}>
                     <input
                       type="number"
                       min="0"
@@ -297,7 +297,7 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
                       onChange={(event) => updateLoad(load.id, 'height', event.target.value)}
                     />
                   </td>
-                  <td className={isBarrel || isPipe ? 'stack-cell-disabled' : ''}>
+                  <td data-label="Width (cm)" className={isBarrel || isPipe ? 'stack-cell-disabled' : ''}>
                     <input
                       type="number"
                       min="0"
@@ -306,7 +306,7 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
                       onChange={(event) => updateLoad(load.id, 'width', event.target.value)}
                     />
                   </td>
-                  <td className={isBox ? 'stack-cell-disabled' : ''}>
+                  <td data-label="Diameter (cm)" className={isBox ? 'stack-cell-disabled' : ''}>
                     <input
                       type="number"
                       min="0"
@@ -315,7 +315,7 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
                       onChange={(event) => updateLoad(load.id, 'diameter', event.target.value)}
                     />
                   </td>
-                  <td>
+                  <td data-label="Weight (kg)">
                     <input
                       type="number"
                       min="0"
@@ -323,7 +323,7 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
                       onChange={(event) => updateLoad(load.id, 'weight', event.target.value)}
                     />
                   </td>
-                  <td>
+                  <td data-label="Quantity">
                     <input
                       type="number"
                       min="0"
@@ -331,7 +331,7 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
                       onChange={(event) => updateLoad(load.id, 'quantity', event.target.value)}
                     />
                   </td>
-                  <td>
+                  <td data-label="Rotate Freely" className="table-cell-checkbox">
                     <input
                       type="checkbox"
                       checked={load.rotate_freely}
@@ -339,7 +339,7 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
                       onChange={(event) => updateLoad(load.id, 'rotate_freely', event.target.checked)}
                     />
                   </td>
-                  <td>
+                  <td data-label="Stack" className="table-cell-checkbox">
                     <input
                       type="checkbox"
                       checked={load.stack}
@@ -348,7 +348,7 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
                   </td>
                   {showStackColumns ? (
                     <>
-                      <td className={!load.stack ? 'stack-cell-disabled' : ''}>
+                      <td data-label="Max Stack Weight" className={!load.stack ? 'stack-cell-disabled' : ''}>
                         <input
                           type="number"
                           min="0"
@@ -357,7 +357,7 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
                           onChange={(event) => updateLoad(load.id, 'max_stack_weight', event.target.value)}
                         />
                       </td>
-                      <td className={!load.stack ? 'stack-cell-disabled' : ''}>
+                      <td data-label="Arrange On Floor" className={`table-cell-checkbox ${!load.stack ? 'stack-cell-disabled' : ''}`}>
                         <input
                           type="checkbox"
                           checked={load.arrange_on_floor}
@@ -377,9 +377,8 @@ function PlannerSection({ id = 'start' }: PlannerSectionProps) {
                           }}
                         />
                       </td> */}
-
-                  <td className="row-total">{rowTotal.toFixed(2)} kg</td>
-                  <td>
+                  <td data-label="Total" className="row-total">{rowTotal.toFixed(2)} kg</td>
+                  <td data-label="Action" className="table-cell-action">
                     <button
                       type="button"
                       className="remove-btn"

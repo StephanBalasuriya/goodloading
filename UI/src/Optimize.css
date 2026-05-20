@@ -25,7 +25,7 @@
 
 .optimize-summary-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 0.9rem;
 }
 
@@ -204,6 +204,7 @@
   padding: 0.68rem 0.58rem;
   border-bottom: 1px solid rgba(17, 67, 146, 0.1);
   text-align: left;
+  word-break: break-word;
 }
 
 .optimize-panel .loads-table th {
@@ -248,6 +249,9 @@
 .optimize-sequence-head p {
   margin: 0;
   color: #4e6793;
+  font: 600 0.78rem/1.2 'Space Grotesk', sans-serif;
+}
+
 .optimize-response-visual {
   display: grid;
   gap: 1rem;
@@ -437,8 +441,6 @@
     grid-template-columns: 1fr;
   }
 }
-  font: 600 0.78rem/1.2 'Space Grotesk', sans-serif;
-}
 
 .optimize-sequence-steps {
   display: grid;
@@ -531,7 +533,7 @@
 
 @media (max-width: 980px) {
   .optimize-summary-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .optimize-panel-head {
@@ -541,5 +543,74 @@
 
   .optimize-send-btn {
     width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  .optimize-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .optimize-panel {
+    border-radius: 18px;
+    padding: 0.95rem;
+  }
+
+  .optimize-panel .table-wrap {
+    border: none;
+    overflow: visible;
+  }
+
+  .optimize-panel .loads-table {
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .optimize-panel .loads-table thead {
+    display: none;
+  }
+
+  .optimize-panel .loads-table tbody {
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .optimize-panel .loads-table tr {
+    display: grid;
+    gap: 0.46rem;
+    border: 1px solid rgba(17, 67, 146, 0.14);
+    border-radius: 14px;
+    background: #f8fbff;
+    padding: 0.7rem;
+  }
+
+  .optimize-panel .loads-table td {
+    display: grid;
+    grid-template-columns: minmax(112px, 44%) minmax(0, 1fr);
+    gap: 0.56rem;
+    align-items: center;
+    padding: 0;
+    border: 0;
+  }
+
+  .optimize-panel .loads-table td::before {
+    content: attr(data-label);
+    color: #1a4d96;
+    font: 700 0.74rem/1.2 'Space Grotesk', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .optimize-mobile-empty-row {
+    display: block;
+    text-align: center;
+    padding: 0.7rem;
+  }
+
+  .optimize-mobile-empty-row::before {
+    content: none;
   }
 }

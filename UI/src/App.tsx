@@ -5,13 +5,15 @@ import './App.css'
 
 function App() {
   return (
-    <>
+    <div className="app-shell">
       <HeaderBar />
       <div className="app-layout">
         <Sidebar />
-        <Outlet />
+        <div className="app-content">
+          <Outlet />
+        </div>
       </div>
-    </>
+    </div>
   )
 }
 
