@@ -1,122 +1,127 @@
 {
-  "name": "Generated from GMPRO Response",
-  "note": "Auto-generated from GMPRO routes and planner loads",
+  "name": "Generated from GMPRO Response - vehicle_Light Van1",
+  "note": "Auto-generated from GMPRO route 1 and planner loads",
   "loads": [
     {
-      "id": 1776752972045,
+      "id": 1778839490076,
       "quantity": 2,
-      "name": "shipment_1",
-      "length": 45,
-      "width": 60,
-      "height": 30,
+      "name": "1",
+      "loadType": 0,
       "weight": 10,
       "priority": 0,
-      "stacking": true,
+      "stacking": false,
+      "rotateFreely": true,
       "allowToRotate": true,
-      "alongFloor": false,
-      "maxWeightOnTop": 10,
-      "origin": {
-        "id": 2,
-        "name": "Pickup shipment_1"
-      },
-      "destination": {
-        "id": 7,
-        "name": "Delivery shipment_1"
-      }
-    },
-    {
-      "id": 1776752972046,
-      "quantity": 3,
-      "name": "shipment_2",
-      "length": 60,
-      "width": 60,
-      "height": 45,
-      "weight": 30,
-      "priority": 0,
-      "stacking": true,
-      "allowToRotate": true,
-      "alongFloor": true,
-      "maxWeightOnTop": 20,
-      "origin": {
-        "id": 4,
-        "name": "Pickup shipment_2"
-      },
-      "destination": {
-        "id": 8,
-        "name": "Delivery shipment_2"
-      }
-    },
-    {
-      "id": 1776752972047,
-      "quantity": 4,
-      "name": "shipment_3",
-      "length": 45,
-      "width": 45,
-      "height": 45,
-      "weight": 45,
-      "priority": 0,
-      "stacking": true,
-      "allowToRotate": true,
-      "alongFloor": false,
-      "maxWeightOnTop": 45,
+      "length": 50,
+      "width": 50,
+      "height": 50,
       "origin": {
         "id": 1,
-        "name": "Pickup shipment_3"
+        "name": "Location 1"
+      },
+      "destination": {
+        "id": 4,
+        "name": "Location 4"
+      }
+    },
+    {
+      "id": 1778839490077,
+      "quantity": 3,
+      "name": "2",
+      "loadType": 0,
+      "weight": 15,
+      "priority": 0,
+      "stacking": true,
+      "rotateFreely": false,
+      "allowToRotate": true,
+      "length": 75,
+      "width": 45,
+      "height": 60,
+      "alongFloor": true,
+      "maxWeightOnTop": 15,
+      "origin": {
+        "id": 2,
+        "name": "Location 2"
       },
       "destination": {
         "id": 5,
-        "name": "Delivery shipment_3"
+        "name": "Location 5"
       }
     },
     {
-      "id": 1776752972048,
+      "id": 1778839490078,
       "quantity": 5,
-      "name": "shipment_4",
-      "length": 60,
-      "width": 75,
-      "height": 60,
-      "weight": 45,
+      "name": "3",
+      "loadType": 0,
+      "weight": 10,
+      "priority": 0,
+      "stacking": false,
+      "rotateFreely": true,
+      "allowToRotate": true,
+      "length": 75,
+      "width": 65,
+      "height": 70,
+      "origin": {
+        "id": 1,
+        "name": "Location 1"
+      },
+      "destination": {
+        "id": 7,
+        "name": "Location 7"
+      }
+    },
+    {
+      "id": 1778839490079,
+      "quantity": 4,
+      "name": "4",
+      "loadType": 1,
+      "weight": 25,
       "priority": 0,
       "stacking": true,
+      "rotateFreely": false,
       "allowToRotate": true,
+      "height": 75,
+      "diameter": 100,
       "alongFloor": true,
-      "maxWeightOnTop": 30,
+      "maxWeightOnTop": 25,
       "origin": {
         "id": 3,
-        "name": "Pickup shipment_4"
+        "name": "Location 3"
       },
       "destination": {
         "id": 6,
-        "name": "Delivery shipment_4"
+        "name": "Location 6"
       }
     },
     {
-      "id": 1776752972049,
-      "quantity": 6,
-      "name": "shipment_5",
-      "length": 60,
-      "width": 45,
-      "height": 30,
+      "id": 1778839490080,
+      "quantity": 3,
+      "name": "5",
+      "loadType": 0,
       "weight": 30,
       "priority": 0,
       "stacking": true,
+      "rotateFreely": true,
       "allowToRotate": true,
+      "length": 75,
+      "width": 25,
+      "height": 50,
       "alongFloor": false,
-      "maxWeightOnTop": 15,
+      "maxWeightOnTop": 30,
       "origin": {
-        "id": 9,
-        "name": "Pickup shipment_5"
+        "id": 1,
+        "name": "Location 1"
       },
       "destination": {
-        "id": 10,
-        "name": "Delivery shipment_5"
+        "id": 8,
+        "name": "Location 8"
       }
     }
   ],
   "loadingSpaces": [
     {
       "quantity": 1,
-      "name": "vehicle_Light Van_1",
+      "name": "vehicle_Light Van1",
       "type": "vehicle",
       "parts": [
         {
@@ -129,58 +134,35 @@
       "stops": [
         {
           "id": 1,
-          "name": "Pickup shipment_3"
+          "name": "Location 1"
         },
         {
           "id": 2,
-          "name": "Pickup shipment_1"
+          "name": "Location 2"
         },
         {
           "id": 3,
-          "name": "Pickup shipment_4"
+          "name": "Location 3"
         },
         {
           "id": 4,
-          "name": "Pickup shipment_2"
+          "name": "Location 4"
         },
         {
           "id": 5,
-          "name": "Delivery shipment_3"
+          "name": "Location 5"
         },
         {
           "id": 6,
-          "name": "Delivery shipment_4"
+          "name": "Location 6"
         },
         {
           "id": 7,
-          "name": "Delivery shipment_1"
+          "name": "Location 7"
         },
         {
           "id": 8,
-          "name": "Delivery shipment_2"
-        }
-      ]
-    },
-    {
-      "quantity": 1,
-      "name": "vehicle_Light Van_2",
-      "type": "vehicle",
-      "parts": [
-        {
-          "length": 500,
-          "width": 200,
-          "height": 200,
-          "limit": 800
-        }
-      ],
-      "stops": [
-        {
-          "id": 9,
-          "name": "Pickup shipment_5"
-        },
-        {
-          "id": 10,
-          "name": "Delivery shipment_5"
+          "name": "Location 8"
         }
       ]
     }
@@ -195,4 +177,3 @@
     "arrangeOptimally": false
   }
 }
-    

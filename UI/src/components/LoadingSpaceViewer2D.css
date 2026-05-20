@@ -125,6 +125,15 @@
   cursor: pointer;
 }
 
+.lsv2d-box-barrel {
+  border-radius: 999px;
+}
+
+.lsv2d-box-pipe {
+  border-radius: 999px;
+  border-style: dashed;
+}
+
 .lsv2d-box-label {
   opacity: 0;
   padding: 0.1rem 0.2rem;

@@ -109,7 +109,8 @@
 	color: #17468d;
 }
 
-.loads-table td input {
+.loads-table td input:not([type='checkbox']),
+.loads-table td select {
 	width: 100%;
 	border-radius: 9px;
 	border: 1px solid rgba(17, 67, 146, 0.2);
@@ -119,7 +120,18 @@
 	background: #fbfdff;
 }
 
-.stack-cell-disabled input {
+.loads-table td input[type='checkbox'] {
+	width: 1rem;
+	height: 1rem;
+	accent-color: #1b5ecc;
+}
+
+.table-cell-checkbox {
+	text-align: center;
+}
+
+.stack-cell-disabled input,
+.stack-cell-disabled select {
 	filter: blur(1.4px);
 	opacity: 0.58;
 	cursor: not-allowed;
@@ -139,6 +151,12 @@
 	padding: 0.45rem 0.75rem;
 	font: 600 0.8rem/1 'Space Grotesk', sans-serif;
 	cursor: pointer;
+}
+
+.planner-empty-row {
+	text-align: center;
+	color: #4b628b;
+	font: 600 0.9rem/1.4 'Space Grotesk', sans-serif;
 }
 
 .card-grid {
@@ -256,6 +274,101 @@
 
 	.planner-head {
 		align-items: start;
+	}
+}
+
+@media (max-width: 840px) {
+	.loads-table {
+		min-width: 740px;
+	}
+}
+
+@media (max-width: 720px) {
+	.planner {
+		padding: 1rem;
+	}
+
+	.planner-total {
+		width: 100%;
+		text-align: center;
+	}
+
+	.planner-actions .btn,
+	.csv-upload {
+		width: 100%;
+		justify-content: center;
+	}
+
+	.table-wrap {
+		border: none;
+		overflow: visible;
+	}
+
+	.loads-table {
+		min-width: 0;
+		border-collapse: separate;
+		border-spacing: 0;
+	}
+
+	.loads-table thead {
+		display: none;
+	}
+
+	.loads-table tbody {
+		display: grid;
+		gap: 0.72rem;
+	}
+
+	.loads-table tr {
+		display: grid;
+		gap: 0.5rem;
+		padding: 0.72rem;
+		border-radius: 14px;
+		border: 1px solid rgba(17, 67, 146, 0.14);
+		background: #f8fbff;
+	}
+
+	.loads-table td {
+		display: grid;
+		grid-template-columns: minmax(110px, 42%) minmax(0, 1fr);
+		align-items: center;
+		gap: 0.58rem;
+		padding: 0;
+		border: 0;
+	}
+
+	.loads-table td::before {
+		content: attr(data-label);
+		color: #1a4d96;
+		font: 700 0.74rem/1.2 'Space Grotesk', sans-serif;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.planner-empty-row {
+		display: block;
+		padding: 0.7rem;
+	}
+
+	.planner-empty-row::before {
+		content: none;
+	}
+
+	.table-cell-checkbox {
+		grid-template-columns: minmax(110px, 42%) auto;
+		justify-content: start;
+	}
+
+	.table-cell-action {
+		grid-template-columns: 1fr;
+	}
+
+	.table-cell-action::before {
+		content: none;
+	}
+
+	.table-cell-action .remove-btn {
+		width: 100%;
 	}
 }
 

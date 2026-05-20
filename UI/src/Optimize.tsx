@@ -14,6 +14,17 @@ const toVolumeM3 = (lengthCm: number, widthCm: number, heightCm: number) =>
 const formatNumber = (value: number, maximumFractionDigits = 2) =>
   value.toLocaleString(undefined, { maximumFractionDigits })
 
+const LOAD_TYPE_BOX = 0
+const LOAD_TYPE_BARREL = 1
+const LOAD_TYPE_PIPE = 2
+
+const formatLoadType = (value: number) => {
+  if (value === LOAD_TYPE_BARREL) return 'barrel'
+  if (value === LOAD_TYPE_PIPE) return 'pipe'
+  if (value === LOAD_TYPE_BOX) return 'box'
+  return `box`
+}
+
 type GmproUsedVehicle = {
   gmpro_vehicle_label: string
   gmpro_vehicle_type: string
@@ -251,13 +262,29 @@ const buildGoodloadingPayloads = (
             id: load.id || index + 1,
             quantity: Math.max(1, Math.floor(load.quantity || 1)),
             name: load.name.trim(),
-            length: Math.max(0, load.length),
-            width: Math.max(0, load.width),
-            height: Math.max(0, load.height),
+            loadType: load.load_type,
             weight: Math.max(0, load.weight),
             priority: 0,
             stacking: load.stack,
+            rotateFreely: load.rotate_freely,
             allowToRotate: true,
+          }
+
+          if (load.load_type === LOAD_TYPE_BOX) {
+            mappedLoad.length = Math.max(0, load.length)
+            mappedLoad.width = Math.max(0, load.width)
+            mappedLoad.height = Math.max(0, load.height)
+          } else if (load.load_type === LOAD_TYPE_PIPE) {
+            mappedLoad.length = Math.max(0, load.length)
+            mappedLoad.diameter = Math.max(0, load.diameter)
+          } else if (load.load_type === LOAD_TYPE_BARREL) {
+            mappedLoad.height = Math.max(0, load.height)
+            mappedLoad.diameter = Math.max(0, load.diameter)
+          } else {
+            mappedLoad.length = Math.max(0, load.length)
+            mappedLoad.width = Math.max(0, load.width)
+            mappedLoad.height = Math.max(0, load.height)
+            mappedLoad.diameter = Math.max(0, load.diameter)
           }
 
           if (load.stack) {
@@ -671,11 +698,14 @@ function Optimize() {
               <thead>
                 <tr>
                   <th>Load Name</th>
+                  <th>Load Type</th>
                   <th>Length (cm)</th>
                   <th>Width (cm)</th>
                   <th>Height (cm)</th>
+                  <th>Diameter (cm)</th>
                   <th>Weight (kg)</th>
                   <th>Qty</th>
+                  <th>Rotate Freely</th>
                   <th>Stack</th>
                   <th>Max Stack Weight (kg)</th>
                   <th>Arrange On Floor</th>
@@ -686,21 +716,24 @@ function Optimize() {
                 {validLoads.length > 0 ? (
                   validLoads.map((load) => (
                     <tr key={load.id}>
-                      <td>{load.name}</td>
-                      <td>{formatNumber(load.length)}</td>
-                      <td>{formatNumber(load.width)}</td>
-                      <td>{formatNumber(load.height)}</td>
-                      <td>{formatNumber(load.weight)}</td>
-                      <td>{formatNumber(load.quantity, 0)}</td>
-                      <td>{load.stack ? 'Yes' : 'No'}</td>
-                      <td>{load.stack ? formatNumber(load.max_stack_weight) : '-'}</td>
-                      <td>{load.stack ? (load.arrange_on_floor ? 'Yes' : 'No') : '-'}</td>
+                      <td data-label="Load Name">{load.name}</td>
+                      <td data-label="Load Type">{formatLoadType(load.load_type)}</td>
+                      <td data-label="Length (cm)">{formatNumber(load.length)}</td>
+                      <td data-label="Width (cm)">{formatNumber(load.width)}</td>
+                      <td data-label="Height (cm)">{formatNumber(load.height)}</td>
+                      <td data-label="Diameter (cm)">{load.load_type === LOAD_TYPE_BOX ? '-' : formatNumber(load.diameter)}</td>
+                      <td data-label="Weight (kg)">{formatNumber(load.weight)}</td>
+                      <td data-label="Qty">{formatNumber(load.quantity, 0)}</td>
+                      <td data-label="Rotate Freely">{load.rotate_freely ? 'Yes' : 'No'}</td>
+                      <td data-label="Stack">{load.stack ? 'Yes' : 'No'}</td>
+                      <td data-label="Max Stack Weight (kg)">{load.stack ? formatNumber(load.max_stack_weight) : '-'}</td>
+                      <td data-label="Arrange On Floor">{load.stack ? (load.arrange_on_floor ? 'Yes' : 'No') : '-'}</td>
                       {/* <td>{load.destination}</td> */}
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={9} className="optimize-empty-row">
+                    <td colSpan={12} className="optimize-empty-row optimize-mobile-empty-row">
                       No loads uploaded yet.
                     </td>
                   </tr>
@@ -754,21 +787,21 @@ function Optimize() {
 
                     return (
                       <tr key={`${vehicle.type_id}-${vehicle.gmpro_vehicle_label}`}>
-                        <td>
+                        <td data-label="Vehicle Name">
                           <div className="optimize-vehicle-name">
                             <span>{vehicle.gmpro_vehicle_label}</span>
                             <span className="optimize-vehicle-subtitle">Type ID {vehicle.type_id}</span>
                           </div>
                         </td>
-                        <td>{vehicle.type_name}</td>
-                        <td>{formatNumber(vehicle.length_cm)}</td>
-                        <td>{formatNumber(vehicle.width_cm)}</td>
-                        <td>{formatNumber(vehicle.height_cm)}</td>
-                        <td>{formatNumber(vehicle.max_weight_kg)}</td>
+                        <td data-label="Vehicle Type">{vehicle.type_name}</td>
+                        <td data-label="Length (cm)">{formatNumber(vehicle.length_cm)}</td>
+                        <td data-label="Width (cm)">{formatNumber(vehicle.width_cm)}</td>
+                        <td data-label="Height (cm)">{formatNumber(vehicle.height_cm)}</td>
+                        <td data-label="Max Weight (kg)">{formatNumber(vehicle.max_weight_kg)}</td>
                         {/* <td>{formatNumber(vehicle.count, 0)}</td> */}
                         {/* <td>{formatNumber(vehicleVolume, 3)}</td> */}
-                        <td>{formatNumber(vehicle.max_cbm, 3)}</td>
-                        <td>
+                        <td data-label="Max CBM">{formatNumber(vehicle.max_cbm, 3)}</td>
+                        <td data-label="Status">
                           <span
                             className={
                               vehicle.is_active

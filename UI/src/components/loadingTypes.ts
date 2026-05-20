@@ -2,6 +2,7 @@ export type LoadPlacement = {
   height: number
   length: number
   width: number
+  diameter?: number
   loadsPerAxis: { x: number; y: number; z: number }
   position: { x: number; y: number; z: number }
 }
@@ -13,6 +14,8 @@ export type LoadItem = {
   width: number
   length: number
   height: number
+  diameter?: number
+  loadType?: number
   weight: number
   quantity: number
   priority: number
@@ -70,6 +73,8 @@ export type NotFittedLoad = {
   width: number
   length: number
   height: number
+  diameter?: number
+  loadType?: number
   weight: number
   quantity: number
 }

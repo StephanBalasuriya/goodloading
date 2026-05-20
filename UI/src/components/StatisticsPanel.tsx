@@ -1,10 +1,15 @@
-import type { Summary } from './loadingTypes'
+import type { LoadItem, Summary } from './loadingTypes'
 import './StatisticsPanel.css'
+
+const LOAD_TYPE_BOX = 0
+const LOAD_TYPE_BARREL = 1
+const LOAD_TYPE_PIPE = 2
 
 interface StatisticsPanelProps {
   summary: Summary
   spaceName: string
   spaceType: string
+  loads?: LoadItem[]
   dimensions: {
     length: number
     width: number
@@ -13,7 +18,7 @@ interface StatisticsPanelProps {
   }
 }
 
-export function StatisticsPanel({ summary, spaceName, spaceType, dimensions }: StatisticsPanelProps) {
+export function StatisticsPanel({ summary, spaceName, spaceType, loads = [], dimensions }: StatisticsPanelProps) {
   const formatNumber = (num: number | undefined) => {
     if (num === undefined) return 'N/A'
     if (num > 1000000) return (num / 1000000).toFixed(2) + 'M'
@@ -29,6 +34,20 @@ export function StatisticsPanel({ summary, spaceName, spaceType, dimensions }: S
 
   const volumePercent = calculatePercentage(summary.occupiedVolume, summary.freeVolume)
   const surfacePercent = calculatePercentage(summary.occupiedSurface, summary.freeSurface)
+
+  const typeCounts = loads.reduce(
+    (acc, load) => {
+      if (load.loadType === LOAD_TYPE_BARREL) {
+        acc.barrel += 1
+      } else if (load.loadType === LOAD_TYPE_PIPE) {
+        acc.pipe += 1
+      } else {
+        acc.box += 1
+      }
+      return acc
+    },
+    { box: 0, barrel: 0, pipe: 0 },
+  )
 
   return (
     <div className="statistics-panel">
@@ -86,6 +105,13 @@ export function StatisticsPanel({ summary, spaceName, spaceType, dimensions }: S
               LDM: {summary.percentLdmUsd.toFixed(1)}%
             </p>
           )}
+        </div>
+
+        <div className="statistics-panel-card statistics-panel-card-types">
+          <h4>Load Types</h4>
+          <p>Box (L x W x H): {typeCounts.box}</p>
+          <p>Barrel (H + D): {typeCounts.barrel}</p>
+          <p>Pipe (L + D): {typeCounts.pipe}</p>
         </div>
       </div>
     </div>

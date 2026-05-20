@@ -4,58 +4,67 @@ import { useMemo, useState } from 'react'
 import './PlannerSection.css'
 import { useLoadsContext } from '../context/LoadsContext'
 import type { LoadItem } from '../context/LoadsContext'
+
+const LOAD_TYPE_BOX = 0
+const LOAD_TYPE_BARREL = 1
+const LOAD_TYPE_PIPE = 2
+
 const parseNumber = (value: string): number => {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
 }
 
-// const parseLatLngTuple = (value: string): { lat: number; lng: number } | null => {
-//   const normalized = value.trim().replace(/^\(/, '').replace(/\)$/, '')
-//   const match = normalized.match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/)
-//   if (!match) return null
+const normalizeLoadType = (value: unknown): LoadItem['load_type'] => {
+  if (value === LOAD_TYPE_BOX || value === LOAD_TYPE_BARREL || value === LOAD_TYPE_PIPE) {
+    return value
+  }
 
-//   const lat = Number(match[1])
-//   const lng = Number(match[2])
-//   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-//   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase()
+    if (normalized === '0' || normalized === 'box') return LOAD_TYPE_BOX
+    if (normalized === '1' || normalized === 'barrel') return LOAD_TYPE_BARREL
+    if (normalized === '2' || normalized === 'pipe') return LOAD_TYPE_PIPE
+  }
 
-//   return { lat, lng }
-// }
+  if (typeof value === 'number') {
+    if (value === 0) return LOAD_TYPE_BOX
+    if (value === 1) return LOAD_TYPE_BARREL
+    if (value === 2) return LOAD_TYPE_PIPE
+  }
 
-// const formatLatLng = (lat: number, lng: number) => `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+  return LOAD_TYPE_BOX
+}
 
-// const geocodeAddressToLatLng = async (address: string): Promise<{ lat: number; lng: number } | null> => {
-//   const query = address.trim()
-//   if (!query) return null
+const sanitizeLoadByType = (load: LoadItem): LoadItem => {
+  if (load.load_type === LOAD_TYPE_BARREL) {
+    return { ...load, length: 0, width: 0, rotate_freely: false }
+  }
+  if (load.load_type === LOAD_TYPE_PIPE) {
+    return { ...load, height: 0, width: 0, rotate_freely: false }
+  }
+  return { ...load, diameter: 0 }
+}
 
-//   const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`
-//   const response = await fetch(url)
-//   if (!response.ok) return null
+const parseBoolean = (value: string | undefined, defaultValue = false): boolean => {
+  if (!value) return defaultValue
+  const normalized = value.trim().toLowerCase()
+  if (['true', '1', 'yes', 'y'].includes(normalized)) return true
+  if (['false', '0', 'no', 'n'].includes(normalized)) return false
+  return defaultValue
+}
 
-//   const data = (await response.json()) as Array<{ lat?: string; lon?: string }>
-//   const first = data[0]
-//   if (!first?.lat || !first?.lon) return null
-
-//   const lat = Number(first.lat)
-//   const lng = Number(first.lon)
-//   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-//   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null
-
-//   return { lat, lng }
-// }
 
 type PlannerSectionProps = {
   id?: string
 }
 
 function PlannerSection({ id = 'start' }: PlannerSectionProps) {
-    const [csvMessage, setCsvMessage] = useState('')
+  const [csvMessage, setCsvMessage] = useState('')
   const [csvMessageType, setCsvMessageType] = useState<'success' | 'error' | null>(null)
   const { loads, setLoads, addLoadRow, removeLoadRow } = useLoadsContext()
   const showStackColumns = loads.some((load) => load.stack)
 
-
-const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
+  const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
 
@@ -72,21 +81,35 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
     }
 
     const headers = lines[0].toLowerCase().split(',').map((value) => value.trim())
-    console.log('CSV Headers:', headers)
-    const requiredHeaders = ['donumber', 'length', 'height', 'width', 'weight', 'quantity', 'stack', 'max_stack_weight', 'arrange_on_floor']
-    const hasAllHeaders = requiredHeaders.every((header) => headers.includes(header))
+    const requiredHeaders = [
+      'donumber',
+      'load_type',
+      'length',
+      'height',
+      'width',
+      'diameter',
+      'weight',
+      'quantity',
+      'stack',
+      'max_stack_weight',
+      'arrange_on_floor',
+      'rotate_freely',
+    ]
+  const hasAllHeaders = requiredHeaders.every((header) => headers.includes(header))
 
     // Support common typo from user input files: "hight".
     const heightAliasIndex = headers.indexOf('hight')
 
     if (!hasAllHeaders && heightAliasIndex === -1) {
-      setCsvMessage('CSV headers must include: doNumber,length,height,width,weight,quantity,stack,max_stack_weight,arrange_on_floor')
+      setCsvMessage(
+        'CSV headers must include: doNumber,load_type,length,height,width,diameter,weight,quantity,stack,max_stack_weight,arrange_on_floor,rotate_freely',
+      )
       setCsvMessageType('error')
       return
     }
 
     const getFieldIndex = (field: string) => {
-    //   if (field === 'height' && heightAliasIndex !== -1) return heightAliasIndex
+     
       return headers.indexOf(field)
     }
 
@@ -98,14 +121,17 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
       const parsedLoad: LoadItem = {
         id: Date.now() + index,
         name: cols[getFieldIndex('donumber')] ?? '',
+        load_type: normalizeLoadType(cols[getFieldIndex('load_type')] ?? LOAD_TYPE_BOX),
         length: parseNumber(cols[getFieldIndex('length')] ?? '0'),
         height: parseNumber(cols[getFieldIndex('height')] ?? '0'),
         width: parseNumber(cols[getFieldIndex('width')] ?? '0'),
+        diameter: parseNumber(cols[getFieldIndex('diameter')] ?? '0'),
         weight: parseNumber(cols[getFieldIndex('weight')] ?? '0'),
-        quantity: parseNumber(cols[getFieldIndex('quantity')] ?? '0'),
-        stack: cols[getFieldIndex('stack')]?.toLowerCase() === 'true',
+        quantity: Math.max(1, parseNumber(cols[getFieldIndex('quantity')] ?? '1')),
+        rotate_freely: parseBoolean(cols[getFieldIndex('rotate_freely')], false),
+        stack: parseBoolean(cols[getFieldIndex('stack')], false),
         max_stack_weight: parseNumber(cols[getFieldIndex('max_stack_weight')] ?? '0'),
-        arrange_on_floor: cols[getFieldIndex('arrange_on_floor')]?.toLowerCase() === 'true',
+        arrange_on_floor: parseBoolean(cols[getFieldIndex('arrange_on_floor')], false),
         // destination: cols[getFieldIndex('destination')] ?? '',
       }
 
@@ -116,7 +142,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
         return
       }
 
-      parsedLoads.push(parsedLoad)
+      parsedLoads.push(sanitizeLoadByType(parsedLoad))
     }
 
     if (parsedLoads.length === 0) {
@@ -145,7 +171,18 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
         // if (field === 'destination') {
         //   return { ...item, [field]: String(value) }
         // }
-        if (field === 'stack' || field === 'arrange_on_floor') {
+        if (field === 'load_type') {
+          const updated = { ...item, load_type: normalizeLoadType(value) }
+          return sanitizeLoadByType(updated)
+        }
+        if (field === 'stack') {
+          const nextStack = value === true
+          if (!nextStack) {
+            return { ...item, stack: false, max_stack_weight: 0, arrange_on_floor: false }
+          }
+          return { ...item, stack: true }
+        }
+        if (field === 'arrange_on_floor' || field === 'rotate_freely') {
           return { ...item, [field]: Boolean(value) }
         }
         return { ...item, [field]: parseNumber(String(value)) }
@@ -153,28 +190,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
     )
   }
 
-  // const normalizeDestination = async (id: number, inputValue: string) => {
-  //   const value = inputValue.trim()
-  //   if (!value) {
-  //     updateLoad(id, 'destination', '')
-  //     return
-  //   }
 
-  //   const tuple = parseLatLngTuple(value)
-  //   if (tuple) {
-  //     updateLoad(id, 'destination', formatLatLng(tuple.lat, tuple.lng))
-  //     return
-  //   }
-
-  //   try {
-  //     const geocoded = await geocodeAddressToLatLng(value)
-  //     if (geocoded) {
-  //       updateLoad(id, 'destination', formatLatLng(geocoded.lat, geocoded.lng))
-  //     }
-  //   } catch {
-  //     // Keep the original destination string if geocoding fails.
-  //   }
-  // }
   const totalWeight = useMemo(
     () => loads.reduce((sum, item) => sum + item.weight * item.quantity, 0),
     [loads],
@@ -215,11 +231,14 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
           <thead>
             <tr>
               <th>Name</th>
+              <th>Load Type</th>
               <th>Length (cm)</th>
               <th>Height (cm)</th>
               <th>Width (cm)</th>
+              <th>Diameter (cm)</th>
               <th>Weight (kg)</th>
               <th>Quantity</th>
+              <th>Rotate Freely</th>
               <th>Stack</th>
               {showStackColumns && <th>Max Stack Weight</th>}
               {showStackColumns && <th>Arrange on Floor</th>}
@@ -231,48 +250,72 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
           <tbody>
             {loads.length === 0 && (
               <tr>
-                <td colSpan={12} className="text-center">
+                <td colSpan={showStackColumns ? 14 : 12} className="text-center planner-empty-row">
                   No load rows added yet.
                 </td>
               </tr>
             )}
             {loads.map((load) => {
               const rowTotal = load.weight * load.quantity
+              const isBarrel = load.load_type === LOAD_TYPE_BARREL
+              const isPipe = load.load_type === LOAD_TYPE_PIPE
+              const isBox = load.load_type === LOAD_TYPE_BOX
               return (
-                
                 <tr key={load.id}>
-                  <td>
+                  <td data-label="Name">
                     <input
                       value={load.name}
                       onChange={(event) => updateLoad(load.id, 'name', event.target.value)}
                       placeholder="Load name"
                     />
                   </td>
-                  <td>
+                  <td data-label="Load Type">
+                    <select
+                      value={load.load_type}
+                      onChange={(event) => updateLoad(load.id, 'load_type', event.target.value)}
+                    >
+                      <option value={LOAD_TYPE_BOX}>box</option>
+                      <option value={LOAD_TYPE_BARREL}>barrel</option>
+                      <option value={LOAD_TYPE_PIPE}>pipe</option>
+                    </select>
+                  </td>
+                  <td data-label="Length (cm)" className={isBarrel ? 'stack-cell-disabled' : ''}>
                     <input
                       type="number"
                       min="0"
                       value={load.length}
+                      disabled={isBarrel}
                       onChange={(event) => updateLoad(load.id, 'length', event.target.value)}
                     />
                   </td>
-                  <td>
+                  <td data-label="Height (cm)" className={isPipe ? 'stack-cell-disabled' : ''}>
                     <input
                       type="number"
                       min="0"
                       value={load.height}
+                      disabled={isPipe}
                       onChange={(event) => updateLoad(load.id, 'height', event.target.value)}
                     />
                   </td>
-                  <td>
+                  <td data-label="Width (cm)" className={isBarrel || isPipe ? 'stack-cell-disabled' : ''}>
                     <input
                       type="number"
                       min="0"
                       value={load.width}
+                      disabled={isBarrel || isPipe}
                       onChange={(event) => updateLoad(load.id, 'width', event.target.value)}
                     />
                   </td>
-                  <td>
+                  <td data-label="Diameter (cm)" className={isBox ? 'stack-cell-disabled' : ''}>
+                    <input
+                      type="number"
+                      min="0"
+                      value={load.diameter}
+                      disabled={isBox}
+                      onChange={(event) => updateLoad(load.id, 'diameter', event.target.value)}
+                    />
+                  </td>
+                  <td data-label="Weight (kg)">
                     <input
                       type="number"
                       min="0"
@@ -280,7 +323,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
                       onChange={(event) => updateLoad(load.id, 'weight', event.target.value)}
                     />
                   </td>
-                  <td>
+                  <td data-label="Quantity">
                     <input
                       type="number"
                       min="0"
@@ -288,7 +331,15 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
                       onChange={(event) => updateLoad(load.id, 'quantity', event.target.value)}
                     />
                   </td>
-                  <td>
+                  <td data-label="Rotate Freely" className="table-cell-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={load.rotate_freely}
+                      disabled={isBarrel || isPipe}
+                      onChange={(event) => updateLoad(load.id, 'rotate_freely', event.target.checked)}
+                    />
+                  </td>
+                  <td data-label="Stack" className="table-cell-checkbox">
                     <input
                       type="checkbox"
                       checked={load.stack}
@@ -297,7 +348,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
                   </td>
                   {showStackColumns ? (
                     <>
-                      <td className={!load.stack ? 'stack-cell-disabled' : ''}>
+                      <td data-label="Max Stack Weight" className={!load.stack ? 'stack-cell-disabled' : ''}>
                         <input
                           type="number"
                           min="0"
@@ -306,7 +357,7 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
                           onChange={(event) => updateLoad(load.id, 'max_stack_weight', event.target.value)}
                         />
                       </td>
-                      <td className={!load.stack ? 'stack-cell-disabled' : ''}>
+                      <td data-label="Arrange On Floor" className={`table-cell-checkbox ${!load.stack ? 'stack-cell-disabled' : ''}`}>
                         <input
                           type="checkbox"
                           checked={load.arrange_on_floor}
@@ -326,9 +377,8 @@ const importCsvLoads = async (event: ChangeEvent<HTMLInputElement>) => {
                           }}
                         />
                       </td> */}
-                     
-                  <td className="row-total">{rowTotal.toFixed(2)} kg</td>
-                  <td>
+                  <td data-label="Total" className="row-total">{rowTotal.toFixed(2)} kg</td>
+                  <td data-label="Action" className="table-cell-action">
                     <button
                       type="button"
                       className="remove-btn"

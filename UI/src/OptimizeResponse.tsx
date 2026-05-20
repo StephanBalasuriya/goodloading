@@ -29,6 +29,10 @@ type VehicleResponseItem = {
   response: unknown
 }
 
+const LOAD_TYPE_BOX = 0
+const LOAD_TYPE_BARREL = 1
+const LOAD_TYPE_PIPE = 2
+
 const formatApiResult = (value: unknown) => {
   if (typeof value === 'string') return value
   try {
@@ -63,6 +67,84 @@ const asOptionalNumber = (value: unknown): number | undefined => {
     return Number.isFinite(parsed) ? parsed : undefined
   }
   return undefined
+}
+
+const toPositiveNumber = (value: unknown): number => {
+  const parsed = asOptionalNumber(value)
+  return parsed !== undefined && parsed > 0 ? parsed : 0
+}
+
+const normalizeDimensionsByLoadType = (
+  loadType: number | undefined,
+  dimensions: {
+    width: number
+    length: number
+    height: number
+    diameter?: number
+  },
+) => {
+  const width = toPositiveNumber(dimensions.width)
+  const length = toPositiveNumber(dimensions.length)
+  const height = toPositiveNumber(dimensions.height)
+  const diameter = toPositiveNumber(dimensions.diameter)
+
+  if (loadType === LOAD_TYPE_BOX) {
+    return {
+      width,
+      length,
+      height,
+      diameter: undefined,
+    }
+  }
+
+  if (loadType === LOAD_TYPE_BARREL) {
+    return {
+      width: 0,
+      length: 0,
+      height,
+      diameter: diameter > 0 ? diameter : Math.max(width, length),
+    }
+  }
+
+  if (loadType === LOAD_TYPE_PIPE) {
+    return {
+      width: 0,
+      length,
+      height: 0,
+      diameter: diameter > 0 ? diameter : Math.max(width, height),
+    }
+  }
+
+  return {
+    width,
+    length,
+    height,
+    diameter: diameter > 0 ? diameter : undefined,
+  }
+}
+
+const formatLoadDimensionsByType = (load: {
+  loadType?: number
+  width: number
+  length: number
+  height: number
+  diameter?: number
+}) => {
+  const diameter = toPositiveNumber(load.diameter)
+
+  if (load.loadType === LOAD_TYPE_BOX) {
+    return `${load.length} x ${load.width} x ${load.height} cm`
+  }
+
+  if (load.loadType === LOAD_TYPE_BARREL) {
+    return `Height ${load.height} cm, Diameter ${diameter} cm`
+  }
+
+  if (load.loadType === LOAD_TYPE_PIPE) {
+    return `Length ${load.length} cm, Diameter ${diameter} cm`
+  }
+
+  return `${load.length} x ${load.width} x ${load.height} cm`
 }
 
 const toSummary = (value: unknown): Summary => {  //Converts summary object.
@@ -131,7 +213,7 @@ const buildLoadSignature = (load: LoadItem): string => {
   const placementSignature = load.placement
     .map(
       (placement) =>
-        `${placement.position.x},${placement.position.y},${placement.position.z}:${placement.width},${placement.length},${placement.height}`,
+        `${placement.position.x},${placement.position.y},${placement.position.z}:${placement.width},${placement.length},${placement.height},${placement.diameter ?? 0}`,
     )
     .sort()
     .join('|')
@@ -141,6 +223,8 @@ const buildLoadSignature = (load: LoadItem): string => {
     load.width,
     load.length,
     load.height,
+    load.diameter ?? 0,
+    load.loadType ?? -1,
     load.weight,
     load.quantity,
     load.priority,
@@ -170,6 +254,7 @@ const toPlacement = (value: unknown): LoadPlacement | null => { //Converts cargo
     height: asNumber(value.height, 0),
     length: asNumber(value.length, 0),
     width: asNumber(value.width, 0),
+    diameter: asOptionalNumber(value.diameter),
     loadsPerAxis: isObject(value.loadsPerAxis)
       ? {
           x: asNumber(value.loadsPerAxis.x, 1),
@@ -188,6 +273,16 @@ const toPlacement = (value: unknown): LoadPlacement | null => { //Converts cargo
 const toLoad = (value: unknown, index: number): LoadItem | null => {
   if (!isObject(value)) return null
 
+  const loadTypeRaw = asOptionalNumber(value.loadType)
+  const loadType = loadTypeRaw !== undefined ? Math.trunc(loadTypeRaw) : undefined
+
+  const normalizedDimensions = normalizeDimensionsByLoadType(loadType, {
+    width: asNumber(value.width, 0),
+    length: asNumber(value.length, 0),
+    height: asNumber(value.height, 0),
+    diameter: asOptionalNumber(value.diameter),
+  })
+
   const placement = Array.isArray(value.placement)
     ? value.placement
         .map((p) => toPlacement(p))
@@ -197,9 +292,11 @@ const toLoad = (value: unknown, index: number): LoadItem | null => {
   return {
     id: asNumber(value.id, index + 1),
     name: asString(value.name, `Load ${index + 1}`),
-    width: asNumber(value.width, 0),
-    length: asNumber(value.length, 0),
-    height: asNumber(value.height, 0),
+    width: normalizedDimensions.width,
+    length: normalizedDimensions.length,
+    height: normalizedDimensions.height,
+    diameter: normalizedDimensions.diameter,
+    loadType,
     weight: asNumber(value.weight, 0),
     quantity: asNumber(value.quantity, 1),
     priority: asNumber(value.priority, 0),
@@ -270,12 +367,24 @@ const toLoadingSpace = (value: unknown, index: number): LoadingSpace | null => {
 
 const toNotFittedLoad = (value: unknown, index: number): NotFittedLoad | null => { //Converts items that could not fit.
   if (!isObject(value)) return null
-  return {
-    id: asNumber(value.id, index + 1),
-    name: asString(value.name, `Load ${index + 1}`),
+
+  const loadTypeRaw = asOptionalNumber(value.loadType)
+  const loadType = loadTypeRaw !== undefined ? Math.trunc(loadTypeRaw) : undefined
+  const normalizedDimensions = normalizeDimensionsByLoadType(loadType, {
     width: asNumber(value.width, 0),
     length: asNumber(value.length, 0),
     height: asNumber(value.height, 0),
+    diameter: asOptionalNumber(value.diameter),
+  })
+
+  return {
+    id: asNumber(value.id, index + 1),
+    name: asString(value.name, `Load ${index + 1}`),
+    width: normalizedDimensions.width,
+    length: normalizedDimensions.length,
+    height: normalizedDimensions.height,
+    diameter: normalizedDimensions.diameter,
+    loadType,
     weight: asNumber(value.weight, 0),
     quantity: asNumber(value.quantity, 1),
   }
@@ -460,6 +569,7 @@ function OptimizeResponse() {
                     summary={bestStopSummary}
                     spaceName={loadingSpace.name}
                     spaceType={loadingSpace.type}
+                    loads={currentLoads}
                     dimensions={{
                       length: part.length,
                       width: part.width,
@@ -494,7 +604,7 @@ function OptimizeResponse() {
                     <div key={`notfitted-${effectiveSelectedVehicleResponseIndex}-${load.id}-${loadIdx}`} className="optimize-response-notfitted-item">
                       <p>{load.name}</p>
                       <p>
-                        {load.length} × {load.width} × {load.height} cm, {load.weight} kg,
+                        {formatLoadDimensionsByType(load)}, {load.weight} kg,
                         Qty: {load.quantity}
                       </p>
                     </div>
