@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { LoadPlacement, LoadingSpace } from './loadingTypes'
-import { LOAD_COLORS } from './loadColors'
+import { getLoadColor } from './loadColors'
 import './LoadingSpaceViewer2D.css'
 
 interface LoadingSpaceViewer2DProps {
@@ -242,7 +242,7 @@ export function LoadingSpaceViewer2D({ loadingSpace, selectedStopId }: LoadingSp
                 height: `${viewDimensions.height * zoom+4}px`,
               }}
             >
-              {loadsToRender.map((load, loadIndex) =>
+              {loadsToRender.map((load) =>
                 load.placement.map((placement, placementIndex) => {
                   const { style: boxStyle, normalized } = getPlacementByView(load, placement)
                   const loadTypeClassName =
@@ -261,7 +261,7 @@ export function LoadingSpaceViewer2D({ loadingSpace, selectedStopId }: LoadingSp
                         top: `${boxStyle.top * zoom}px`,
                         width: `${boxStyle.width * zoom}px`,
                         height: `${boxStyle.height * zoom}px`,
-                        backgroundColor: LOAD_COLORS[loadIndex % LOAD_COLORS.length],
+                        backgroundColor: getLoadColor(load.id),
                         opacity: 0.8,
                       }}
                       title={`${load.name} (${getLoadTypeLabel(load.loadType)}) - ${formatLoadSize(load.loadType, {

@@ -10,3 +10,8 @@ export const LOAD_COLORS = [
   '#9ef1a9',
   '#093950',
 ]
+
+export const getLoadColor = (loadId: number) => {
+  const index = Math.abs(Math.trunc(loadId)) % LOAD_COLORS.length
+  return LOAD_COLORS[index]
+}
