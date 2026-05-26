@@ -15,7 +15,6 @@ interface LoadingSpaceViewer2DProps {
 
 type ViewType = 'top' | 'side' | 'front'
 
-const LOAD_TYPE_BOX = 0
 const LOAD_TYPE_BARREL = 1
 const LOAD_TYPE_PIPE = 2
 

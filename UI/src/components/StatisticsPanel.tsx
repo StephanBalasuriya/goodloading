@@ -1,7 +1,6 @@
 import type { LoadItem, Summary } from './loadingTypes'
 import './StatisticsPanel.css'
 
-const LOAD_TYPE_BOX = 0
 const LOAD_TYPE_BARREL = 1
 const LOAD_TYPE_PIPE = 2
 

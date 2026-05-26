@@ -9,6 +9,7 @@ type Vehicle = {
   height_cm: number
   width_cm: number
   max_weight_kg: number
+  max_cbm: number
   quantity: number
   created_at: string
   updated_at: string
@@ -41,7 +42,8 @@ const emptyVehicleForm: VehicleFormData = {
   quantity: '',
 }
 
-function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
+function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps)
+{
   const [isVehiclesLoading, setIsVehiclesLoading] = useState(false)
   const [vehiclesError, setVehiclesError] = useState('')
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
@@ -55,36 +57,44 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
   const [selectingVehicle, setSelectingVehicle] = useState<Vehicle | null>(null)
   const [vehicleQuantity, setVehicleQuantity] = useState<string>('1')
   const [quantityError, setQuantityError] = useState<string>('')
- 
 
-  const fetchVehicles = async () => {
+
+  const fetchVehicles = async () =>
+  {
     setIsVehiclesLoading(true)
     setVehiclesError('')
 
-    try {
+    try
+    {
       const response = await fetch(vehiclesApiUrl('/vehicles/'))
-      if (!response.ok) {
+      if (!response.ok)
+      {
         throw new Error(`Failed to fetch vehicles (${response.status})`)
       }
 
       const data = (await response.json()) as Vehicle[]
       setVehicles(data)
 
-      if (data.length === 0) {
+      if (data.length === 0)
+      {
         setVehiclesError('No vehicles found in the database yet. Add one below.')
       }
-    } catch {
+    } catch
+    {
       setVehiclesError('Could not load vehicles. Check if Vehicles API is running on port 8000.')
-    } finally {
+    } finally
+    {
       setIsVehiclesLoading(false)
     }
   }
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     void fetchVehicles()
   }, [])
 
-  const startAddVehicle = () => {
+  const startAddVehicle = () =>
+  {
     setEditingVehicleId(null)
     setVehicleForm(emptyVehicleForm)
     setIsVehicleForm(true)
@@ -92,7 +102,8 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
     setVehicleFormMessage('')
   }
 
-  const startEditVehicle = (vehicle: Vehicle) => {
+  const startEditVehicle = (vehicle: Vehicle) =>
+  {
     setEditingVehicleId(vehicle.id)
     setVehicleForm({
       name: vehicle.name,
@@ -107,11 +118,13 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
     setVehicleFormMessage('')
   }
 
-  const updateVehicleForm = (field: keyof VehicleFormData, value: string) => {
+  const updateVehicleForm = (field: keyof VehicleFormData, value: string) =>
+  {
     setVehicleForm((previous) => ({ ...previous, [field]: value }))
   }
 
-  const submitVehicle = async () => {
+  const submitVehicle = async () =>
+  {
     setVehicleFormError('')
     setVehicleFormMessage('')
 
@@ -124,7 +137,8 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
       quantity: Number(vehicleForm.quantity),
     }
 
-    if (!payload.name) {
+    if (!payload.name)
+    {
       setVehicleFormError('Vehicle name is required.')
       return
     }
@@ -138,14 +152,16 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
     ]
 
     const hasInvalidNumber = allNumbers.some((value) => !Number.isFinite(value) || value < 0)
-    if (hasInvalidNumber) {
+    if (hasInvalidNumber)
+    {
       setVehicleFormError('All numeric fields must be valid positive numbers.')
       return
     }
 
     setIsSubmittingVehicle(true)
 
-    try {
+    try
+    {
       const isUpdate = editingVehicleId !== null
       const url = isUpdate
         ? vehiclesApiUrl(`/vehicles/${editingVehicleId}`)
@@ -159,56 +175,67 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
         body: JSON.stringify(payload),
       })
 
-      if (!response.ok) {
+      if (!response.ok)
+      {
         throw new Error(isUpdate ? 'Failed to update vehicle' : 'Failed to add vehicle')
       }
 
       setVehicleFormMessage(isUpdate ? 'Vehicle updated successfully.' : 'Vehicle added successfully.')
       setIsVehicleForm(false)
       await fetchVehicles()
-    } catch {
+    } catch
+    {
       setVehicleFormError('Unable to save vehicle. Check API status and try again.')
-    } finally {
+    } finally
+    {
       setIsSubmittingVehicle(false)
     }
   }
 
-  const deleteVehicle = async (vehicleId: number) => {
+  const deleteVehicle = async (vehicleId: number) =>
+  {
     setVehicleFormError('')
     setVehicleFormMessage('')
 
-    try {
+    try
+    {
       const response = await fetch(vehiclesApiUrl(`/vehicles/${vehicleId}`), {
         method: 'DELETE',
       })
 
-      if (!response.ok) {
+      if (!response.ok)
+      {
         throw new Error('Failed to delete vehicle')
       }
 
-      if (editingVehicleId === vehicleId) {
+      if (editingVehicleId === vehicleId)
+      {
         setIsVehicleForm(false)
         setEditingVehicleId(null)
       }
 
       await fetchVehicles()
       setVehicleFormMessage('Vehicle deleted successfully.')
-    } catch {
+    } catch
+    {
       setVehicleFormError('Unable to delete vehicle. Check API status and try again.')
     }
   }
 
-  const selectVehicle = (vehicle: Vehicle) => {
+  const selectVehicle = (vehicle: Vehicle) =>
+  {
     setSelectingVehicle(vehicle)
     setVehicleQuantity('1')
     setQuantityError('')
   }
 
-  const confirmVehicleSelection = () => {
+  const confirmVehicleSelection = () =>
+  {
     if (!selectingVehicle) return
 
     const quantity = Number(vehicleQuantity)
-    if (!Number.isFinite(quantity) || quantity < 1) {
+    if (!Number.isFinite(quantity) || quantity < 1)
+    {
       return
     }
 
@@ -222,7 +249,8 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
     onClose()
   }
 
-  const cancelQuantitySelection = () => {
+  const cancelQuantitySelection = () =>
+  {
     setSelectingVehicle(null)
     setVehicleQuantity('1')
     setQuantityError('')
@@ -350,13 +378,16 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
                 type="number"
                 min="1"
                 value={vehicleQuantity}
-                onChange={(event) => {
+                onChange={(event) =>
+                {
                   const value = event.target.value
                   setVehicleQuantity(value)
                   const quantity = Number(value)
-                  if (selectingVehicle && Number.isFinite(quantity) && quantity > selectingVehicle.quantity) {
+                  if (selectingVehicle && Number.isFinite(quantity) && quantity > selectingVehicle.quantity)
+                  {
                     setQuantityError(`Cannot exceed available quantity (${selectingVehicle.quantity})`)
-                  } else {
+                  } else
+                  {
                     setQuantityError('')
                   }
                 }}
