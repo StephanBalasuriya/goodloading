@@ -4,6 +4,7 @@ import re
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -26,6 +27,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/")
+def root():
+    return {"status": "ok", "docs": "/docs"}
+
+
+@app.get("/doc")
+def docs_alias():
+    return RedirectResponse(url="/docs", status_code=307)
 
 
 def get_db():
@@ -138,7 +149,7 @@ def get_used_vehicles_from_gmpro(db: Session = Depends(get_db)):
 if __name__ == "__main__":
     uvicorn.run(
         "app:app",
-        host=os.getenv("HOST", "0.0.0.0"),
-        port=int(os.getenv("PORT", "8001")),
+        host=os.getenv("HOST", "127.0.0.1"),
+        port=int(os.getenv("PORT", "8002")),
         reload=os.getenv("RELOAD", "true").lower() == "true",
     )

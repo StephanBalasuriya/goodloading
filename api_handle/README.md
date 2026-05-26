@@ -4,6 +4,8 @@ FastAPI proxy service for Goodloading external calculation APIs.
 
 ## Endpoints
 
+- `GET /` -> basic health response with docs link
+- `GET /doc` -> redirects to FastAPI docs at `/docs`
 - `POST /calculate` -> forwards to `https://api.goodloading.com/api/external/calculation`
 - `POST /recommend` -> forwards to `https://api.goodloading.com/api/external/calculation/recommendation`
 - `POST /map` -> processes loading mapping data
