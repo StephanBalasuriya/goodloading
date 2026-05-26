@@ -108,26 +108,104 @@ These tables store vehicle dimensions, weight limits, and capacity information u
 Test `/map`:
 
 ```powershell
-curl.exe -i -X POST http://127.0.0.1:8001/map `
-  -H "Content-Type: application/json" `
-  -d "{\"ping\": true}"
+# api_handle
+
+FastAPI service for the Goodloading integration. It forwards calculation requests to the external Goodloading API, caches GMPRO responses locally, and exposes vehicle data used by the UI.
+
+## Endpoints
+
+- `POST /calculate` forwards payloads to `https://api.goodloading.com/api/external/calculation`
+- `POST /recommend` forwards payloads to `https://api.goodloading.com/api/external/calculation/recommendation`
+- `POST /map` processes loading mapping data
+- `POST /GMPROResponse` stores the latest GMPRO optimization response
+- `GET /GMPROResponse` returns the cached GMPRO response if one is available
+- `GET /vehicles/used` returns the vehicle rows matched from the latest GMPRO optimization result
+
+## Requirements
+
+Install the Python dependencies listed in [requirment.txt](requirment.txt).
+
+The backend uses:
+
+- `fastapi` and `uvicorn` for the API server
+- `requests` for outbound Goodloading API calls
+- `sqlalchemy` and `psycopg2` for PostgreSQL access
+- `python-dotenv` for `.env` loading
+
+## Setup
+
+```bash
+cd /home/stephan/Documents/Goodloading/api_handle
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirment.txt
+```
+
+## Environment
+
+Create `api_handle/.env` with your database connection and access token:
+
+```env
+DATABASE_URL=postgresql://username:password@host:5432/database_name
+GOODLOADING_ACCESS_TOKEN=your_api_token_here
+GMPRO_RESPONSE_TTL_SECONDS=120
+```
+
+`GOODLOADING_ACCESS_TOKEN` is required for requests to the Goodloading API. `GMPRO_RESPONSE_TTL_SECONDS` controls how long the cached GMPRO response stays valid.
+
+## Run
+
+```bash
+cd /home/stephan/Documents/Goodloading/api_handle
+source .venv/bin/activate
+python app.py
+```
+
+Default runtime values:
+
+- Host: `0.0.0.0`
+- Port: `8001`
+- Reload: `true`
+
+Optional overrides:
+
+```bash
+export HOST="127.0.0.1"
+export PORT="9001"
+export RELOAD="false"
+python app.py
+```
+
+## CORS
+
+The API currently allows requests from:
+
+- `http://localhost:5173`
+- `http://127.0.0.1:5173`
+
+Update the `CORSMiddleware` configuration in [app.py](app.py) if the UI is served from another origin.
+
+## Database
+
+The `/vehicles/used` endpoint reads from PostgreSQL tables named `vehicle_types` and `vehicle_specs`.
+
+Those tables are expected to store vehicle dimensions, weight limits, capacity, and active-state data used to match GMPRO vehicle labels.
+
+## Quick Test Commands
+
+Test `/map`:
+
+```bash
+curl -i -X POST http://127.0.0.1:8001/map \
+  -H "Content-Type: application/json" \
+  -d '{"ping": true}'
 ```
 
 Test `/recommend`:
 
-```powershell
-curl.exe -i -X POST http://127.0.0.1:8001/recommend `
-  -H "Content-Type: application/json" `
-  -d "{\"loads\": [], \"loadspaces\": []}"
-```
-
-## Notes
-
-- Current token is hardcoded in `config.py`. For production, move it to an environment variable.
-- The dependency filename is `requirment.txt` in this project.
-- If you previously installed `psycopg2` or `psycopg2-binary`, remove them before reinstalling:
-
-```powershell
-python -m pip uninstall -y psycopg2 psycopg2-binary
-python -m pip install -r requirment.txt
+```bash
+curl -i -X POST http://127.0.0.1:8001/recommend \
+  -H "Content-Type: application/json" \
+  -d '{"loads": [], "loadspaces": []}'
 ```
