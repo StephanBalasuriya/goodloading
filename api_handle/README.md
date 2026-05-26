@@ -66,7 +66,7 @@ python app.py
 Default runtime values:
 
 - Host: `0.0.0.0`
-- Port: `8001`
+- Port: `8002`
 - Reload: `true`
 
 Optional overrides:
@@ -79,6 +79,8 @@ export PORT="9001"
 export RELOAD="false"
 python app.py
 ```
+
+For production behind systemd, prefer `HOST=127.0.0.1`, `PORT=8002`, and `RELOAD=false`.
 
 **Windows:**
 
@@ -167,7 +169,7 @@ python app.py
 Default runtime values:
 
 - Host: `0.0.0.0`
-- Port: `8001`
+- Port: `8002`
 - Reload: `true`
 
 Optional overrides:
@@ -199,7 +201,7 @@ Those tables are expected to store vehicle dimensions, weight limits, capacity, 
 Test `/map`:
 
 ```bash
-curl -i -X POST http://127.0.0.1:8001/map \
+curl -i -X POST http://127.0.0.1:8002/map \
   -H "Content-Type: application/json" \
   -d '{"ping": true}'
 ```
@@ -207,7 +209,7 @@ curl -i -X POST http://127.0.0.1:8001/map \
 Test `/recommend`:
 
 ```bash
-curl -i -X POST http://127.0.0.1:8001/recommend \
+curl -i -X POST http://127.0.0.1:8002/recommend \
   -H "Content-Type: application/json" \
   -d '{"loads": [], "loadspaces": []}'
 ```

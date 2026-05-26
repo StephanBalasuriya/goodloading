@@ -34,8 +34,10 @@ The UI talks to the backend through the base URL configured in [src/config/api.t
 
 Default values:
 
-- `VITE_API_HANDLE_BASE_URL=http://127.0.0.1:8001`
+- `VITE_API_HANDLE_BASE_URL=https://stack360-be.l360.lk`
 - `VITE_VEHICLES_API_BASE_URL` falls back to `VITE_API_HANDLE_BASE_URL`
+
+For local development, you can point the UI at the backend process directly with `VITE_API_HANDLE_BASE_URL=http://127.0.0.1:8002`.
 
 If you need to point the UI at another backend, set those environment variables in a local `.env` file.
 
