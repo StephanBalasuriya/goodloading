@@ -1,7 +1,7 @@
 const trimTrailingSlash = (value: string) => value.replace(/\/$/, '')
 
 export const API_HANDLE_BASE_URL =
-  import.meta.env.VITE_API_HANDLE_BASE_URL ?? 'http://127.0.0.1:8001'
+  import.meta.env.VITE_API_HANDLE_BASE_URL ?? 'https://stack360-be.l360.lk'
 
 export const VEHICLES_API_BASE_URL =
   import.meta.env.VITE_VEHICLES_API_BASE_URL ?? API_HANDLE_BASE_URL
