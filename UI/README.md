@@ -1,73 +1,52 @@
-# React + TypeScript + Vite
+# Goodloading UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript + Vite front end for the Goodloading workflow.
 
-Currently, two official plugins are available:
+## What It Does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The UI provides three main entry points:
 
-## React Compiler
+- Home planner screen for starting the loading flow and submitting GMPRO response JSON
+- Optimization screen for building Goodloading payloads from GMPRO routes and CSV loads
+- Optimization response screen for reviewing the backend result payloads
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The app uses React Router and shared loading context to move data between the planning, optimization, and response views.
 
-## Expanding the ESLint configuration
+## Setup
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd /home/stephan/Documents/Goodloading/UI
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Run
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd /home/stephan/Documents/Goodloading/UI
+npm run dev
 ```
+
+The app runs on Vite's default development server, usually `http://localhost:5173`.
+
+## Environment
+
+The UI talks to the backend through the base URL configured in [src/config/api.ts](src/config/api.ts).
+
+Default values:
+
+- `VITE_API_HANDLE_BASE_URL=http://127.0.0.1:8001`
+- `VITE_VEHICLES_API_BASE_URL` falls back to `VITE_API_HANDLE_BASE_URL`
+
+If you need to point the UI at another backend, set those environment variables in a local `.env` file.
+
+## Available Routes
+
+- `/` Home planner screen
+- `/optimize` optimization workflow
+- `/optimize-response` response viewer
+
+## Notes
+
+- The UI expects the backend API to allow CORS from `http://localhost:5173` or `http://127.0.0.1:5173`
+- The optimization flow uses the backend endpoints `/GMPROResponse`, `/vehicles/used`, and `/calculate`
+- The project uses Vite, ESLint, and TypeScript; run `npm run build` and `npm run lint` before shipping changes
