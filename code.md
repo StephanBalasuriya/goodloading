@@ -23,6 +23,28 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
+Service control:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl start stack360
+sudo systemctl restart stack360
+sudo systemctl stop stack360
+sudo systemctl enable stack360
+sudo systemctl status stack360
+```
+
+Steps to host the project:
+
+1. Create the backend virtualenv and install dependencies in `/home/ubuntu/apps/goodloading/api_handle`.
+2. Create `/home/ubuntu/apps/goodloading/api_handle/.env` with `DATABASE_URL` and `GOODLOADING_ACCESS_TOKEN`.
+3. Save the systemd service file as `/etc/systemd/system/stack360.service`.
+4. Run `sudo systemctl daemon-reload` and `sudo systemctl enable stack360`.
+5. Start the backend with `sudo systemctl start stack360` and verify it with `sudo systemctl status stack360`.
+6. Build the frontend from `/home/ubuntu/apps/goodloading/UI`.
+7. Place the Nginx site blocks in `/etc/nginx/sites-available/stack360` and enable them.
+8. Test and reload Nginx with `sudo nginx -t` and `sudo systemctl reload nginx`.
+
 Frontend build:
 
 ```bash
