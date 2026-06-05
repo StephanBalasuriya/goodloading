@@ -17,7 +17,7 @@ from Schema.schemas import GmproUsedVehicle, VehicleCreate, VehicleUpdate, Vehic
 from services.gmpro_cache import get_valid_gmpro_response
 from services.goodloading_service import calculate_loading, map_loading, recommend_loading
 from services.gmpro_service import get_gmpro_response, handle_gmpro_response
-from services.email_service import send_otp_email
+from services.email_service import send_otp_email, send_invitation_email
 from services.auth_service import hash_password, verify_password, create_jwt, decode_jwt, generate_otp
 
 app = FastAPI()
@@ -399,8 +399,20 @@ def get_me(current_entity: dict = Depends(get_current_entity)):
 
 
 @app.post("/calculate")
-def calculate_loading_endpoint(data: dict):
-    return calculate_loading(data)
+def calculate_loading_endpoint(data: dict, current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
+    res = calculate_loading(data)
+    # Log user activity
+    if current_entity.get("role") == "user":
+        try:
+            db.execute(
+                text("INSERT INTO gmpro_responses (user_id, response) VALUES (:user_id, CAST(:response AS JSONB))"),
+                {"user_id": current_entity["id"], "response": json.dumps(res)}
+            )
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            print("Failed to save gmpro_response activity:", e)
+    return res
 
 @app.post("/recommend")
 def recommend_loading_endpoint(data: dict):
@@ -420,6 +432,149 @@ def get_gmpro_response_endpoint():
     return get_gmpro_response()
 
 
+# --- Organization Users & Activity Endpoints ---
+
+class OrgUserCreateRequest(BaseModel):
+    name: str
+    email: str
+
+@app.get("/api/organization/users")
+def get_organization_users(current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
+    org_id = current_entity.get("organization_id") if current_entity.get("role") == "user" else current_entity.get("id")
+    
+    try:
+        users = db.execute(
+            text("""
+                SELECT id, name, email, created_at
+                FROM app_users
+                WHERE organization_id = :org_id
+                ORDER BY created_at DESC
+            """),
+            {"org_id": org_id}
+        ).mappings().all()
+        
+        result = []
+        for u in users:
+            user_id = str(u["id"])
+            
+            count_res = db.execute(
+                text("SELECT count(*) FROM gmpro_responses WHERE user_id = :user_id"),
+                {"user_id": user_id}
+            ).scalar() or 0
+            
+            recent_res = db.execute(
+                text("SELECT id, created_at FROM gmpro_responses WHERE user_id = :user_id ORDER BY created_at DESC LIMIT 5"),
+                {"user_id": user_id}
+            ).mappings().all()
+            
+            recent_activities = []
+            for r in recent_res:
+                recent_activities.append({
+                    "id": r["id"],
+                    "created_at": r["created_at"]
+                })
+                
+            result.append({
+                "id": user_id,
+                "name": u["name"],
+                "email": u["email"],
+                "created_at": u["created_at"],
+                "activity_count": count_res,
+                "recent_activities": recent_activities
+            })
+            
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
+@app.post("/api/organization/users")
+def create_organization_user(req: OrgUserCreateRequest, current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
+    if current_entity.get("role") != "organization":
+         raise HTTPException(status_code=403, detail="Only organization administrator can create users.")
+         
+    org_id = current_entity.get("id")
+    
+    # Check if user already exists
+    user_exists = db.execute(
+        text("SELECT 1 FROM app_users WHERE email = :email"),
+        {"email": req.email}
+    ).first()
+    if user_exists:
+        raise HTTPException(status_code=400, detail="User email is already registered.")
+        
+    import secrets
+    import string
+    alphabet = string.ascii_letters + string.digits
+    temp_password = ''.join(secrets.choice(alphabet) for _ in range(10))
+    pwd_hash = hash_password(temp_password)
+    
+    try:
+        result = db.execute(
+            text("""
+                INSERT INTO app_users (name, email, password_hash, organization_id)
+                VALUES (:name, :email, :password_hash, :org_id)
+                RETURNING id, name, email
+            """),
+            {
+                "name": req.name,
+                "email": req.email,
+                "password_hash": pwd_hash,
+                "org_id": org_id
+            }
+        ).mappings().first()
+        
+        if not result:
+            raise HTTPException(status_code=500, detail="Failed to retrieve user details after creation.")
+            
+        db.commit()
+        
+        # Send invitation email
+        send_invitation_email(req.email, temp_password, req.name)
+        
+        return {
+            "message": "User created successfully. Credentials have been emailed.",
+            "user": {
+                "id": str(result["id"]),
+                "name": result["name"],
+                "email": result["email"]
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error during creation: {str(e)}")
+
+
+@app.delete("/api/organization/users/{user_id}")
+def delete_organization_user(user_id: str, current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
+    if current_entity.get("role") != "organization":
+         raise HTTPException(status_code=403, detail="Only organization administrator can delete users.")
+         
+    org_id = current_entity.get("id")
+    
+    try:
+        exists = db.execute(
+            text("SELECT 1 FROM app_users WHERE id = :user_id AND organization_id = :org_id"),
+            {"user_id": user_id, "org_id": org_id}
+        ).first()
+        
+        if not exists:
+            raise HTTPException(status_code=404, detail="User not found in this organization.")
+            
+        db.execute(
+            text("DELETE FROM app_users WHERE id = :user_id AND organization_id = :org_id"),
+            {"user_id": user_id, "org_id": org_id}
+        )
+        db.commit()
+        return {"message": "User deleted successfully."}
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error during deletion: {str(e)}")
+
+
 def _normalize_vehicle_type(label: str) -> str:
     normalized = re.sub(r"(?i)^vehicle[_\s-]*", "", label).strip()
     normalized = re.sub(r"\d+$", "", normalized).strip()
@@ -428,7 +583,8 @@ def _normalize_vehicle_type(label: str) -> str:
 
 
 @app.get("/vehicles/used", response_model=list[GmproUsedVehicle])
-def get_used_vehicles_from_gmpro(db: Session = Depends(get_db)):
+def get_used_vehicles_from_gmpro(current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
+    org_id = current_entity.get("organization_id") if current_entity.get("role") == "user" else current_entity.get("id")
     payload = get_valid_gmpro_response()
     if payload is None:
         raise HTTPException(status_code=404, detail="No valid GMPRO response available")
@@ -468,11 +624,11 @@ def get_used_vehicles_from_gmpro(db: Session = Depends(get_db)):
                     vs.max_cbm AS max_cbm
                 FROM vehicle_types vt
                 JOIN vehicle_specs vs ON vs.type_id = vt.id
-                WHERE lower(vt.name) = lower(:type_name)
+                WHERE lower(vt.name) = lower(:type_name) AND (vt.organization_id = :org_id OR vt.organization_id IS NULL)
                 LIMIT 1
                 """
             ),
-            {"type_name": type_name},
+            {"type_name": type_name, "org_id": org_id},
         ).mappings().first()
 
         if row is None:
@@ -498,7 +654,8 @@ def get_used_vehicles_from_gmpro(db: Session = Depends(get_db)):
 
 
 @app.get("/vehicles/", response_model=list[VehicleResponse])
-def get_vehicles(db: Session = Depends(get_db)):
+def get_vehicles(current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
+    org_id = current_entity.get("organization_id") if current_entity.get("role") == "user" else current_entity.get("id")
     try:
         rows = db.execute(
             text(
@@ -515,9 +672,11 @@ def get_vehicles(db: Session = Depends(get_db)):
                     vt.created_at AS updated_at
                 FROM vehicle_types vt
                 LEFT JOIN vehicle_specs vs ON vs.type_id = vt.id
+                WHERE vt.organization_id = :org_id OR vt.organization_id IS NULL
                 ORDER BY vt.id ASC
                 """
-            )
+            ),
+            {"org_id": org_id}
         ).mappings().all()
         
         result = []
@@ -541,34 +700,30 @@ def get_vehicles(db: Session = Depends(get_db)):
 
 
 @app.post("/vehicles/", response_model=VehicleResponse)
-def create_vehicle(vehicle: VehicleCreate, db: Session = Depends(get_db)):
+def create_vehicle(vehicle: VehicleCreate, current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
+    org_id = current_entity.get("organization_id") if current_entity.get("role") == "user" else current_entity.get("id")
     try:
-        # 1. Get next ID for vehicle_types
         vt_id = db.execute(text("SELECT COALESCE(MAX(id), 0) + 1 FROM vehicle_types")).scalar() or 1
-        
-        # 2. Get next ID for vehicle_specs
         vs_id = db.execute(text("SELECT COALESCE(MAX(id), 0) + 1 FROM vehicle_specs")).scalar() or 1
         
-        # 3. Insert into vehicle_types
         db.execute(
             text(
                 """
-                INSERT INTO vehicle_types (id, name, count, is_active, created_at)
-                VALUES (:id, :name, :count, :is_active, NOW())
+                INSERT INTO vehicle_types (id, name, count, is_active, created_at, organization_id)
+                VALUES (:id, :name, :count, :is_active, NOW(), :org_id)
                 """
             ),
             {
                 "id": vt_id,
                 "name": vehicle.name,
                 "count": vehicle.quantity,
-                "is_active": True
+                "is_active": True,
+                "org_id": org_id
             }
         )
         
-        # 4. Calculate max_cbm
         max_cbm = (vehicle.length_cm * vehicle.width_cm * vehicle.height_cm) / 1000000.0
         
-        # 5. Insert into vehicle_specs
         db.execute(
             text(
                 """
@@ -589,7 +744,6 @@ def create_vehicle(vehicle: VehicleCreate, db: Session = Depends(get_db)):
         
         db.commit()
         
-        # 6. Retrieve the newly created vehicle
         row = db.execute(
             text(
                 """
@@ -630,17 +784,16 @@ def create_vehicle(vehicle: VehicleCreate, db: Session = Depends(get_db)):
 
 
 @app.put("/vehicles/{vehicle_id}", response_model=VehicleResponse)
-def update_vehicle(vehicle_id: int, vehicle: VehicleUpdate, db: Session = Depends(get_db)):
+def update_vehicle(vehicle_id: int, vehicle: VehicleUpdate, current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
+    org_id = current_entity.get("organization_id") if current_entity.get("role") == "user" else current_entity.get("id")
     try:
-        # 1. Check if vehicle exists
         exists = db.execute(
-            text("SELECT 1 FROM vehicle_types WHERE id = :id"),
-            {"id": vehicle_id}
+            text("SELECT 1 FROM vehicle_types WHERE id = :id AND organization_id = :org_id"),
+            {"id": vehicle_id, "org_id": org_id}
         ).first()
         if not exists:
-            raise HTTPException(status_code=404, detail="Vehicle not found")
+            raise HTTPException(status_code=404, detail="Vehicle not found or you do not have permission to modify it.")
             
-        # 2. Update vehicle_types
         db.execute(
             text(
                 """
@@ -656,10 +809,8 @@ def update_vehicle(vehicle_id: int, vehicle: VehicleUpdate, db: Session = Depend
             }
         )
         
-        # 3. Calculate max_cbm
         max_cbm = (vehicle.length_cm * vehicle.width_cm * vehicle.height_cm) / 1000000.0
         
-        # 4. Check if spec exists for this type_id
         spec_exists = db.execute(
             text("SELECT id FROM vehicle_specs WHERE type_id = :type_id"),
             {"type_id": vehicle_id}
@@ -706,7 +857,6 @@ def update_vehicle(vehicle_id: int, vehicle: VehicleUpdate, db: Session = Depend
             
         db.commit()
         
-        # 5. Retrieve updated vehicle
         row = db.execute(
             text(
                 """
@@ -750,23 +900,21 @@ def update_vehicle(vehicle_id: int, vehicle: VehicleUpdate, db: Session = Depend
 
 
 @app.delete("/vehicles/{vehicle_id}")
-def delete_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
+def delete_vehicle(vehicle_id: int, current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
+    org_id = current_entity.get("organization_id") if current_entity.get("role") == "user" else current_entity.get("id")
     try:
-        # 1. Check if vehicle exists
         exists = db.execute(
-            text("SELECT 1 FROM vehicle_types WHERE id = :id"),
-            {"id": vehicle_id}
+            text("SELECT 1 FROM vehicle_types WHERE id = :id AND organization_id = :org_id"),
+            {"id": vehicle_id, "org_id": org_id}
         ).first()
         if not exists:
-            raise HTTPException(status_code=404, detail="Vehicle not found")
+            raise HTTPException(status_code=404, detail="Vehicle not found or you do not have permission to delete it.")
             
-        # 2. Delete from vehicle_specs
         db.execute(
             text("DELETE FROM vehicle_specs WHERE type_id = :type_id"),
             {"type_id": vehicle_id}
         )
         
-        # 3. Delete from vehicle_types
         db.execute(
             text("DELETE FROM vehicle_types WHERE id = :id"),
             {"id": vehicle_id}

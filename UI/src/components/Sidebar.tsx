@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import './Sidebar.css'
 
 function Sidebar() {
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
 
   return (
     <aside className="sidebar" aria-label="Primary navigation">
@@ -12,6 +12,12 @@ function Sidebar() {
       </NavLink>
       <NavLink to="/optimize" className={({ isActive }) => `sidebar-link${isActive ? ' sidebar-link-active' : ''}`}>
         Optimize
+      </NavLink>
+      <NavLink to="/vehicles" className={({ isActive }) => `sidebar-link${isActive ? ' sidebar-link-active' : ''}`}>
+        Vehicles
+      </NavLink>
+      <NavLink to="/users-activity" className={({ isActive }) => `sidebar-link${isActive ? ' sidebar-link-active' : ''}`}>
+        Users Activity
       </NavLink>
       <button onClick={logout} className="sidebar-logout-btn">
         Logout

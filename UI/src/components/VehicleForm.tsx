@@ -62,7 +62,10 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
     setVehiclesError('')
 
     try {
-      const response = await fetch(vehiclesApiUrl('/vehicles/'))
+      const token = localStorage.getItem('stack360_token')
+      const response = await fetch(vehiclesApiUrl('/vehicles/'), {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      })
       if (!response.ok) {
         throw new Error(`Failed to fetch vehicles (${response.status})`)
       }
@@ -151,10 +154,12 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
         ? vehiclesApiUrl(`/vehicles/${editingVehicleId}`)
         : vehiclesApiUrl('/vehicles/')
 
+      const token = localStorage.getItem('stack360_token')
       const response = await fetch(url, {
         method: isUpdate ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify(payload),
       })
@@ -178,8 +183,10 @@ function VehicleForm({ onClose, onSelectVehicle }: VehicleFormProps) {
     setVehicleFormMessage('')
 
     try {
+      const token = localStorage.getItem('stack360_token')
       const response = await fetch(vehiclesApiUrl(`/vehicles/${vehicleId}`), {
         method: 'DELETE',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       })
 
       if (!response.ok) {
