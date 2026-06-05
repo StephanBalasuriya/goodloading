@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { X } from 'lucide-react'
+import { X, Eye, EyeOff } from 'lucide-react'
 import { apiHandleUrl } from '../config/api'
 import './ChangePasswordModal.css'
 
@@ -13,6 +13,9 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -93,40 +96,70 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
         <form onSubmit={handlePasswordSubmit} className="password-form">
           <div className="password-form-field">
             <label htmlFor="current-pwd">Current Password</label>
-            <input
-              type="password"
-              id="current-pwd"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showCurrentPassword ? 'text' : 'password'}
+                id="current-pwd"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
+              >
+                {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <div className="password-form-field">
             <label htmlFor="new-pwd">New Password</label>
-            <input
-              type="password"
-              id="new-pwd"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              minLength={6}
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showNewPassword ? 'text' : 'password'}
+                id="new-pwd"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                minLength={6}
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+              >
+                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <div className="password-form-field">
             <label htmlFor="confirm-pwd">Confirm New Password</label>
-            <input
-              type="password"
-              id="confirm-pwd"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              minLength={6}
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                id="confirm-pwd"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                minLength={6}
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <div className="password-modal-actions">

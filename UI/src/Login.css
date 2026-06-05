@@ -192,3 +192,35 @@
   color: var(--brand-2);
   text-decoration: underline;
 }
+
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrapper .form-input {
+  width: 100%;
+  padding-right: 2.75rem;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.password-toggle-btn:hover {
+  color: var(--brand);
+  background-color: rgba(11, 99, 246, 0.05);
+}
