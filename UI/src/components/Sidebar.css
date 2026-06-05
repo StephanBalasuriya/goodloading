@@ -66,3 +66,24 @@
     box-shadow: none;
   }
 }
+
+.sidebar-logout-btn {
+  width: 100%;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 14px;
+  text-align: left;
+  padding: 0.72rem 0.82rem;
+  font: 600 0.9rem/1.2 'Space Grotesk', sans-serif;
+  background: rgba(239, 68, 68, 0.05);
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 160ms ease;
+  margin-top: auto;
+}
+
+.sidebar-logout-btn:hover {
+  background: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(220, 38, 38, 0.2);
+  transform: translateY(-1px);
+}

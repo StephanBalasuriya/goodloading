@@ -6,23 +6,32 @@ import App from './App.tsx'
 import Home from './Home.tsx'
 import Optimize from './Optimize.tsx'
 import OptimizeResponse from './OptimizeResponse.tsx'
+import Login from './Login.tsx'
+import OrgSignup from './OrgSignup.tsx'
+import UserSignup from './UserSignup.tsx'
 import { LoadsProvider } from './context/LoadsContext.tsx'
 import { LoadSpaceProvider } from './context/LoadSpace.tsx'
+import { AuthProvider } from './context/AuthContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Router>
-      <LoadSpaceProvider>
-        <LoadsProvider>
-          <Routes>
-            <Route element={<App />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/optimize" element={<Optimize />} />
-              <Route path="/optimize-response" element={<OptimizeResponse />} />
-            </Route>
-          </Routes>
-        </LoadsProvider>
-      </LoadSpaceProvider>
+      <AuthProvider>
+        <LoadSpaceProvider>
+          <LoadsProvider>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/organization-signup" element={<OrgSignup />} />
+              <Route path="/user-signup" element={<UserSignup />} />
+              <Route element={<App />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/optimize" element={<Optimize />} />
+                <Route path="/optimize-response" element={<OptimizeResponse />} />
+              </Route>
+            </Routes>
+          </LoadsProvider>
+        </LoadSpaceProvider>
+      </AuthProvider>
     </Router>
   </StrictMode>,
 )

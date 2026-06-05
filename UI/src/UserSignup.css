@@ -1,0 +1,15 @@
+/* User signup layout styles */
+.org-notice-badge {
+  background: rgba(11, 99, 246, 0.08);
+  border: 1px solid rgba(11, 99, 246, 0.15);
+  color: var(--ink);
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin-bottom: 1.25rem;
+}
+
+.org-notice-badge strong {
+  color: var(--brand);
+}

@@ -15,7 +15,7 @@ def _db_settings() -> dict:
 	return {
 		"host": os.getenv("DB_HOST", "localhost"),
 		"port": int(os.getenv("DB_PORT", "5432")),
-		"dbname": os.getenv("DB_NAME", "GMPRO"),
+		"dbname": os.getenv("DB_NAME", "Stack360"),
 		"user": os.getenv("DB_USER", "postgres"),
 		"password": os.getenv("DB_PASSWORD", "1212"),
 	}
@@ -54,3 +54,53 @@ def get_connection():
 		yield conn
 	finally:
 		conn.close()
+
+
+def init_db():
+	settings = _db_settings()
+	# 1. Connect to postgres default DB to check if Stack360 exists, create it if not
+	try:
+		conn = psycopg2.connect(
+			host=settings["host"],
+			port=settings["port"],
+			user=settings["user"],
+			password=settings["password"],
+			dbname="postgres"
+		)
+		conn.autocommit = True
+		cursor = conn.cursor()
+		cursor.execute(f"SELECT 1 FROM pg_database WHERE datname = '{settings['dbname']}'")
+		exists = cursor.fetchone()
+		if not exists:
+			print(f"Database {settings['dbname']} does not exist. Creating...")
+			cursor.execute(f'CREATE DATABASE "{settings["dbname"]}"')
+		else:
+			print(f"Database {settings['dbname']} already exists.")
+		cursor.close()
+		conn.close()
+	except Exception as e:
+		print("Error checking/creating database:", e)
+
+	# 2. Execute db.sql schema against Stack360
+	try:
+		conn = psycopg2.connect(
+			host=settings["host"],
+			port=settings["port"],
+			user=settings["user"],
+			password=settings["password"],
+			dbname=settings["dbname"]
+		)
+		conn.autocommit = True
+		cursor = conn.cursor()
+		sql_file = BASE_DIR / "db.sql"
+		if sql_file.exists():
+			with open(sql_file, "r") as f:
+				sql_content = f.read()
+			cursor.execute(sql_content)
+			print("Executed db.sql database schema successfully.")
+		else:
+			print(f"db.sql not found at {sql_file}")
+		cursor.close()
+		conn.close()
+	except Exception as e:
+		print("Error executing db.sql database schema:", e)

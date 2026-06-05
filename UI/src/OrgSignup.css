@@ -1,0 +1,62 @@
+.otp-card {
+  text-align: center;
+}
+
+.otp-instruction {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.otp-instruction strong {
+  color: var(--ink);
+}
+
+.timer-display {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-top: 1rem;
+}
+
+.timer-active {
+  color: var(--brand);
+}
+
+.timer-expired {
+  color: #dc2626;
+}
+
+.resend-container {
+  margin-top: 1rem;
+}
+
+.resend-button {
+  background: none;
+  border: none;
+  color: var(--brand);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.resend-button:hover {
+  color: var(--brand-2);
+}
+
+.success-alert {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #059669;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

@@ -1,0 +1,6 @@
+[tool.pyrefly]
+python_interpreter = "api_handle/.venv/bin/python"
+search_path = [
+  "api_handle",
+  "api_handle/.venv/lib/python3.12/site-packages"
+]

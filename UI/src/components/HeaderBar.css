@@ -39,3 +39,45 @@
   font: 500 0.83rem/1.2 'Space Grotesk', sans-serif;
   color: #355781;
 }
+
+.header-profile {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 6px 12px;
+  background: rgba(17, 42, 88, 0.05);
+  border-radius: 12px;
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.profile-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #122038;
+}
+
+.profile-role {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #0b63f6;
+}
+
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0b63f6 0%, #02b4c8 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  box-shadow: 0 4px 10px rgba(11, 99, 246, 0.2);
+}

@@ -1,7 +1,10 @@
 import { NavLink } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import './Sidebar.css'
 
 function Sidebar() {
+  const { logout } = useAuth()
+
   return (
     <aside className="sidebar" aria-label="Primary navigation">
       <NavLink to="/" end className={({ isActive }) => `sidebar-link${isActive ? ' sidebar-link-active' : ''}`}>
@@ -10,6 +13,9 @@ function Sidebar() {
       <NavLink to="/optimize" className={({ isActive }) => `sidebar-link${isActive ? ' sidebar-link-active' : ''}`}>
         Optimize
       </NavLink>
+      <button onClick={logout} className="sidebar-logout-btn">
+        Logout
+      </button>
     </aside>
   )
 }

@@ -1,3 +1,9 @@
 {
-  "python.terminal.activateEnvironment": false
+  "python.terminal.activateEnvironment": false,
+  "python.defaultInterpreterPath": "/home/stephan/Documents/Goodloading/api_handle/.venv/bin/python",
+  "python.interpreterPath": "/home/stephan/Documents/Goodloading/api_handle/.venv/bin/python",
+  "python.pythonPath": "/home/stephan/Documents/Goodloading/api_handle/.venv/bin/python",
+  "python.analysis.extraPaths": [
+    "/home/stephan/Documents/Goodloading/api_handle"
+  ]
 }
