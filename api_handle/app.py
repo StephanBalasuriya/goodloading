@@ -575,6 +575,53 @@ def delete_organization_user(user_id: str, current_entity: dict = Depends(get_cu
         raise HTTPException(status_code=500, detail=f"Database error during deletion: {str(e)}")
 
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+    confirm_password: str
+
+@app.post("/api/change-password")
+def change_password_endpoint(req: ChangePasswordRequest, current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
+    if req.new_password != req.confirm_password:
+        raise HTTPException(status_code=400, detail="New passwords do not match.")
+        
+    role = current_entity.get("role")
+    entity_id = current_entity.get("id")
+    
+    if role == "organization":
+        org = db.execute(
+            text("SELECT password_hash FROM organizations WHERE id = :id"),
+            {"id": entity_id}
+        ).mappings().first()
+        if not org or not verify_password(req.current_password, org["password_hash"]):
+            raise HTTPException(status_code=401, detail="Invalid current password.")
+            
+        new_hash = hash_password(req.new_password)
+        db.execute(
+            text("UPDATE organizations SET password_hash = :hash WHERE id = :id"),
+            {"hash": new_hash, "id": entity_id}
+        )
+        db.commit()
+    elif role == "user":
+        user = db.execute(
+            text("SELECT password_hash FROM app_users WHERE id = :id"),
+            {"id": entity_id}
+        ).mappings().first()
+        if not user or not verify_password(req.current_password, user["password_hash"]):
+            raise HTTPException(status_code=401, detail="Invalid current password.")
+            
+        new_hash = hash_password(req.new_password)
+        db.execute(
+            text("UPDATE app_users SET password_hash = :hash WHERE id = :id"),
+            {"hash": new_hash, "id": entity_id}
+        )
+        db.commit()
+    else:
+        raise HTTPException(status_code=400, detail="Invalid role.")
+        
+    return {"message": "Password updated successfully."}
+
+
 def _normalize_vehicle_type(label: str) -> str:
     normalized = re.sub(r"(?i)^vehicle[_\s-]*", "", label).strip()
     normalized = re.sub(r"\d+$", "", normalized).strip()
