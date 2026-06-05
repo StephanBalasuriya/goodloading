@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useLoadsContext } from './context/LoadsContext'
 import { apiHandleUrl } from './config/api'
 import './Optimize.css'
+import heroImg from './assets/hero.png'
+
 
 const API_HANDLE_GMPRO_RESPONSE_ENDPOINT = apiHandleUrl('/GMPROResponse')
 const API_HANDLE_USED_VEHICLES_ENDPOINT = apiHandleUrl('/vehicles/used')
@@ -398,18 +400,18 @@ function Optimize() {
     () => ({
       totalVehicleUnits: usedVehicles.length,
       totalVehicleCapacityKg: usedVehicles.reduce(
-        (sum, vehicle) => sum + vehicle.max_weight_kg ,
+        (sum, vehicle) => sum + vehicle.max_weight_kg,
         0,
       ),
       totalVehicleVolumeM3: usedVehicles.reduce(
-        (sum, vehicle) => sum + vehicle.max_cbm ,
+        (sum, vehicle) => sum + vehicle.max_cbm,
         0,
       ),
     }),
     [usedVehicles],
   )
 
-  const hasUploadData = validLoads.length > 0 
+  const hasUploadData = validLoads.length > 0
 
   const routeCharts = useMemo<RouteChart[]>(() => {
     if (!gmproPayload?.routes || !Array.isArray(gmproPayload.routes)) return []
@@ -428,7 +430,7 @@ function Optimize() {
         const visits = route.visits ?? []
         const locationNumbers = buildVisitLocationNumbers(visits, route.transitions)
 
-        const steps = visits  
+        const steps = visits
           .map((visit, index) => {
             const locationNumber = locationNumbers[index] ?? 1
             const previousLocationNumber = index > 0 ? locationNumbers[index - 1] : null
@@ -475,7 +477,10 @@ function Optimize() {
     setUsedVehiclesError(null)
 
     try {
-      const response = await fetch(API_HANDLE_USED_VEHICLES_ENDPOINT)
+      const token = localStorage.getItem('stack360_token')
+      const response = await fetch(API_HANDLE_USED_VEHICLES_ENDPOINT, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      })
       if (!response.ok) {
         throw new Error(`Failed to load vehicle load space (${response.status}).`)
       }
@@ -530,12 +535,14 @@ function Optimize() {
         throw new Error('No per-vehicle payload available to send.')
       }
 
+      const token = localStorage.getItem('stack360_token')
       const results = await Promise.all(
         generatedGoodloadingPayloads.map(async (generated) => {
           const response = await fetch(API_HANDLE_CALCULATE_ENDPOINT, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
             },
             body: JSON.stringify(generated.payload),
           })
@@ -629,6 +636,8 @@ function Optimize() {
 
         <div className="hero-art" aria-hidden="true">
           <div className="hero-orbit" />
+          <img src={heroImg} alt="Goodloading visual" />
+
         </div>
       </header>
 
@@ -686,7 +695,7 @@ function Optimize() {
           ) : null}
         </section>
 
-     
+
 
         <section className="optimize-panel">
           <div className="optimize-panel-head">
@@ -907,7 +916,7 @@ function Optimize() {
                 {isSendingToApi ? 'Sending...' : 'Upload & Optimize'}
               </button>
             </div>
-        </section>)}
+          </section>)}
       </main>
     </div>
   )

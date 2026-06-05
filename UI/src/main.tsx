@@ -9,6 +9,8 @@ import OptimizeResponse from './OptimizeResponse.tsx'
 import Login from './Login.tsx'
 import OrgSignup from './OrgSignup.tsx'
 import UserSignup from './UserSignup.tsx'
+import VehiclesPage from './VehiclesPage.tsx'
+import UsersActivityPage from './UsersActivityPage.tsx'
 import { LoadsProvider } from './context/LoadsContext.tsx'
 import { LoadSpaceProvider } from './context/LoadSpace.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
@@ -27,6 +29,8 @@ createRoot(document.getElementById('root')!).render(
                 <Route path="/" element={<Home />} />
                 <Route path="/optimize" element={<Optimize />} />
                 <Route path="/optimize-response" element={<OptimizeResponse />} />
+                <Route path="/vehicles" element={<VehiclesPage />} />
+                <Route path="/users-activity" element={<UsersActivityPage />} />
               </Route>
             </Routes>
           </LoadsProvider>
