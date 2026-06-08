@@ -16,7 +16,7 @@ from db_config.db import SessionLocal, init_db
 from Schema.schemas import GmproUsedVehicle, VehicleCreate, VehicleUpdate, VehicleResponse
 from services.gmpro_cache import get_valid_gmpro_response
 from services.goodloading_service import calculate_loading, map_loading, recommend_loading
-from services.gmpro_service import get_gmpro_response, handle_gmpro_response
+
 from services.email_service import send_otp_email, send_invitation_email
 from services.auth_service import hash_password, verify_password, create_jwt, decode_jwt, generate_otp
 
@@ -401,17 +401,6 @@ def get_me(current_entity: dict = Depends(get_current_entity)):
 @app.post("/calculate")
 def calculate_loading_endpoint(data: dict, current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
     res = calculate_loading(data)
-    # Log user activity
-    if current_entity.get("role") == "user":
-        try:
-            db.execute(
-                text("INSERT INTO gmpro_responses (user_id, response) VALUES (:user_id, CAST(:response AS JSONB))"),
-                {"user_id": current_entity["id"], "response": json.dumps(res)}
-            )
-            db.commit()
-        except Exception as e:
-            db.rollback()
-            print("Failed to save gmpro_response activity:", e)
     return res
 
 @app.post("/recommend")
@@ -423,13 +412,61 @@ def map_loading_endpoint(data: dict):
     return map_loading(data)
     
 @app.post("/GMPROResponse")
-def handle_gmpro_response_endpoint(data: dict):
-    return handle_gmpro_response(data)
+def handle_gmpro_response_endpoint(data: dict, current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
+    try:
+        if current_entity.get("role") == "user":
+            db.execute(
+                text("INSERT INTO gmpro_responses (user_id, response) VALUES (:id, CAST(:response AS JSONB))"),
+                {"id": current_entity["id"], "response": json.dumps(data)}
+            )
+        else:
+            db.execute(
+                text("INSERT INTO gmpro_responses (organization_id, response) VALUES (:id, CAST(:response AS JSONB))"),
+                {"id": current_entity["id"], "response": json.dumps(data)}
+            )
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print("Failed to save gmpro_response activity:", e)
+        raise HTTPException(status_code=500, detail="Database insertion failed")
+    return {"status": "success", "message": "GMPRO response processed"}
 
 
 @app.get("/GMPROResponse")
-def get_gmpro_response_endpoint():
-    return get_gmpro_response()
+def get_gmpro_response_endpoint(current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
+    try:
+        if current_entity.get("role") == "user":
+            row = db.execute(
+                text("""
+                    SELECT response 
+                    FROM gmpro_responses 
+                    WHERE user_id = :id 
+                    ORDER BY created_at DESC 
+                    LIMIT 1
+                """),
+                {"id": current_entity["id"]}
+            ).mappings().first()
+        else:
+            row = db.execute(
+                text("""
+                    SELECT response 
+                    FROM gmpro_responses 
+                    WHERE organization_id = :id 
+                    ORDER BY created_at DESC 
+                    LIMIT 1
+                """),
+                {"id": current_entity["id"]}
+            ).mappings().first()
+            
+        if row:
+            return {
+                "available": True,
+                "data": row["response"]
+            }
+    except Exception as e:
+        print("Failed to fetch gmpro_response from db:", e)
+        
+    return {"available": False, "data": None}
 
 
 # --- Organization Users & Activity Endpoints ---
@@ -632,9 +669,42 @@ def _normalize_vehicle_type(label: str) -> str:
 @app.get("/vehicles/used", response_model=list[GmproUsedVehicle])
 def get_used_vehicles_from_gmpro(current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
     org_id = current_entity.get("organization_id") if current_entity.get("role") == "user" else current_entity.get("id")
-    payload = get_valid_gmpro_response()
-    if payload is None:
+    
+    # Fetch latest GMPRO response from the database
+    if current_entity.get("role") == "user":
+        row = db.execute(
+            text("""
+                SELECT response 
+                FROM gmpro_responses 
+                WHERE user_id = :id 
+                ORDER BY created_at DESC 
+                LIMIT 1
+            """),
+            {"id": current_entity["id"]}
+        ).mappings().first()
+    else:
+        # Organization fallback if applicable, assuming organization_id exists or it might fail if table is strictly user_id
+        # We will attempt it the same way GET /GMPROResponse works
+        row = db.execute(
+            text("""
+                SELECT response 
+                FROM gmpro_responses 
+                WHERE organization_id = :id 
+                ORDER BY created_at DESC 
+                LIMIT 1
+            """),
+            {"id": current_entity["id"]}
+        ).mappings().first()
+
+    if not row or not row["response"]:
         raise HTTPException(status_code=404, detail="No valid GMPRO response available")
+        
+    payload = row["response"]
+    
+    # Safely parse string JSON to dict if it was stored as text, though JSONB maps to dict directly in async/psycopg usually
+    if isinstance(payload, str):
+        import json
+        payload = json.loads(payload)
 
     routes = payload.get("routes")
     if not isinstance(routes, list):

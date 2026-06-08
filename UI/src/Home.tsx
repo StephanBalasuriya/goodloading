@@ -11,8 +11,7 @@ const GMPRO_RESPONSE_ENDPOINT = apiHandleUrl('/GMPROResponse')
 
 type GmproInputMode = 'gmpro_system' | 'manual_json'
 
-function Home()
-{
+function Home() {
   const navigate = useNavigate()
   const { loads } = useLoadsContext()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -22,8 +21,7 @@ function Home()
   const [gmproSubmitSuccess, setGmproSubmitSuccess] = useState<string | null>(null)
   const [isSubmittingGmproJson, setIsSubmittingGmproJson] = useState(false)
 
-  const scrollToPlanner = (event: React.MouseEvent<HTMLButtonElement>) =>
-  {
+  const scrollToPlanner = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
     const plannerSection = document.getElementById('start-button')
     if (!plannerSection) return
@@ -32,10 +30,8 @@ function Home()
     window.scrollTo({ top, behavior: 'smooth' })
   }
 
-  const handleUpload = () =>
-  {
-    if (!gmproSubmitSuccess && gmproInputMode === 'manual_json')
-    {
+  const handleUpload = () => {
+    if (!gmproSubmitSuccess && gmproInputMode === 'manual_json') {
       setErrorMessage('Please insert correct GMPRO response JSON before sending.')
       return
     }
@@ -43,8 +39,7 @@ function Home()
 
     // Check if there's at least one load with data
     const hasValidLoads = loads.length > 0 && loads.some((load) => load.name.trim() !== '')
-    if (!hasValidLoads)
-    {
+    if (!hasValidLoads) {
       setErrorMessage('Error: Please add at least one load with a name.')
       return
     }
@@ -64,42 +59,38 @@ function Home()
     })
   }
 
-  const submitGmproJson = async () =>
-  {
+  const submitGmproJson = async () => {
     setGmproSubmitError(null)
     setGmproSubmitSuccess(null)
     setErrorMessage(null)
 
 
-    if (gmproJsonInput.trim() === '')
-    {
+    if (gmproJsonInput.trim() === '') {
       setGmproSubmitError('Please paste GMPRO response JSON before sending.')
       return
     }
 
     let parsedJson: unknown
-    try
-    {
+    try {
       parsedJson = JSON.parse(gmproJsonInput)
-    } catch
-    {
+    } catch {
       setGmproSubmitError('Invalid JSON. Please check the format and try again.')
       return
     }
 
-    if (!parsedJson || typeof parsedJson !== 'object' || Array.isArray(parsedJson))
-    {
+    if (!parsedJson || typeof parsedJson !== 'object' || Array.isArray(parsedJson)) {
       setGmproSubmitError('GMPRO response must be a JSON object.')
       return
     }
 
     setIsSubmittingGmproJson(true)
-    try
-    {
+    try {
+      const token = localStorage.getItem('stack360_token')
       const response = await fetch(GMPRO_RESPONSE_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify(parsedJson),
       })
@@ -107,19 +98,15 @@ function Home()
       const rawBody = await response.text()
       let parsedBody: unknown = null
 
-      if (rawBody.trim() !== '')
-      {
-        try
-        {
+      if (rawBody.trim() !== '') {
+        try {
           parsedBody = JSON.parse(rawBody) as unknown
-        } catch
-        {
+        } catch {
           parsedBody = rawBody
         }
       }
 
-      if (!response.ok)
-      {
+      if (!response.ok) {
         const detail =
           parsedBody && typeof parsedBody === 'object' && 'detail' in parsedBody
             ? String((parsedBody as { detail?: unknown }).detail)
@@ -128,13 +115,11 @@ function Home()
       }
 
       setGmproSubmitSuccess('GMPRO response JSON saved successfully.')
-    } catch (error)
-    {
+    } catch (error) {
       setGmproSubmitError(
         error instanceof Error ? error.message : 'Unable to send JSON to backend.',
       )
-    } finally
-    {
+    } finally {
       setIsSubmittingGmproJson(false)
     }
   }
@@ -171,8 +156,7 @@ function Home()
                   name="gmpro-input-mode"
                   value="gmpro_system"
                   checked={gmproInputMode === 'gmpro_system'}
-                  onChange={() =>
-                  {
+                  onChange={() => {
                     setGmproInputMode('gmpro_system')
                     setGmproSubmitError(null)
                     setGmproSubmitSuccess(null)
@@ -186,8 +170,7 @@ function Home()
                   name="gmpro-input-mode"
                   value="manual_json"
                   checked={gmproInputMode === 'manual_json'}
-                  onChange={() =>
-                  {
+                  onChange={() => {
                     setGmproInputMode('manual_json')
                     setGmproSubmitError(null)
                     setGmproSubmitSuccess(null)
@@ -208,8 +191,7 @@ function Home()
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  onClick={() =>
-                  {
+                  onClick={() => {
                     void submitGmproJson()
                   }}
                   disabled={isSubmittingGmproJson}

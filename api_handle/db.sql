@@ -97,3 +97,6 @@ ALTER TABLE vehicle_specs DROP COLUMN IF EXISTS created_at;
 
 ALTER TABLE vehicle_types ALTER COLUMN organization_id DROP NOT NULL;
 ALTER TABLE vehicle_types ALTER COLUMN name DROP NOT NULL;
+
+ALTER TABLE gmpro_responses ADD COLUMN IF NOT EXISTS organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE gmpro_responses ALTER COLUMN user_id DROP NOT NULL;

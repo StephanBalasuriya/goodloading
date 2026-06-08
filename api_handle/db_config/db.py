@@ -92,14 +92,29 @@ def init_db():
 		)
 		conn.autocommit = True
 		cursor = conn.cursor()
-		sql_file = BASE_DIR / "db.sql"
-		if sql_file.exists():
-			with open(sql_file, "r") as f:
-				sql_content = f.read()
-			cursor.execute(sql_content)
-			print("Executed db.sql database schema successfully.")
+		
+		# Check if all required tables exist
+		cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'")
+		existing_tables = {row[0] for row in cursor.fetchall()}
+		expected_tables = {
+			"organizations", "app_users", "otp_verifications", 
+			"organization_credentials", "gmpro_responses", 
+			"vehicle_types", "vehicle_specs"
+		}
+		
+		if not expected_tables.issubset(existing_tables):
+			print("Some tables are missing. Executing db.sql to create them...")
+			sql_file = BASE_DIR / "db.sql"
+			if sql_file.exists():
+				with open(sql_file, "r") as f:
+					sql_content = f.read()
+				cursor.execute(sql_content)
+				print("Executed db.sql database schema successfully.")
+			else:
+				print(f"db.sql not found at {sql_file}")
 		else:
-			print(f"db.sql not found at {sql_file}")
+			print("All required tables already exist in the database.")
+			
 		cursor.close()
 		conn.close()
 	except Exception as e:

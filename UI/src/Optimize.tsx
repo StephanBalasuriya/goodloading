@@ -503,7 +503,10 @@ function Optimize() {
     setGmproStatusError(null)
 
     try {
-      const response = await fetch(API_HANDLE_GMPRO_RESPONSE_ENDPOINT)
+      const token = localStorage.getItem('stack360_token')
+      const response = await fetch(API_HANDLE_GMPRO_RESPONSE_ENDPOINT, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      })
       if (!response.ok) {
         setHasGmproResponse(null)
         setGmproStatusError(`Unable to verify GMPRO response (status ${response.status}).`)

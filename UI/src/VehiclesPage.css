@@ -279,6 +279,8 @@
 }
 
 .form-field input {
+	width: 100%;
+	box-sizing: border-box;
 	padding: 0.75rem 1rem;
 	border: 1px solid var(--line);
 	border-radius: 12px;
@@ -377,8 +379,13 @@
 }
 
 @keyframes spin {
-	0% { transform: rotate(0deg); }
-	100% { transform: rotate(360deg); }
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
 }
 
 @keyframes rise {
@@ -386,6 +393,7 @@
 		opacity: 0;
 		transform: translateY(20px);
 	}
+
 	to {
 		opacity: 1;
 		transform: translateY(0);
