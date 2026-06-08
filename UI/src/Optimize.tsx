@@ -540,8 +540,12 @@ function Optimize() {
 
       const token = localStorage.getItem('stack360_token')
       const results = await Promise.all(
-        generatedGoodloadingPayloads.map(async (generated) => {
-          const response = await fetch(API_HANDLE_CALCULATE_ENDPOINT, {
+        generatedGoodloadingPayloads.map(async (generated, index) => {
+          const endpointUrl = index === 0 
+            ? `${API_HANDLE_CALCULATE_ENDPOINT}?increment_count=true` 
+            : `${API_HANDLE_CALCULATE_ENDPOINT}?increment_count=false`
+            
+          const response = await fetch(endpointUrl, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

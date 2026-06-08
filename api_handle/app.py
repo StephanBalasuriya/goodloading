@@ -399,8 +399,36 @@ def get_me(current_entity: dict = Depends(get_current_entity)):
 
 
 @app.post("/calculate")
-def calculate_loading_endpoint(data: dict, current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
+def calculate_loading_endpoint(data: dict, increment_count: bool = True, current_entity: dict = Depends(get_current_entity), db: Session = Depends(get_db)):
     res = calculate_loading(data)
+    
+    if increment_count:
+        # Increment counts on successful calculation
+        try:
+            role = current_entity.get("role")
+            entity_id = current_entity.get("id")
+            
+            if role == "user":
+                db.execute(
+                    text("UPDATE app_users SET calc_count = calc_count + 1 WHERE id = :id"),
+                    {"id": entity_id}
+                )
+                org_id = current_entity.get("organization_id")
+                if org_id:
+                    db.execute(
+                        text("UPDATE organizations SET total_calc_count = total_calc_count + 1 WHERE id = :org_id"),
+                        {"org_id": org_id}
+                    )
+            elif role == "organization":
+                db.execute(
+                    text("UPDATE organizations SET calc_count = calc_count + 1, total_calc_count = total_calc_count + 1 WHERE id = :id"),
+                    {"id": entity_id}
+                )
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            print(f"Failed to update calculation counts: {e}")
+        
     return res
 
 @app.post("/recommend")
@@ -480,9 +508,14 @@ def get_organization_users(current_entity: dict = Depends(get_current_entity), d
     org_id = current_entity.get("organization_id") if current_entity.get("role") == "user" else current_entity.get("id")
     
     try:
+        org_stats = db.execute(
+            text("SELECT calc_count, total_calc_count FROM organizations WHERE id = :org_id"),
+            {"org_id": org_id}
+        ).mappings().first()
+        
         users = db.execute(
             text("""
-                SELECT id, name, email, created_at
+                SELECT id, name, email, created_at, calc_count
                 FROM app_users
                 WHERE organization_id = :org_id
                 ORDER BY created_at DESC
@@ -493,11 +526,6 @@ def get_organization_users(current_entity: dict = Depends(get_current_entity), d
         result = []
         for u in users:
             user_id = str(u["id"])
-            
-            count_res = db.execute(
-                text("SELECT count(*) FROM gmpro_responses WHERE user_id = :user_id"),
-                {"user_id": user_id}
-            ).scalar() or 0
             
             recent_res = db.execute(
                 text("SELECT id, created_at FROM gmpro_responses WHERE user_id = :user_id ORDER BY created_at DESC LIMIT 5"),
@@ -516,11 +544,14 @@ def get_organization_users(current_entity: dict = Depends(get_current_entity), d
                 "name": u["name"],
                 "email": u["email"],
                 "created_at": u["created_at"],
-                "activity_count": count_res,
+                "activity_count": u["calc_count"] or 0,
                 "recent_activities": recent_activities
             })
             
-        return result
+        return {
+            "organization_stats": dict(org_stats) if org_stats else {"calc_count": 0, "total_calc_count": 0},
+            "users": result
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 

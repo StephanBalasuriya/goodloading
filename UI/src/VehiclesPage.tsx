@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2, X } from 'lucide-react'
 import { vehiclesApiUrl } from './config/api'
+import { useAuth } from './context/AuthContext'
 import './VehiclesPage.css'
 
 type Vehicle = {
@@ -34,6 +35,8 @@ const emptyForm: VehicleFormData = {
 }
 
 function VehiclesPage() {
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'organization'
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -188,9 +191,11 @@ function VehiclesPage() {
           <p className="hero-description">
             Add, update, or remove vehicles from your organization's active logistics fleet. These dimensions will be available for quick load space optimization.
           </p>
-          <button onClick={openAddModal} className="btn-add-vehicle">
-            <Plus className="icon" /> Add New Vehicle
-          </button>
+          {isAdmin && (
+            <button onClick={openAddModal} className="btn-add-vehicle">
+              <Plus className="icon" /> Add New Vehicle
+            </button>
+          )}
         </div>
       </header>
 
@@ -233,14 +238,16 @@ function VehiclesPage() {
                     <span className="value highlighted">{v.max_weight_kg} kg</span>
                   </div>
                 </div>
-                <div className="card-actions">
-                  <button onClick={() => openEditModal(v)} className="btn-action edit" aria-label="Edit vehicle">
-                    <Pencil className="icon" /> Edit
-                  </button>
-                  <button onClick={() => handleDelete(v.id)} className="btn-action delete" aria-label="Delete vehicle">
-                    <Trash2 className="icon" /> Delete
-                  </button>
-                </div>
+                {isAdmin && (
+                  <div className="card-actions">
+                    <button onClick={() => openEditModal(v)} className="btn-action edit" aria-label="Edit vehicle">
+                      <Pencil className="icon" /> Edit
+                    </button>
+                    <button onClick={() => handleDelete(v.id)} className="btn-action delete" aria-label="Delete vehicle">
+                      <Trash2 className="icon" /> Delete
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

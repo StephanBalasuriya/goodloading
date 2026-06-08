@@ -21,6 +21,7 @@ type UserActivityInfo = {
 function UsersActivityPage() {
   const { user } = useAuth()
   const [users, setUsers] = useState<UserActivityInfo[]>([])
+  const [orgStats, setOrgStats] = useState<{ calc_count: number; total_calc_count: number } | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -43,7 +44,12 @@ function UsersActivityPage() {
         throw new Error(`Failed to load users activity (${response.status})`)
       }
       const data = await response.json()
-      setUsers(Array.isArray(data) ? data : [])
+      if (data && !Array.isArray(data)) {
+        setUsers(data.users || [])
+        setOrgStats(data.organization_stats || null)
+      } else {
+        setUsers(Array.isArray(data) ? data : [])
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch users and activities')
     } finally {
@@ -155,6 +161,25 @@ function UsersActivityPage() {
               <h2>Active Members</h2>
               <span className="count-badge">{users.length} Users</span>
             </div>
+
+            {orgStats && (
+              <div className="org-stats-cards" style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+                <div className="stat-card" style={{ flex: 1, backgroundColor: 'var(--surface-color)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <Activity className="icon-blue" size={32} />
+                  <div>
+                    <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Organization's Direct Calls</p>
+                    <h3 style={{ margin: '0.5rem 0 0 0', fontSize: '1.5rem' }}>{orgStats.calc_count}</h3>
+                  </div>
+                </div>
+                <div className="stat-card" style={{ flex: 1, backgroundColor: 'var(--surface-color)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <Activity className="icon-blue" size={32} />
+                  <div>
+                    <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Total Calls (Org + Users)</p>
+                    <h3 style={{ margin: '0.5rem 0 0 0', fontSize: '1.5rem' }}>{orgStats.total_calc_count}</h3>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {loading ? (
               <div className="loading-state">
@@ -269,13 +294,14 @@ function UsersActivityPage() {
                 </form>
               </div>
             ) : (
-              <div className="member-info-card">
-                <ShieldAlert className="icon-warn" />
-                <h3>Administrator Access Required</h3>
-                <p>
-                  You are logged in as a team member. Only the organization administrator accounts can create, delete, or manage team credentials.
-                </p>
-              </div>
+              // <div className="member-info-card">
+              //   <ShieldAlert className="icon-warn" />
+              //   <h3>Administrator Access Required</h3>
+              //   <p>
+              //     You are logged in as a team member. Only the organization administrator accounts can create, delete, or manage team credentials.
+              //   </p>
+              // </div>
+              <>  </>
             )}
           </section>
         </div>
