@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import './Sidebar.css'
 
 function Sidebar() {
-  const { user, logout } = useAuth()
+  const { logout } = useAuth()
 
   return (
     <aside className="sidebar" aria-label="Primary navigation">

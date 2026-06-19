@@ -11,19 +11,13 @@ interface LoadsListProps {
 const LOAD_TYPE_BARREL = 1
 const LOAD_TYPE_PIPE = 2
 
-const toPositiveNumber = (value: number | undefined) =>
-  typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0
 
 const getLoadSizeText = (load: LoadItem) => {
-  const diameter = toPositiveNumber(load.diameter)
-
   if (load.loadType === LOAD_TYPE_PIPE) {
-    const size = (Math.PI * diameter * diameter * load.length) / 4
     return `Size: π × ${load.diameter}² / 4 × ${load.length}  cm³`
   }
 
   if (load.loadType === LOAD_TYPE_BARREL) {
-    const size = (Math.PI * diameter * diameter * load.height) / 4
     return `Size: π × ${load.diameter}² / 4 × ${load.height} cm³`
   }
 

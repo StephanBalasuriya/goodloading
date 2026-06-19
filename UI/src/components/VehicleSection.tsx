@@ -24,6 +24,7 @@ function VehicleSection() {
       width_cm: vehicle.width_cm,
       height_cm: vehicle.height_cm,
       max_weight_kg: vehicle.max_weight_kg,
+      max_cbm: (vehicle.length_cm * vehicle.width_cm * vehicle.height_cm) / 1_000_000,
       selected_quantity: vehicle.selected_quantity,
     }
     addSelectedVehicle(veh)

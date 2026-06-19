@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { UserPlus, Trash2, Calendar, Activity, Key, ShieldAlert } from 'lucide-react'
+import { UserPlus, Trash2, Calendar, Activity } from 'lucide-react'
 import { apiHandleUrl } from './config/api'
 import { useAuth } from './context/AuthContext'
 import './UsersActivityPage.css'
