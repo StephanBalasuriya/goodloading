@@ -1,52 +1,68 @@
 # Goodloading UI
 
-React + TypeScript + Vite front end for the Goodloading workflow.
+React + TypeScript + Vite frontend for the Stack360 / Goodloading platform, served at **https://stack360.l360.lk**.
 
 ## What It Does
 
-The UI provides three main entry points:
-
-- Home planner screen for starting the loading flow and submitting GMPRO response JSON
-- Optimization screen for building Goodloading payloads from GMPRO routes and CSV loads
-- Optimization response screen for reviewing the backend result payloads
-
-The app uses React Router and shared loading context to move data between the planning, optimization, and response views.
+- **Authentication** — organization signup (OTP-verified), login, and app user login
+- **Home planner** — start the loading workflow and submit GMPRO response JSON
+- **Optimization screen** — build Goodloading payloads from GMPRO routes and CSV loads
+- **Optimization response** — review backend result payloads with 2D and 3D viewers
+- **Vehicles** — manage the organization's vehicle fleet (CRUD)
+- **Users & Activity** — view app users, their calculation activity, and create/delete users (admin only)
 
 ## Setup
 
 ```bash
-cd /home/stephan/Documents/Goodloading/UI
+cd /var/www/html/goodloading/UI
 npm install
 ```
 
-## Run
+## Run (development)
 
 ```bash
-cd /home/stephan/Documents/Goodloading/UI
 npm run dev
 ```
 
-The app runs on Vite's default development server, usually `http://localhost:5173`.
+The dev server runs on `http://localhost:5173` by default.
 
-## Environment
+## Build (production)
 
-The UI talks to the backend through the base URL configured in [src/config/api.ts](src/config/api.ts).
+```bash
+npm run build
+```
 
-Default values:
+The build output goes to `dist/`. Nginx serves this directory for `https://stack360.l360.lk`.
 
-- `VITE_API_HANDLE_BASE_URL=http://127.0.0.1:8001`
-- `VITE_VEHICLES_API_BASE_URL` falls back to `VITE_API_HANDLE_BASE_URL`
+The production build automatically picks up [.env.production](.env.production):
 
-If you need to point the UI at another backend, set those environment variables in a local `.env` file.
+```env
+VITE_API_HANDLE_BASE_URL=https://stack360-be.l360.lk
+```
+
+## Environment Variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `VITE_API_HANDLE_BASE_URL` | `http://127.0.0.1:8002` | Backend API base URL |
+| `VITE_VEHICLES_API_BASE_URL` | falls back to `VITE_API_HANDLE_BASE_URL` | Vehicles API base URL |
+
+- Local dev uses the defaults (no `.env` file needed)
+- Production build uses `.env.production` which points to `https://stack360-be.l360.lk`
 
 ## Available Routes
 
-- `/` Home planner screen
-- `/optimize` optimization workflow
-- `/optimize-response` response viewer
+| Path | Description |
+|---|---|
+| `/` | Home planner screen |
+| `/optimize` | Optimization workflow |
+| `/optimize-response` | Response viewer |
+| `/vehicles` | Vehicle management |
+| `/users-activity` | Users & activity logs (organization admin) |
 
 ## Notes
 
-- The UI expects the backend API to allow CORS from `http://localhost:5173` or `http://127.0.0.1:5173`
-- The optimization flow uses the backend endpoints `/GMPROResponse`, `/vehicles/used`, and `/calculate`
-- The project uses Vite, ESLint, and TypeScript; run `npm run build` and `npm run lint` before shipping changes
+- The backend must allow CORS from the frontend origin — see `api_handle/app.py`
+- The optimization flow uses `/GMPROResponse`, `/vehicles/used`, and `/calculate`
+- Run `npm run build` and `npm run lint` before deploying changes
+- TypeScript strict mode is enabled — all unused imports and variables must be removed before a build succeeds

@@ -1,180 +1,101 @@
 # api_handle
 
-FastAPI proxy service for Goodloading external calculation APIs.
+FastAPI backend service for the Goodloading / Stack360 platform. It handles authentication, organization and user management, vehicle management, loading calculations via the external Goodloading API, GMPRO response caching, and database initialisation.
 
 ## Endpoints
 
-- `POST /calculate` -> forwards to `https://api.goodloading.com/api/external/calculation`
-- `POST /recommend` -> forwards to `https://api.goodloading.com/api/external/calculation/recommendation`
-- `POST /map` -> processes loading mapping data
-- `POST /GMPROResponse` -> stores GMPRO optimization response
-- `GET /GMPROResponse` -> retrieves the last cached GMPRO response
-- `GET /vehicles/used` -> returns vehicles used in the last GMPRO optimization result
+### Auth
+- `POST /api/auth/organization/signup-otp` → sends OTP to verify organization email before signup
+- `POST /api/auth/organization/verify-otp` → verifies OTP and creates the organization account
+- `POST /api/auth/login` → authenticates organization or app user, returns JWT
+- `POST /api/auth/user/signup-otp` → sends OTP for app user signup
+- `POST /api/auth/user/verify-otp` → verifies OTP and creates app user
+
+### Organization & Users
+- `GET /api/organization/users` → lists all users and activity logs for the authenticated organization
+- `POST /api/organization/users` → creates a new app user under the organization (credentials emailed)
+- `DELETE /api/organization/users/{user_id}` → deletes an app user
+
+### Vehicles
+- `GET /vehicles/` → lists all vehicles for the authenticated organization
+- `POST /vehicles/` → creates a new vehicle
+- `PUT /vehicles/{vehicle_id}` → updates a vehicle
+- `DELETE /vehicles/{vehicle_id}` → deletes a vehicle
+
+### Loading / GMPRO
+- `POST /calculate` → forwards payload to `https://api.goodloading.com/api/external/calculation`
+- `POST /recommend` → forwards payload to `https://api.goodloading.com/api/external/calculation/recommendation`
+- `POST /map` → processes loading mapping data
+- `POST /GMPROResponse` → stores GMPRO optimization response
+- `GET /GMPROResponse` → retrieves the last cached GMPRO response (TTL controlled by `GMPRO_RESPONSE_TTL_SECONDS`)
+- `GET /vehicles/used` → returns vehicles used in the last GMPRO optimization result
 
 ## Requirements
 
-Dependencies are listed in `requirment.txt`.
+Dependencies are listed in `requirment.txt`. The backend uses:
+
+- `fastapi` and `uvicorn` — API server
+- `sqlalchemy` and `psycopg2` — PostgreSQL ORM and driver
+- `python-dotenv` — `.env` loading
+- `requests` — outbound Goodloading API calls
+- `python-jose` / `passlib` — JWT and password hashing
+- `resend` — transactional email (OTP and invitation emails)
 
 ## Setup
 
-
 ```bash
-cd /home/stephan/Documents/Goodloading/api_handle
+cd /var/www/html/goodloading/api_handle
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirment.txt
 ```
 
-Why `python -m pip` instead of `pip`:
-
-- Some Windows environments block direct execution of `pip.exe` with Application Control policies.
-- Running pip through `python -m pip` often works even when `pip.exe` is blocked.
-- This project uses `pg8000` as the PostgreSQL driver to avoid native DLL issues that can affect `psycopg2` on locked-down Windows machines.
-
 ## Environment
 
-Create or update `api_handle/.env` with your database connection and API token:
+Create or update `api_handle/.env`:
 
 ```env
-DATABASE_URL=postgresql://username:password@host:5432/database_name
 GOODLOADING_ACCESS_TOKEN=your_api_token_here
+GMPRO_RESPONSE_TTL_SECONDS=600
+
+PORT=8002
+HOST=127.0.0.1
+
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_NAME=Goodloading
+DB_USER=Stack360
+DB_PASSWORD=your_password_here
+
+RESEND_API_KEY=your_resend_key_here
 ```
 
-The `GOODLOADING_ACCESS_TOKEN` is required for authentication with the Goodloading API.
-
-## Run
-
-**Linux/macOS:**
-
-```bash
-cd /home/stephan/Documents/Goodloading/api_handle
-source .venv/bin/activate
-python app.py
-```
-
-**Windows:**
-
-```powershell
-cd D:\path\to\api_handle
-.\.venv\Scripts\Activate.ps1
-python app.py
-```
-
-Default runtime values:
-
-- Host: `0.0.0.0`
-- Port: `8001`
-- Reload: `true`
-
-Optional overrides:
-
-**Linux/macOS:**
-
-```bash
-export HOST="127.0.0.1"
-export PORT="9001"
-export RELOAD="false"
-python app.py
-```
-
-**Windows:**
-
-```powershell
-$env:HOST="127.0.0.1"
-$env:PORT="9001"
-$env:RELOAD="false"
-pytCORS Configuration
-
-The API is configured to accept requests from:
-- `http://localhost:5173`
-- `http://127.0.0.1:5173`
-
-Adjust the `CORSMiddleware` configuration in `app.py` for other origins.
+> **Note:** `DB_PORT` must be `5432` (PostgreSQL). The app uses `psycopg2` — it cannot connect to MySQL (port 3306).
 
 ## Database
 
-The API requires a PostgreSQL database. Vehicle type and specification data is read from:
-- `vehicle_types` table
-- `vehicle_specs` table
+The app connects to **PostgreSQL**. On first startup it auto-creates the `Goodloading` database (if missing) and runs `db.sql` to create all required tables:
 
-These tables store vehicle dimensions, weight limits, and capacity information used by the `/vehicles/used` endpoint.
+- `organizations`
+- `app_users`
+- `otp_verifications`
+- `organization_credentials`
+- `gmpro_responses`
+- `vehicle_types`
+- `vehicle_specs`
 
-## Notes
-
-- The access token must be set via the `GOODLOADING_ACCESS_TOKEN`
-## Quick Test Commands
-
-Test `/map`:
-
-```powershell
-# api_handle
-
-FastAPI service for the Goodloading integration. It forwards calculation requests to the external Goodloading API, caches GMPRO responses locally, and exposes vehicle data used by the UI.
-
-## Endpoints
-
-- `POST /calculate` forwards payloads to `https://api.goodloading.com/api/external/calculation`
-- `POST /recommend` forwards payloads to `https://api.goodloading.com/api/external/calculation/recommendation`
-- `POST /map` processes loading mapping data
-- `POST /GMPROResponse` stores the latest GMPRO optimization response
-- `GET /GMPROResponse` returns the cached GMPRO response if one is available
-- `GET /vehicles/used` returns the vehicle rows matched from the latest GMPRO optimization result
-
-## Requirements
-
-Install the Python dependencies listed in [requirment.txt](requirment.txt).
-
-The backend uses:
-
-- `fastapi` and `uvicorn` for the API server
-- `requests` for outbound Goodloading API calls
-- `sqlalchemy` and `psycopg2` for PostgreSQL access
-- `python-dotenv` for `.env` loading
-
-## Setup
+### Create the PostgreSQL user and database (one-time)
 
 ```bash
-cd /home/stephan/Documents/Goodloading/api_handle
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirment.txt
+sudo -u postgres psql
 ```
 
-## Environment
-
-Create `api_handle/.env` with your database connection and access token:
-
-```env
-DATABASE_URL=postgresql://username:password@host:5432/database_name
-GOODLOADING_ACCESS_TOKEN=your_api_token_here
-GMPRO_RESPONSE_TTL_SECONDS=120
-```
-
-`GOODLOADING_ACCESS_TOKEN` is required for requests to the Goodloading API. `GMPRO_RESPONSE_TTL_SECONDS` controls how long the cached GMPRO response stays valid.
-
-## Run
-
-```bash
-cd /home/stephan/Documents/Goodloading/api_handle
-source .venv/bin/activate
-python app.py
-```
-
-Default runtime values:
-
-- Host: `0.0.0.0`
-- Port: `8001`
-- Reload: `true`
-
-Optional overrides:
-
-```bash
-export HOST="127.0.0.1"
-export PORT="9001"
-export RELOAD="false"
-python app.py
+```sql
+CREATE USER "Stack360" WITH PASSWORD 'your_password';
+CREATE DATABASE "Goodloading" OWNER "Stack360";
+GRANT ALL PRIVILEGES ON DATABASE "Goodloading" TO "Stack360";
+\q
 ```
 
 ## CORS
@@ -183,21 +104,50 @@ The API currently allows requests from:
 
 - `http://localhost:5173`
 - `http://127.0.0.1:5173`
+- `http://localhost:5174`
+- `http://127.0.0.1:5174`
+- `http://localhost:5175`
+- `http://127.0.0.1:5175`
+- `https://stack360.l360.lk` ← production frontend
 
 Update the `CORSMiddleware` configuration in [app.py](app.py) if the UI is served from another origin.
 
-## Database
+## Run (development)
 
-The `/vehicles/used` endpoint reads from PostgreSQL tables named `vehicle_types` and `vehicle_specs`.
+```bash
+cd /var/www/html/goodloading/api_handle
+source .venv/bin/activate
+python app.py
+```
 
-Those tables are expected to store vehicle dimensions, weight limits, capacity, and active-state data used to match GMPRO vehicle labels.
+Default runtime values (from `.env`):
+
+- Host: `127.0.0.1`
+- Port: `8002`
+
+## Run (production — systemd)
+
+The backend runs as a `systemd` service. See [../code.md](../code.md) for the full deployment guide.
+
+```bash
+sudo systemctl restart stack360
+sudo systemctl status stack360
+```
 
 ## Quick Test Commands
+
+Test connectivity:
+
+```bash
+curl -i http://127.0.0.1:8002/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"test"}'
+```
 
 Test `/map`:
 
 ```bash
-curl -i -X POST http://127.0.0.1:8001/map \
+curl -i -X POST http://127.0.0.1:8002/map \
   -H "Content-Type: application/json" \
   -d '{"ping": true}'
 ```
@@ -205,7 +155,7 @@ curl -i -X POST http://127.0.0.1:8001/map \
 Test `/recommend`:
 
 ```bash
-curl -i -X POST http://127.0.0.1:8001/recommend \
+curl -i -X POST http://127.0.0.1:8002/recommend \
   -H "Content-Type: application/json" \
   -d '{"loads": [], "loadspaces": []}'
 ```
